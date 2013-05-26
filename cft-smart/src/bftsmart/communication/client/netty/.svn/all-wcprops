@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/283/trunk/src/bftsmart/communication/client/netty
+END
+NettyClientPipelineFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/!svn/ver/259/trunk/src/bftsmart/communication/client/netty/NettyClientPipelineFactory.java
+END
+NettyClientServerCommunicationSystemServerSide.java
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/!svn/ver/283/trunk/src/bftsmart/communication/client/netty/NettyClientServerCommunicationSystemServerSide.java
+END
+NettyTOMMessageEncoder.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/259/trunk/src/bftsmart/communication/client/netty/NettyTOMMessageEncoder.java
+END
+NettyServerPipelineFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/!svn/ver/259/trunk/src/bftsmart/communication/client/netty/NettyServerPipelineFactory.java
+END
+NettyClientServerCommunicationSystemClientSide.java
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/!svn/ver/283/trunk/src/bftsmart/communication/client/netty/NettyClientServerCommunicationSystemClientSide.java
+END
+NettyClientServerSession.java
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/!svn/ver/259/trunk/src/bftsmart/communication/client/netty/NettyClientServerSession.java
+END
+NettyTOMMessageDecoder.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/259/trunk/src/bftsmart/communication/client/netty/NettyTOMMessageDecoder.java
+END

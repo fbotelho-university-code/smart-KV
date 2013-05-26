@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/267/trunk/src/bftsmart/statemanagment
+END
+ApplicationState.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/259/trunk/src/bftsmart/statemanagment/ApplicationState.java
+END
+SMMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/259/trunk/src/bftsmart/statemanagment/SMMessage.java
+END
+StateManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/267/trunk/src/bftsmart/statemanagment/StateManager.java
+END

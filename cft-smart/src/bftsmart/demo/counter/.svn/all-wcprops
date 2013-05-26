@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/261/trunk/src/bftsmart/demo/counter
+END
+CounterState.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/261/trunk/src/bftsmart/demo/counter/CounterState.java
+END
+CounterServer.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/261/trunk/src/bftsmart/demo/counter/CounterServer.java
+END
+MultiCounterClient.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/261/trunk/src/bftsmart/demo/counter/MultiCounterClient.java
+END
+CounterClient.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/261/trunk/src/bftsmart/demo/counter/CounterClient.java
+END

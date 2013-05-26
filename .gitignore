@@ -1,0 +1,13 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# folders # 
+Ac/*
+Cenas/*
+try/*
+.metadata/*
+*/keys/*

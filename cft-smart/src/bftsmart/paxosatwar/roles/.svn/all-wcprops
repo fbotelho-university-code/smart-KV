@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/265/trunk/src/bftsmart/paxosatwar/roles
+END
+Acceptor.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/265/trunk/src/bftsmart/paxosatwar/roles/Acceptor.java
+END
+Proposer.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/265/trunk/src/bftsmart/paxosatwar/roles/Proposer.java
+END
