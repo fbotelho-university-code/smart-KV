@@ -312,7 +312,7 @@ public final class Acceptor {
 	                pm.setMACVector(macVector);
 	                
 	                int[] targets = this.reconfManager.getCurrentViewOtherAcceptors();
-	                communication.getServersConn().send(targets, pm, false);
+	                communication.getServersConn().send(targets, pm, true);
 	                
 	                //communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
 	                        //factory.createStrong(eid, round.getNumber(), value));

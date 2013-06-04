@@ -7,8 +7,9 @@ import datastore.bench.flowsimulations.deviceManager.DeviceManager;
 
 
 public class MultiFlowTypes extends BenchClient{
-	FlowSimulation newPing = new DeviceManager(DeviceManager.NewPingingOneExistentIn1000H); 
-	FlowSimulation existentPing = new DeviceManager(DeviceManager.PingKnown1000H); 
+	//FlowSimulation newPing = new DeviceManager(DeviceManager.NewPingingOneExistentIn1000H); 
+	//FlowSimulation existentPing = new DeviceManager(DeviceManager.PingKnown1000H);
+	FlowSimulation ping500 = new DeviceManager(DeviceManager.hosts500);
 	Random generator = new Random(); 
 	public MultiFlowTypes(int id, int numberOfFlows,boolean verbose, long interval, boolean storedStatistics, int start_id) {
 		super(id, numberOfFlows, verbose,interval, storedStatistics, start_id);
@@ -17,7 +18,7 @@ public class MultiFlowTypes extends BenchClient{
 
 	@Override
 	protected FlowSimulation chooseNextFlow() {
-		return newPing;  
+		return ping500; 
 		/*if (generator.nextBoolean()){
 			return newPing; 
 		}

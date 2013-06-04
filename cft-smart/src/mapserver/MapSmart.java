@@ -130,6 +130,10 @@ public class MapSmart extends DefaultSingleRecoverable{
 			 DataInputStream dis = new DataInputStream(in); 
 			 RequestType reqType = RequestType.values()[dis.readInt()];
 			 switch(reqType){
+			 
+			 case GET_AND_INCREMENT:
+				 System.out.println("here"); 
+				 return get_and_increment(dis); 
 			 case CREATE_TABLE:
 				 return create_table(dis);
 			 case CREATE_TABLE_MAX_SIZE: 
@@ -173,9 +177,33 @@ public class MapSmart extends DefaultSingleRecoverable{
 			 System.err.println("Exception reading data in the replica: " + e.getMessage());
 			 e.printStackTrace();
 			 return null;
+		 } catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 return null; 
+	}
+
+	private byte[] get_and_increment(DataInputStream dis) throws IOException, ClassNotFoundException{
+		String tableName;
+		tableName = dis.readUTF(); 
+		 if (datastore.containsKey(tableName)){
+			 byte[] key =readNextByteArray(dis);
+			 byte[] val = datastore.get(tableName).get(new ByteArrayWrapper(key));
+			 if (val != null){
+				 
+			 Long l =(Long) MapSmart.deserialize(val);  
+			 System.out.println(l);
+			 
+			 datastore.get(tableName).put(new ByteArrayWrapper(key), MapSmart.serialize(l +1));
+			 return MapSmart.serialize(l);
+			 }
 		 }
 		 return null; 
 	}
+
+	
+	
 
 	/**
 	 * @param dis
@@ -446,9 +474,8 @@ public class MapSmart extends DefaultSingleRecoverable{
 			 Map<ByteArrayWrapper,byte[]> table = datastore.get(tableName);
 			 if (table.containsKey(k)){
 				byte[] oldValue = readNextByteArray(dis);
-				
 				 if (Arrays.equals(table.get(k), oldValue)){
-					 
+
 					 final byte[] newValue = ByteStreams.toByteArray(dis);
 					 table.put(k, newValue);
 					 
@@ -561,3 +588,4 @@ public class MapSmart extends DefaultSingleRecoverable{
 		return result;
 	}
 }
+

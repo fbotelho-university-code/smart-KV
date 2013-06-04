@@ -21,7 +21,8 @@ public enum RequestType implements Serializable{
 	CREATE_TABLE_MAX_SIZE(SuperType.READ, "Create a circular buffer table (i.e., will remove oldest entry after hiting the threshold specified"), 
 	ATOMIC_REPLACE_VALUE_IN_TABLE (SuperType.WRITE, "Atomically replace a value in a table if the provided expectedValue is correct"), 
 	ATOMIC_REMOVE_IF_VALUE(SuperType.WRITE, "Atomically remove a value in a table if the provided expectedValue is found"), 
-	ATOMIC_PUT_IF_ABSENT(SuperType.WRITE, "Atomically set a value in a table if the key is already present in the table");
+	ATOMIC_PUT_IF_ABSENT(SuperType.WRITE, "Atomically set a value in a table if the key is already present in the table"), 
+	GET_AND_INCREMENT(SuperType.WRITE, "Get and Increment a value");
 	
 	public enum SuperType{
 		WRITE,

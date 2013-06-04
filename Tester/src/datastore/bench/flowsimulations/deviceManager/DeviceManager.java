@@ -8,6 +8,14 @@ import bftsmart.tom.ServiceProxy;
 import datastore.bench.flowsimulations.FlowSimulation;
 
 public class DeviceManager implements FlowSimulation{
+	public static int[][] hosts500 = {
+		{ FlowSimulation.READ_OP,406,82},
+		{ FlowSimulation.READ_OP,28,1758},
+		{ FlowSimulation.WRITE_OP,1786,1},
+		{ FlowSimulation.READ_OP,406,82},
+		{ FlowSimulation.READ_OP,28,1680},
+	};
+	
 	int[][] requests; 
 	byte[][] msgs ; 
 	
@@ -38,8 +46,8 @@ public class DeviceManager implements FlowSimulation{
 		{ FlowSimulation.READ_OP,50,77},
 		{ FlowSimulation.READ_OP,127,1},
 		{ FlowSimulation.WRITE_OP,50,77},
-	
 	}; 
+	
 /*			{ FlowSimulation.READ_OP,406,0},
 			{ FlowSimulation.READ_OP,50,465124},
 			{ FlowSimulation.READ_OP,16,1703264},

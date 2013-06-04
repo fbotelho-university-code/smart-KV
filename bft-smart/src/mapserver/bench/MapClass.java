@@ -99,19 +99,32 @@ public class MapClass extends DefaultSingleRecoverable {
 		}
 		return null; 
 	}
+	int warm =0;  
+	boolean warmed=false;
 	
 	private byte[]execute(byte[] command) throws IOException{
-
 		 ByteArrayInputStream in = new ByteArrayInputStream(command);
 		 DataInputStream dis = new DataInputStream(in); 
 		 int val = dis.readInt();
 		 
+		 if (!warmed){
+			 if (warm++ == 1000) {
+				 warmed = true;
+				 tpStartTime = System.currentTimeMillis();  
+			 }
+		 }
+		 
 		 if (val == -2){
-			 if (measure){
-				 executions++; 
+			 if (measure && warmed){
+				 executions++;
 				 if ((executions % interval) == 0 ){
-					 throughput.addValue(1000 * interval/ (System.currentTimeMillis() - tpStartTime)); 
+					 executions = 0; 
+					 try{
+					 throughput.addValue(1000 * interval/ (System.currentTimeMillis() - tpStartTime));
 					 tpStartTime = System.currentTimeMillis();
+					 }catch (ArithmeticException e){
+						 ; 
+					 }
 				 }
 			 }
 		 }

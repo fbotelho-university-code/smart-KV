@@ -13,12 +13,11 @@ import datastore.bench.flowsimulations.FlowSimulation;
 public abstract class BenchClient implements Runnable{
 	
 	public static void main(String[] args) throws InterruptedException{
-
 		if (args.length < 3) {
             System.out.println("Usage: ... ThroughputLatencyClient <num. threads> <number of operations per thread> <interval> <verbose?> <stored statistics?> <start_id>"); 
             System.exit(-1);
         }
-	    
+		
 	    int numThreads = Integer.parseInt(args[0]);
         int numberOfFlows = Integer.parseInt(args[1]); 
         boolean verbose =Boolean.parseBoolean(args[3]);
@@ -102,7 +101,6 @@ public abstract class BenchClient implements Runnable{
 			dos.writeInt(-2); 
 			dos.flush(); dos.close();
 			end = out.toByteArray();
-			
 		}catch(Exception e){
 			e.printStackTrace(); 
 		}
@@ -111,15 +109,15 @@ public abstract class BenchClient implements Runnable{
 			System.out.println("Starting thread " + this.id); 
 		}
 		bombit(end);
-		System.out.println("Stats: " + (storedStatistics ? latency.toString() : latency2.toString() )); 
-
+		System.out.println("Stats: " + (storedStatistics ? latency.toString() : latency2.toString() ));
+		
 	}
 
 	/**
 	 * @param end
 	 */
 	private void bombit(final byte[] end) {
-		for (long i = 0; i < numFlows ; i++){
+		for (long i = 0; i < numFlows + 1000 ; i++){
 			if (verbose && (i % interval) == 0 ){
 				System.out.println("Thread " + id + " on request: " + i); 
 			}
@@ -128,14 +126,13 @@ public abstract class BenchClient implements Runnable{
 			chooseFlow.run(proxy);	 
 			final long total  = System.currentTimeMillis() - tflow_started;  
 			proxy.invokeUnordered(end);
-			if (storedStatistics) {
+			if (storedStatistics && i > 1000) {
 				latency.addValue(total);
 			}
-			else{
+			else if (i >1000){
 				latency2 .addValue(total); 
 			}
 		}
 	}
-	
 	protected  abstract FlowSimulation chooseNextFlow();
 }
