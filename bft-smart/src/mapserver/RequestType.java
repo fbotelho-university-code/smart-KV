@@ -24,6 +24,8 @@ public enum RequestType implements Serializable{
 	ATOMIC_PUT_IF_ABSENT(SuperType.WRITE, "Atomically set a value in a table if the key is already present in the table"), 
 	GET_AND_INCREMENT(SuperType.WRITE, "Get and Increment a value");
 	
+	
+	
 	public enum SuperType{
 		WRITE,
 		READ;

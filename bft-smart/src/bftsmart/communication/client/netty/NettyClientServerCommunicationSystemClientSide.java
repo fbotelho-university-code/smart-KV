@@ -235,7 +235,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
     @Override
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
-        System.out.println("Channel connected");
+    	//System.out.println("Channel connected");
     }
 
     @Override

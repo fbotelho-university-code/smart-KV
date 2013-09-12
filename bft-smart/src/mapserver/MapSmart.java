@@ -129,11 +129,11 @@ public class MapSmart extends DefaultSingleRecoverable{
 		 ByteArrayInputStream in = new ByteArrayInputStream(command);
 		 try {
 			 DataInputStream dis = new DataInputStream(in); 
+			 DataStoreVersion 
 			 RequestType reqType = RequestType.values()[dis.readInt()];
 			 switch(reqType){
 			 
 			 case GET_AND_INCREMENT:
-				 System.out.println("here"); 
 				 return get_and_increment(dis); 
 			 case CREATE_TABLE:
 				 return create_table(dis);
@@ -185,6 +185,7 @@ public class MapSmart extends DefaultSingleRecoverable{
 		 return null; 
 	}
 
+	//FIXME
 	private byte[] get_and_increment(DataInputStream dis) throws IOException, ClassNotFoundException{
 		String tableName;
 		tableName = dis.readUTF(); 
@@ -393,12 +394,25 @@ public class MapSmart extends DefaultSingleRecoverable{
 			 final byte[] key = readNextByteArray(dis); 
 			 final byte[] value =  ByteStreams.toByteArray(dis);
 			 Map<ByteArrayWrapper, byte[]> table = datastore.get(tableName);
-			 table.put(new ByteArrayWrapper(key), value); 
-			 return new byte[1]; 
+			 return table.put(new ByteArrayWrapper(key), value); 
 		 }
 		 return null;
 	}
 
+	private byte[] insert_value_in_table(ByteArrayInputStream in,
+			DataInputStream dis) throws IOException {
+		String tableName;
+		tableName = dis.readUTF(); 
+		 if (datastore.containsKey(tableName)){
+			 final byte[] key = readNextByteArray(dis); 
+			 final byte[] value =  ByteStreams.toByteArray(dis);
+			 Map<ByteArrayWrapper, byte[]> table = datastore.get(tableName);
+			  table.put(new ByteArrayWrapper(key), value);
+			  return new byte[1];
+		 }
+		 return null;
+	}
+	
 	/**
 	 * @param dis
 	 * @return

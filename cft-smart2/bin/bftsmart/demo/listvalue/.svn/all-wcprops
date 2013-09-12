@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/265/trunk/src/bftsmart/demo/listvalue
+END
+LVClient.java
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/265/trunk/src/bftsmart/demo/listvalue/LVClient.java
+END
+BFTMapList.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/261/trunk/src/bftsmart/demo/listvalue/BFTMapList.java
+END
+BFTList.java
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/261/trunk/src/bftsmart/demo/listvalue/BFTList.java
+END
+BFTListImpl.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/261/trunk/src/bftsmart/demo/listvalue/BFTListImpl.java
+END
+LVRequestType.java
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/261/trunk/src/bftsmart/demo/listvalue/LVRequestType.java
+END

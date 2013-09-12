@@ -47,8 +47,10 @@ public class RSAKeyLoader {
 	private PublicKey testPublicKey; 
     /** Creates a new instance of RSAKeyLoader 
      * @param testing */
+	
+	
     public RSAKeyLoader(TOMConfiguration conf, String configHome, boolean testing) {
-    	System.out.println(testing); 
+    	
         this.conf = conf;
 
 

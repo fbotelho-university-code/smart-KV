@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/264/trunk/src/bftsmart/tom/leaderchange
+END
+CollectData.java
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/259/trunk/src/bftsmart/tom/leaderchange/CollectData.java
+END
+LastEidData.java
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/264/trunk/src/bftsmart/tom/leaderchange/LastEidData.java
+END
+LCMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/259/trunk/src/bftsmart/tom/leaderchange/LCMessage.java
+END
+LCManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/264/trunk/src/bftsmart/tom/leaderchange/LCManager.java
+END

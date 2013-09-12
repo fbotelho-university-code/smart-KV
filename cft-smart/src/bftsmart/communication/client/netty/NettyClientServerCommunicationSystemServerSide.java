@@ -106,14 +106,14 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                     manager.getStaticConf().getProcessId()),
                     manager.getStaticConf().getPort(manager.getStaticConf().getProcessId())));
 
-            System.out.println("#Bound to port " + manager.getStaticConf().getPort(manager.getStaticConf().getProcessId()));
+            /*System.out.println("#Bound to port " + manager.getStaticConf().getPort(manager.getStaticConf().getProcessId()));
             System.out.println("#myId " + manager.getStaticConf().getProcessId());
             System.out.println("#n " + manager.getCurrentViewN());
             System.out.println("#f " + manager.getCurrentViewF());
             System.out.println("#requestTimeout= " + manager.getStaticConf().getRequestTimeout());
             System.out.println("#maxBatch= " + manager.getStaticConf().getMaxBatchSize());
             System.out.println("#Using MACs = " + manager.getStaticConf().getUseMACs());
-            System.out.println("#Using Signatures = " + manager.getStaticConf().getUseSignatures());
+            System.out.println("#Using Signatures = " + manager.getStaticConf().getUseSignatures());*/
             //******* EDUARDO END **************//
         } catch (InvalidKeySpecException ex) {
         } catch (NoSuchAlgorithmException ex) {
@@ -123,9 +123,9 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
     @Override
     public void exceptionCaught( ChannelHandlerContext ctx, ExceptionEvent e) {
     	if(e.getCause() instanceof ClosedChannelException)
-            System.out.println("Connection with client closed.");
+            ; //System.out.println("Connection with client closed.");
     	else if(e.getCause() instanceof ConnectException) {
-            System.out.println("Impossible to connect to client.");
+            ; //Systbem.out.println("Impossible to connect to client.");
         } else {
             e.getCause().printStackTrace(System.err);
         }
@@ -141,7 +141,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
     @Override
     public void channelConnected( ChannelHandlerContext ctx, ChannelStateEvent e) {
         Logger.println("Session Created, active clients=" + sessionTable.size());
-        System.out.println("Session Created, active clients=" + sessionTable.size());
+        //System.out.println("Session Created, active clients=" + sessionTable.size());
     }
 
     @Override
@@ -156,8 +156,8 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                 if (e.getChannel().equals(value.getChannel())) {
                     int key = (Integer) m.getKey();
                     sessionTable.remove(key);
-                    System.out.println("#Removed client channel with ID= " + key);
-                    System.out.println("#active clients=" + sessionTable.size());
+                    //System.out.println("#Removed client channel with ID= " + key);
+                    //System.out.println("#active clients=" + sessionTable.size());
                     break;
                 }
             }

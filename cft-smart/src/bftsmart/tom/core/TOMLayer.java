@@ -453,7 +453,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         int leaderId = lm.getCurrentLeader();
         //******* EDUARDO BEGIN **************//
         if (this.reconfManager.isCurrentViewMember(leaderId)) {
-            System.out.println("(TOMLayer.forwardRequestToLeader) forwarding " + request + " to " + leaderId);
+            //System.out.println("(TOMLayer.forwardRequestToLeader) forwarding " + request + " to " + leaderId);
             communication.send(new int[]{leaderId}, 
                 new ForwardedMessage(this.reconfManager.getStaticConf().getProcessId(), request));
         }

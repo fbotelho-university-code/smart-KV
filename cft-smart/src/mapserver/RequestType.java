@@ -1,6 +1,7 @@
 package mapserver;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 
 
 public enum RequestType implements Serializable{
@@ -14,7 +15,7 @@ public enum RequestType implements Serializable{
 	GET_VALUE_IN_TABLE(SuperType.READ, "Get a specific value from the table"), 
 	IS_DATASTORE_EMPTY(SuperType.READ, "Check if all the datastore is empyt (i.e., no tables)"), 
 	IS_TABLE_EMPTY(SuperType.READ, "Check if a table is empyt (i.e., no values)"), 
-	PUT_VALUE_IN_TABLE(SuperType.WRITE, "Put a value in a table"), 
+	PUT_VALUE_IN_TABLE(SuperType.WRITE, "Put a value in a table and gets previous value"), 
 	PUT_VALUES_IN_TABLE(SuperType.WRITE, "Put several values in a table"), 
 	REMOVE_VALUE_FROM_TABLE(SuperType.WRITE, "Remove a value from a table"), 
 	SIZE_OF_TABLE(SuperType.READ, "Get size of tables (in entries)"), 
@@ -22,7 +23,11 @@ public enum RequestType implements Serializable{
 	ATOMIC_REPLACE_VALUE_IN_TABLE (SuperType.WRITE, "Atomically replace a value in a table if the provided expectedValue is correct"), 
 	ATOMIC_REMOVE_IF_VALUE(SuperType.WRITE, "Atomically remove a value in a table if the provided expectedValue is found"), 
 	ATOMIC_PUT_IF_ABSENT(SuperType.WRITE, "Atomically set a value in a table if the key is already present in the table"), 
-	GET_AND_INCREMENT(SuperType.WRITE, "Get and Increment a value");
+	GET_AND_INCREMENT(SuperType.WRITE, "Get and Increment a value"), 
+	INSERT_VALUE_IN_TABLE(SuperType.WRITE, "Insert a value in table"),
+	SET_COLUMN(SuperType.WRITE, "Insert a value in a column"), 
+	GET_COLUMN(SuperType.READ, "Read a value from a column"), 
+	VALUES(SuperType.READ, "Read all values in a table");
 	
 	public enum SuperType{
 		WRITE,
@@ -34,12 +39,22 @@ public enum RequestType implements Serializable{
 		}
 	}
 	
-	public  final SuperType type;
+	public final SuperType type;
 	public final String description; 
+	
+	/**
+	 *  Byte array representation of this {@link #ordinal()} value. 
+	 *  The user must be aware that this is exposed directly. This is nice since every <b>RPC</b> call requires this representation. 
+	 *  Malicious or innocent modifications to this array would essentially break all client/server <b>RPC</b> semantics.
+	 *  FIXME - make it immutable if possible.    
+	 */
+	public final byte[] byteArrayOrdinal; 
+	
 	
 	RequestType(SuperType t, String description){
 		this.type = t;
-		this.description = description; 
+		this.description = description;
+		byteArrayOrdinal = ByteBuffer.allocate(4).putInt(ordinal()).array(); //Save byte array representation of ordinal value  
 	}
 	
 	public boolean isWrite(){
@@ -54,5 +69,6 @@ public enum RequestType implements Serializable{
 	public String toString(){
 		return super.toString() + " - " + this.description;  
 	}
-	
+
+
 }

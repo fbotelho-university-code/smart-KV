@@ -19,6 +19,7 @@ package bftsmart.tom;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -62,8 +63,9 @@ public class ServiceProxy extends TOMSender {
      *
      * @see bellow
      */
+    private static Set<Integer> ids;
     public ServiceProxy(int processId) {
-        this(processId, null, null, null);
+    	this(processId, null, null, null);
     }
 
     /**
@@ -87,6 +89,8 @@ public class ServiceProxy extends TOMSender {
      */
     public ServiceProxy(int processId, String configHome,
             Comparator<byte[]> replyComparator, Extractor replyExtractor) {
+    	
+    	System.out.println("Here"); 
         if (configHome == null) {
             init(processId);
         } else {
@@ -173,7 +177,7 @@ public class ServiceProxy extends TOMSender {
      *        reconfig requests.
      * @return The reply from the replicas related to request
      */
-    public byte[] invoke(byte[] request, TOMMessageType reqType) {
+    public byte[] invoke(byte[] request, TOMMessageType reqType){
         canSendLock.lock();
 
         // Clean all statefull data to prepare for receiving next replies
@@ -202,7 +206,8 @@ public class ServiceProxy extends TOMSender {
                 System.out.print(getProcessId() + " // " + reqId + " // TIMEOUT // ");
                 System.out.println("Replies received: " + receivedReplies);
                 
-                return null;
+                
+                
             }
         } catch (InterruptedException ex) {
         }
@@ -222,7 +227,7 @@ public class ServiceProxy extends TOMSender {
                 Logger.println("###################RETRY#######################");
                 return invokeOrdered(request);
             } else {
-                throw new RuntimeException("Received n-f replies without f+1 of them matching.");
+                //throw new RuntimeException("Received n-f replies without f+1 of them matching.");
             }
         } else {
             //normal operation
@@ -259,8 +264,9 @@ public class ServiceProxy extends TOMSender {
             }
         }
         //******* EDUARDO END **************//
-
-        canSendLock.unlock();
+        if (canSendLock.isHeldByCurrentThread()){
+        	canSendLock.unlock();
+        }
         return ret;
     }
 

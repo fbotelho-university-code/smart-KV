@@ -21,7 +21,7 @@ import bftsmart.tom.util.Logger;
  */
 public abstract class DefaultRecoverable implements Recoverable, BatchExecutable {
 
-    public static final int CHECKPOINT_PERIOD = 50;
+    public static final int CHECKPOINT_PERIOD = Integer.MAX_VALUE;
 
     private ReentrantLock logLock = new ReentrantLock();
     private ReentrantLock hashLock = new ReentrantLock();

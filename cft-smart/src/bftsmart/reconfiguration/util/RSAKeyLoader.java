@@ -47,11 +47,12 @@ public class RSAKeyLoader {
 	private PublicKey testPublicKey; 
     /** Creates a new instance of RSAKeyLoader 
      * @param testing */
+	
     public RSAKeyLoader(TOMConfiguration conf, String configHome, boolean testing) {
-    	System.out.println(testing); 
+    	//System.out.println(testing);
+    	
         this.conf = conf;
-
-
+        
         if (configHome.equals("")) {
 
             path = "config" + System.getProperty("file.separator") + "keys" +
@@ -63,6 +64,7 @@ public class RSAKeyLoader {
                     System.getProperty("file.separator");
 
         }
+        
         if (testing){
         	try{
         	testPublicKey = this.loadPublicKey(0);
@@ -72,9 +74,8 @@ public class RSAKeyLoader {
         		e.printStackTrace(); 
         	}
         }
-
     }
-
+    
     /**
      * Load the public keys from processes 0..conf.getN()-1 (all servers).
      *
@@ -98,12 +99,13 @@ public class RSAKeyLoader {
      * @return the PublicKey loaded from config/keys/publickey<id>
      * @throws Exception problems reading or parsing the key
      */
+    
     public PublicKey loadPublicKey(int id) throws Exception {
     	if (testing ) return testPublicKey; 
         PublicKey ret = this.pubKeys.get(id);
 
         if (ret == null) {
-            BufferedReader r = new BufferedReader(new FileReader(path + "publickey" + id));
+            BufferedReader r = new BufferedReader(new FileReader(path + "publickey" + 0));
 
             String tmp = "";
 
@@ -124,6 +126,7 @@ public class RSAKeyLoader {
 
     }
 
+    
     /**
      * Loads the private key of this process
      *
