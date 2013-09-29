@@ -13,9 +13,9 @@ import java.io.PrintWriter;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
+import smartkv.server.bench.TestInformation;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.TimeoutException;
-import mapserver.bench.TestInformation;
 import datastore.bench.flowsimulations.FlowSimulation;
 import datastore.bench.flowsimulations.deviceManager.WorkloadPerFlow;
 
