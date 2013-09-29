@@ -4,6 +4,7 @@
 package mapserver;
 
 import java.io.DataInputStream;
+import java.io.IOException;
 
 
 
@@ -32,11 +33,25 @@ public interface Datastore {
 	 byte[]  atomic_remove_if_value(DataInputStream msg) throws Exception;
 	 byte[]  atomic_put_if_absent(DataInputStream msg ) throws Exception;
 	 byte[] values(DataInputStream msg) throws Exception; 
+	 
+	 
 	/**
 	 * @param dis
 	 * @return
 	 * @throws Exception 
 	 */
 	byte[] insert_value_in_table(DataInputStream dis) throws Exception;
+	/**
+	 * @param dis
+	 * @return
+	 * @throws IOException
+	 */
+	byte[] create_pointer_table(DataInputStream dis) throws IOException;
+	/**
+	 * @param dis
+	 * @return
+	 * @throws IOException
+	 */
+	byte[] get_referenced_value(DataInputStream dis) throws IOException;
 }
 

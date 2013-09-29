@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import mapserver.util.LRULinkedHashMap;
@@ -28,16 +29,130 @@ import com.google.common.primitives.UnsignedBytes;
  * @author fabiim
  *
  */
+
+class VersionedDataBucket{
+	private byte[] val=null; 
+	private int version =0;
+	
+	public VersionedDataBucket (byte[] val){
+		this.val = val; 
+	}
+	public VersionedDataBucket(VersionedDataBucket v){
+		this.val = v.getVal(); 
+		this.version = v.getVersion(); 
+	}
+	public byte[] getVal() {
+		return val;
+	}
+	public void setVal(byte[] val) {
+		
+		if (!Arrays.equals(val, this.val)){
+			incrementVersion();
+		}
+		this.val = val;
+	}
+	
+	private void incrementVersion() {
+		version = (version +1) % (Integer.MAX_VALUE-1);  
+	}
+	
+	public int getVersion() {
+		return version;
+	}
+}
+
+
+class VersionMap{
+	Map<ByteArrayWrapper, VersionedDataBucket> values;
+
+	public void clear() {
+		values.clear();
+	}
+
+	public boolean containsKey(Object key) {
+		return values.containsKey(key);
+	}
+
+	public boolean containsValue(Object value) {
+		return values.containsValue(value);
+	}
+
+	public Set<Entry<ByteArrayWrapper, VersionedDataBucket>> entrySet() {
+		return values.entrySet();
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		return values.equals(o);
+	}
+
+	public VersionedDataBucket get(Object key) {
+		return values.get(key);
+	}
+
+	public int hashCode() {
+		return values.hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return values.toString();
+	}
+
+	public boolean isEmpty() {
+		return values.isEmpty();
+	}
+
+	public Set<ByteArrayWrapper> keySet() {
+		return values.keySet();
+	}
+	
+	public VersionedDataBucket put(ByteArrayWrapper key, byte[] data) {
+		VersionedDataBucket tsBucket = values.get(key);
+		if (tsBucket != null){
+			VersionedDataBucket oldBucket = new VersionedDataBucket(tsBucket); 
+			tsBucket.setVal(data);
+			return oldBucket; 
+		}
+		values.put(key, new VersionedDataBucket(data)); 
+		return null; 
+	}
+	
+	public void putWithNoReturn(ByteArrayWrapper key, byte[] data){
+		VersionedDataBucket tsBucket = values.get(key);
+		if (tsBucket != null){
+			tsBucket.setVal(data);
+			return; 
+		}
+		values.put(key, new VersionedDataBucket(data)); 
+	}
+	
+	public VersionedDataBucket remove(Object key) {
+		return values.remove(key);
+	}
+	
+	public int size() {
+		return values.size();
+	}
+	
+	public Collection<VersionedDataBucket> values() {
+		return values.values();
+	}
+}
+
 public class KeyValueStore implements Datastore, Serializable{
-	
-	
-	
-	
-	
+	public static final byte[] TRUE = new byte[0]; 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Map<String, Map<ByteArrayWrapper, byte[]>> datastore;
+	private Map<String, String> pointers; 
 	
 	public KeyValueStore(){
 		 datastore = new HashMap<String, Map<ByteArrayWrapper,byte[]>>();
+		 pointers = Maps.newHashMap(); 
 	}
 	
 	@Override
@@ -46,7 +161,7 @@ public class KeyValueStore implements Datastore, Serializable{
 		tableName = dis.readUTF(); 
 		 if (datastore.containsKey(tableName)){
 			 //FIXME
-			 byte[] key =dis.readUTF().getBytes(); 
+			 byte[] key = dis.readUTF().getBytes(); 
 			 byte[] val = datastore.get(tableName).get(new ByteArrayWrapper(key));
 			 if (val != null){
 				 //FIXME: move me to another key value store... With ints...
@@ -71,13 +186,48 @@ public class KeyValueStore implements Datastore, Serializable{
 	public byte[] create_table(DataInputStream dis) throws IOException {
 		String tableName = dis.readUTF();
 		 if (!datastore.containsKey(tableName)){
-
 			 datastore.put(tableName, new HashMap<ByteArrayWrapper,byte[]>());
-			 return new byte[1]; //TODO - remove hack. 
+			 return TRUE;  
 		 }
 		 return null;
 	}
 
+	@Override 
+	public byte[] create_pointer_table(DataInputStream dis) throws IOException{
+		String tableName = dis.readUTF();
+		String destinyTable = dis.readUTF();
+//		System.out.println("K Creating pointers from :" + tableName + " to : " + destinyTable);
+
+		if (!datastore.containsKey(tableName) && datastore.containsKey(destinyTable)){
+			//System.out.println("created"); 
+			 pointers.put(tableName, destinyTable);
+			 datastore.put(tableName, new HashMap<ByteArrayWrapper,byte[]>()); 
+			 return TRUE;  
+		 }
+		 return null;
+			//FIXME deleted tables and such.
+	}
+	
+	@Override
+	public byte[] get_referenced_value(DataInputStream dis) throws IOException{
+		String tableName = dis.readUTF();
+		//System.out.println("K Get references:" + tableName);
+		if (pointers.containsKey(tableName)){
+			//System.out.println("K In pointers" );
+			ByteArrayWrapper key = new ByteArrayWrapper(readNextByteArray(dis));
+			Map<ByteArrayWrapper, byte[]> keysTable = datastore.get(tableName);
+			if (keysTable.containsKey(key)){
+				//System.out.println("K I have the key" );
+				Map<ByteArrayWrapper, byte[]> endTable = datastore.get(pointers.get(tableName));
+				//System.out.println(endTable.containsKey(new ByteArrayWrapper(keysTable.get(key))));
+				byte[] b = endTable.get(new ByteArrayWrapper(keysTable.get(key)));
+				//System.out.println(b); 
+				return b; 
+			}
+		}
+		return null; 
+	}
+	
 	/**
 	 * @param dis
 	 * @return
@@ -88,10 +238,10 @@ public class KeyValueStore implements Datastore, Serializable{
 			throws IOException {
 		String tableName;
 		tableName = dis.readUTF(); 
-		 if (!datastore.containsKey(tableName)){
+		if (!datastore.containsKey(tableName)){
 			 int size = dis.read(); 
 			 datastore.put(tableName, new LRULinkedHashMap<ByteArrayWrapper,byte[]>(size)); 
-			 return new byte[1]; 
+			 return TRUE;  
 		 }
 		 return null;
 	}
@@ -106,8 +256,12 @@ public class KeyValueStore implements Datastore, Serializable{
 		String tableName;
 		tableName = dis.readUTF(); 
 		 if (datastore.containsKey(tableName)){
-			 datastore.remove(tableName); //TODO - remove hack 
-			 return new byte[1];
+			 datastore.remove(tableName); //TODO - remove hack
+			 if (pointers.containsKey(tableName)){
+				 pointers.remove(tableName);
+			 }
+			 //FIXME we should not traverse every pointer table and delete references to deleted tables. 
+			 return TRUE; 
 		 }
 		 return null;
 	}
@@ -121,8 +275,11 @@ public class KeyValueStore implements Datastore, Serializable{
 	public byte[] contains_table(DataInputStream dis) throws IOException {
 		String needle = dis.readUTF(); 
 		 if (datastore.containsKey(needle)){
-			 return new byte[1]; 
+			 return TRUE;  
 		 }
+		/* else if (pointers.containsKey(needle)){
+			 return TRUE; 
+		 }*/
 		 return null;
 	}
 
@@ -134,14 +291,18 @@ public class KeyValueStore implements Datastore, Serializable{
 	@Override
 	public byte[] clear_table(DataInputStream dis) throws IOException {
 		String tableName;
-		tableName = dis.readUTF(); 
+		tableName = dis.readUTF();
 		 if (datastore.containsKey(tableName)){
 			 Map<?,?> m = datastore.get(tableName); 
 			 if (m != null){
 				 m.clear(); 
-				 return new byte[1]; 
+				 return TRUE;  
 			 }
 		 }
+		/* else if (pointers.containsKey(tableName)){
+			 pointers.get(tableName).key2key.clear();
+			 return TRUE; 
+		 }*/
 		 return null;
 	}
 
@@ -161,10 +322,17 @@ public class KeyValueStore implements Datastore, Serializable{
 			 Map<?,?> tableHayStack = datastore.get(tableName);
 			 byte[] key = readNextByteArray(dis); 
 			 if (tableHayStack.containsKey(new ByteArrayWrapper(key))){
-				 return new byte[1]; 
+				 return TRUE;  
 			 }
 		 }
-
+		/* else if (pointers.containsKey(tableName)){
+			 Map<?,?> tableHayStack = pointers.get(tableName).key2key;
+			 byte[] key = readNextByteArray(dis);
+			 if (tableHayStack.containsKey(new ByteArrayWrapper(key))){
+				 return TRUE;  
+			 }
+		 }
+*/
 		 return null;
 	}
 
@@ -178,13 +346,8 @@ public class KeyValueStore implements Datastore, Serializable{
 	public byte[] get_table(DataInputStream dis) throws IOException {
 		String tableName;
 		tableName = dis.readUTF();
-		boolean d= false;
-		
-		
 		 if (datastore.containsKey(tableName)){ 
 			 Map<ByteArrayWrapper,byte[]> allTable = datastore.get(tableName);
-			 
-
 			 Map<byte[],byte[]> c = Maps.newTreeMap(UnsignedBytes.lexicographicalComparator());
 			 for (Entry<ByteArrayWrapper, byte[]> en: allTable.entrySet()){
 				 c.put(en.getKey().value, en.getValue());
@@ -194,6 +357,9 @@ public class KeyValueStore implements Datastore, Serializable{
 
 			 return ret; 
 		 }
+		/* else if (pointers.containsKey(tableName)){
+			 throw new UnsupportedOperationException("Not yet implemented!"); 
+		 }*/
 		 return null;
 	}
 
@@ -212,6 +378,16 @@ public class KeyValueStore implements Datastore, Serializable{
 			 byte[] key =readNextByteArray(dis);
 			 return datastore.get(tableName).get(new ByteArrayWrapper(key));
 		 }
+		/* else if (pointers.containsKey(tableName)){
+			 ByteArrayWrapper  key =new ByteArrayWrapper(readNextByteArray(dis));
+			 Pointers2Table pointer  = pointers.get(tableName);
+			 if (pointer.key2key.containsKey(key)){
+				 //Will return the pointed value from the intermediate map. 
+				 Map<ByteArrayWrapper,byte[]> endTable = datastore.get(pointer.table); 
+				 return endTable.get(pointer.key2key.get(key)); 
+			 }
+
+		 }*/
 		 return null;
 	}
 
@@ -221,7 +397,7 @@ public class KeyValueStore implements Datastore, Serializable{
 	@Override
 	public byte[] is_datastore_empty() {
 		if (datastore.isEmpty()){
-			 return new byte[1]; 
+			 return TRUE;  
 		 }
 		 return null;
 	}
@@ -235,12 +411,17 @@ public class KeyValueStore implements Datastore, Serializable{
 	public byte[] is_table_empty(DataInputStream dis) throws IOException {
 		String tableName;
 		tableName = dis.readUTF(); 
-		 if (datastore.containsKey(tableName)){
+		 if (datastore.containsKey(tableName) ){
 			 Map<?,?> table = datastore.get(tableName); 
 			 if (table.isEmpty()){
-				 return new byte[1]; 
+				 return TRUE;  
 			 }
 		 }
+		/* else if (pointers.containsKey(tableName)){
+			 if (pointers.get(tableName).key2key.isEmpty()){
+				 return TRUE; 
+			 }
+		 }*/
 		 return null;
 	}
 
@@ -267,6 +448,12 @@ public class KeyValueStore implements Datastore, Serializable{
 			 return table.put(new ByteArrayWrapper(key), value); 
 			 
 		 }
+		/* else if(pointers.containsKey(tableName)){
+			 final byte[] key = readNextByteArray(dis);
+			 final byte[] value =  ByteStreams.toByteArray(dis);
+			 ByteArrayWrapper val = pointers.get(tableName).key2key.put(new ByteArrayWrapper(key), new ByteArrayWrapper(value));
+			 return val != null  ? val.value : null;  
+		 }*/
 		 return null;
 	}
 
@@ -292,12 +479,15 @@ public class KeyValueStore implements Datastore, Serializable{
 						 realValues.put(new ByteArrayWrapper(en.getKey()), en.getValue());
 					 }
 					 table.putAll(realValues);
-					 return new byte[1]; 
+					 return TRUE;  
 				 } catch (ClassNotFoundException e) {
 					 ; 
 				 } 
 			 }
 		 }
+		/* else if (pointers.containsKey(tableName)){
+			 throw new UnsupportedOperationException("Not yet Implemented!"); 
+		 }*/
 		 return null;
 	}
 
@@ -312,7 +502,6 @@ public class KeyValueStore implements Datastore, Serializable{
 			DataInputStream dis) throws IOException {
 			String tableName = dis.readUTF(); 
 		 if (datastore.containsKey(tableName)){
-			 
 			 Map<ByteArrayWrapper,byte[]> table = datastore.get(tableName);
 			 ByteArrayWrapper key = new ByteArrayWrapper(readNextByteArray(dis));
 			 
@@ -321,6 +510,11 @@ public class KeyValueStore implements Datastore, Serializable{
 				 return table.remove(key);
 			 }
 		 }
+		/* else if (pointers.containsKey(tableName)){
+			 ByteArrayWrapper key = new ByteArrayWrapper(readNextByteArray(dis));
+			 ByteArrayWrapper val =  pointers.get(tableName).key2key.remove(key);
+			 return val != null? val.value : null; 
+		 }*/
 		 return null;
 	}
 
@@ -335,6 +529,9 @@ public class KeyValueStore implements Datastore, Serializable{
 		 if (datastore.containsKey(tableName)){
 			 return Ints.toByteArray((datastore.get(tableName).size())); 
 		 }
+		/* else if (pointers.containsKey(tableName)){
+			 return Ints.toByteArray((pointers.get(tableName).key2key.size())); 
+		 }*/
 		 return null;
 	}
 	
@@ -360,10 +557,22 @@ public class KeyValueStore implements Datastore, Serializable{
 					 final byte[] newValue = ByteStreams.toByteArray(dis);
 					 table.put(k, newValue);
 					 
-					 return new byte[1]; 
+					 return TRUE;  
 				 }
 			 }
 		 }
+		/* else if (pointers.containsKey(tableName)){
+			 ByteArrayWrapper key = new ByteArrayWrapper(readNextByteArray(dis));			 
+			 if (pointers.get(tableName).key2key.containsKey(key)){
+				 Pointers2Table pointer = pointers.get(tableName);
+				 ByteArrayWrapper oldValue = new ByteArrayWrapper(readNextByteArray(dis));
+				 if (pointer.key2key.get(key).equals(oldValue)){
+					 ByteArrayWrapper newValue = new ByteArrayWrapper(readNextByteArray(dis));
+					 pointers.put(key, value);
+				 }
+				 return TRUE;
+			 }
+		 }*/
 		 return null;
 	}
 
@@ -384,7 +593,7 @@ public class KeyValueStore implements Datastore, Serializable{
 				 byte[] currValue = ByteStreams.toByteArray(dis);
 				 if (Arrays.equals(table.get(key), currValue)){
 					 table.remove(key); 
-					 return new byte[1];
+					 return TRUE; 
 				 }
 			 }
 		 }
@@ -444,7 +653,7 @@ public class KeyValueStore implements Datastore, Serializable{
 			 final byte[] value =  ByteStreams.toByteArray(dis);
 			 Map<ByteArrayWrapper, byte[]> table = datastore.get(tableName);
 			 table.put(new ByteArrayWrapper(key), value); 
-			 return new byte[1]; 
+			 return TRUE;  
 		 }
 		 return null;
 	}
@@ -466,5 +675,4 @@ public class KeyValueStore implements Datastore, Serializable{
 			}
 			return null; 
 		}
-
 }

@@ -30,18 +30,21 @@ import com.google.common.primitives.UnsignedBytes;
  * @author fabiim
  *
  */
-public class KeyValueColumnStore implements ColumnDatastore, Serializable{
 
+//FIXME : this screams memory leak all over the place. The key, map cannot be garbage collected after it has been eliminated. 
+
+
+public class KeyValueColumnStore implements ColumnDatastore, Serializable{
 	
 	private Map<String, Map<ByteArrayWrapper, Map<String,byte[]>>> datastore;
-	private Map<String, Map<String,Integer>> counters; 
+	
+	private Map<String, Map<String,Integer>> counters;
 	
 	//FIXME :Addd timestamps map.
-	
-	
 	public KeyValueColumnStore(){
 		 datastore = new HashMap<String, Map<ByteArrayWrapper, Map<String,byte[]>>>();
 		 counters = new HashMap<String,Map<String,Integer>>(); 
+		 pointers = Maps.newHashMap(); 
 	}
 	
 	/* (non-Javadoc)
@@ -406,9 +409,9 @@ public class KeyValueColumnStore implements ColumnDatastore, Serializable{
 		tableName = dis.readUTF();
 		 if (datastore.containsKey(tableName)){
 			 byte[] key =readNextByteArray(dis);
-			 Map<String,byte[]> table = datastore.get(tableName).get(new ByteArrayWrapper(key));
+			 Map<String,byte[]> value = datastore.get(tableName).get(new ByteArrayWrapper(key));
 			 String columnName = dis.readUTF();
-			 return table.get(columnName); 
+			 return value.get(columnName); 
 		 }
 		 return null;
 	}
@@ -483,4 +486,57 @@ public class KeyValueColumnStore implements ColumnDatastore, Serializable{
 		}
 		return null; 
 	}
+	
+	private Map<String,String> pointers;
+	public static final byte[] TRUE = new byte[0]; 
+	
+	@Override 
+	public byte[] create_pointer_table(DataInputStream dis) throws IOException{
+		String tableName = dis.readUTF();
+		String destinyTable = dis.readUTF();
+		System.out.println("Creating pointers from :" + tableName + " to : " + destinyTable);
+		if (!datastore.containsKey(tableName) && datastore.containsKey(destinyTable)){
+			 pointers.put(tableName, destinyTable);
+			 datastore.put(tableName, new HashMap<ByteArrayWrapper,Map<String,byte[]>>()); 
+			 return TRUE;  
+		 }
+		 return null;
+			//FIXME deleted tables and such.
+	}
+	
+	@Override
+	public byte[] get_referenced_value(DataInputStream dis) throws IOException{
+		String tableName = dis.readUTF();
+		System.out.println("Get references:" + tableName);
+		if (pointers.containsKey(tableName)){
+			System.out.println("In pointers" );
+			ByteArrayWrapper key = new ByteArrayWrapper(readNextByteArray(dis));
+			Map<ByteArrayWrapper, Map<String,byte[]>> keysTable = datastore.get(tableName);
+			if (keysTable.containsKey(key)){
+				System.out.println("I have the key" );
+				Map<ByteArrayWrapper, Map<String,byte[]>> endTable = datastore.get(pointers.get(tableName));
+				return MapSmart.serialize(endTable.get(keysTable.get(key))); 
+			}
+		}
+		return null; 
+	}
+	
+	@Override
+	public byte[] get_column_by_reference(DataInputStream dis) throws IOException {
+		
+		String tableName;
+		tableName = dis.readUTF();
+		
+		 if (pointers.containsKey(tableName)){
+			 ByteArrayWrapper key = new ByteArrayWrapper(readNextByteArray(dis));
+				Map<ByteArrayWrapper, Map<String,byte[]>> keysTable = datastore.get(tableName);
+				if (keysTable.containsKey(key)){
+					Map<ByteArrayWrapper, Map<String,byte[]>> endTable = datastore.get(pointers.get(tableName));
+					String columnName = dis.readUTF();
+					return endTable.get(keysTable.get(key)).get(columnName); 
+				}
+		 }
+		 return null;
+	}
+	//FIXME delete referenced values. 
 }

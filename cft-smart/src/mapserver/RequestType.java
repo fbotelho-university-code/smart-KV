@@ -27,12 +27,14 @@ public enum RequestType implements Serializable{
 	INSERT_VALUE_IN_TABLE(SuperType.WRITE, "Insert a value in table"),
 	SET_COLUMN(SuperType.WRITE, "Insert a value in a column"), 
 	GET_COLUMN(SuperType.READ, "Read a value from a column"), 
-	VALUES(SuperType.READ, "Read all values in a table");
+	VALUES(SuperType.READ, "Read all values in a table"),
+	CREATE_POINTER_TABLE(SuperType.WRITE, "Creates a table that has, as values, keys to be used in another table"), 
+	GET_VALUE_IN_TABLE_BY_REFERENCE(SuperType.READ, "Get value by reference (pointer table) "),
+	GET_COLUMN_BY_REFERENCE(SuperType.READ, "Get Column value by reference");
 	
 	public enum SuperType{
 		WRITE,
 		READ;
-		
 		@Override
 		public String toString(){
 			return name(); 

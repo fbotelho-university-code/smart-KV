@@ -86,7 +86,6 @@ public class MapSmart extends DefaultSingleRecoverable{
 	 */
 	private byte[] execute(byte[] command) {
 		 //FIXME: Proper serialization/deserialization of messages.
-		
 		ByteArrayInputStream in = new ByteArrayInputStream(command);
 		 try {
 			 DataInputStream dis = new DataInputStream(in);
@@ -148,6 +147,15 @@ public class MapSmart extends DefaultSingleRecoverable{
 				return this.columns.put_column(dis);
 			 case VALUES: 
 				 return ds.values(dis);
+			case CREATE_POINTER_TABLE:
+				return ds.create_pointer_table(dis); 
+			case GET_COLUMN_BY_REFERENCE:
+				if (version != DataStoreVersion.COLUMN_KEY_VALUE) throw new UnsupportedOperationException("This is operation is not supported for the specified version");
+				return this.columns.get_column_by_reference(dis);
+			case GET_VALUE_IN_TABLE_BY_REFERENCE:
+				return ds.get_referenced_value(dis);
+			default:
+				break;
 			 }
 		 } catch (IOException e) {
 			 System.err.println("Exception reading data in the replica: " + e.getMessage());
@@ -162,10 +170,7 @@ public class MapSmart extends DefaultSingleRecoverable{
 		}
 		 return null;
 	}
-
 	
-	
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public void installSnapshot(byte[] state) {
