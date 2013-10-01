@@ -7,8 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.slf4j.Logger;
+import java.util.TreeMap;
 
 import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
@@ -131,8 +130,8 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 	 * @see bonafide.datastore.tables.ColumnObject#toColumns(java.lang.Object)
 	 */
 	@Override
-	public Map<String, byte[]> toColumns(T obj){
-		Map<String, byte[]> values= Maps.newHashMap();  
+	public TreeMap<String, byte[]> toColumns(T obj){
+		TreeMap<String, byte[]> values= Maps.newTreeMap();  
 		
 		for (Entry<String, Method> field : getters.entrySet()){
 			try {

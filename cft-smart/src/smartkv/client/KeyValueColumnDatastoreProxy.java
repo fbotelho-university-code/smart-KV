@@ -4,7 +4,7 @@
 package smartkv.client;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author fabiim
@@ -24,7 +24,7 @@ public interface KeyValueColumnDatastoreProxy extends TableDataStoreProxy{
 	 * @return The previously existent value associated with this key if the mapping is successfully created; <br/> 
 	 *         <code>null</code> otherwise (note that it will be false when no table with the specified name exists or the previously existent value is <code>null</code>, the latter reason being implementation dependent).
 	 */
-	public Map<String,byte[]> put(String tableName, byte[] key, Map<String,byte[]> value);
+	public TreeMap<String,byte[]> put(String tableName, byte[] key, TreeMap<String,byte[]> value);
 
 	
 	/**
@@ -35,7 +35,7 @@ public interface KeyValueColumnDatastoreProxy extends TableDataStoreProxy{
 	 *         <code>null</code> otherwise (note that it will be null when no table with the specified name exists). 
 	 *         
 	 */
-	public  Map<String,byte[]> getValue(String tableName, byte[] key);
+	public  TreeMap<String,byte[]> getValue(String tableName, byte[] key);
 	
 
 	/**
@@ -53,7 +53,7 @@ public interface KeyValueColumnDatastoreProxy extends TableDataStoreProxy{
 	 * @return <code>true</code> if the mapping is inserted; <br/>
 	 *         <code>false</code> otherwise (note that it will be false when no table with the specified name exists).
 	 */
-	public boolean insert(String tableName, byte[] key, Map<String,byte[]> value);
+	public boolean insert(String tableName, byte[] key, TreeMap<String,byte[]> value);
 	
 
 	/**
@@ -64,7 +64,7 @@ public interface KeyValueColumnDatastoreProxy extends TableDataStoreProxy{
 	 * @return <code>true</code> if the value  is replaced; <br/>
 	 *         <code>false</code> otherwise (note that it will be false when no table with the specified name exists or the condition does not hold).
 	 */
-	public  Map<String,byte[]> removeValue(String tableName,byte[] key);
+	public  TreeMap<String,byte[]> removeValue(String tableName,byte[] key);
 
 	/**
 	 * <b>Atomically</b> replaces the entry for a key if currently mapped to the specified value.
@@ -81,7 +81,7 @@ public interface KeyValueColumnDatastoreProxy extends TableDataStoreProxy{
 	 *         <code>false</code> otherwise (note that it will be false when no table with the specified name exists).
 	 */
 	public  boolean replace(String tableName, byte[] key,
-			Map<String,byte[]> oldValue, Map<String,byte[]> newValue);
+			TreeMap<String,byte[]> oldValue, TreeMap<String,byte[]> newValue);
 	
 	/**
 	 * Atomically removes the entry for a key in a table only if currently mapped to a given value.
@@ -96,7 +96,7 @@ public interface KeyValueColumnDatastoreProxy extends TableDataStoreProxy{
 	 * @return <code>true</code> if the value  is replaced; <br/>
 	 *         <code>false</code> otherwise (note that it will be false when no table with the specified name exists or the condition does not hold).
 	 */
-	public  boolean remove(String tableName, byte[] key, Map<String,byte[]> expectedValue);
+	public  boolean remove(String tableName, byte[] key, TreeMap<String,byte[]> expectedValue);
 	
 	/**
 	 * Atomically inserts the specified mapping in a table only if  the mapping is present already.
@@ -108,14 +108,14 @@ public interface KeyValueColumnDatastoreProxy extends TableDataStoreProxy{
 	 * @return The previously existent value associated with this key if the mapping is successfully deleted; <br/> 
 	 *         <code>null</code> otherwise (note that it will be false when no table with the specified name exists or the previously table did not contain the specified mapping.
 	 */
-	public  Map<String,byte[]> putIfAbsent(String tableName, byte[] key, Map<String,byte[]> value);
+	public  TreeMap<String,byte[]> putIfAbsent(String tableName, byte[] key, TreeMap<String,byte[]> value);
 	
 	//FIXME : doc. What happens when setColumn when key is inexistent? 
 	public boolean setColumn(String tableName, byte[] key, String columnName , byte[] value); 
 	public byte[] getColumn(String tableName, byte[] key, String columnName);
 	
 	//FIXME  -URGENTE!!!!! 
-	public Collection<Map<String,byte[]>> valueS(String tableName);
+	public Collection<TreeMap<String,byte[]>> valueS(String tableName);
 
 
 	/**
@@ -132,7 +132,7 @@ public interface KeyValueColumnDatastoreProxy extends TableDataStoreProxy{
 	 * @param serializeKey
 	 * @return
 	 */
-	public Map<String, byte[]> getValueByReference(String tableName,
+	public TreeMap<String, byte[]> getValueByReference(String tableName,
 			byte[] serializeKey);
 	
 	

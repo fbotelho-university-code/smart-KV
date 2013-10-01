@@ -61,7 +61,7 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 
 	
 	/* 
-	 * @see bonafide.datastore.tables.Table#remove(java.lang.Object, java.lang.Object)
+	 * @see bonafide.getRawData()store.tables.Table#remove(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public boolean remove(K key, V value) {
@@ -69,34 +69,34 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 	}
 	
 	/* (non-Javadoc)
-	 * @see bonafide.datastore.tables.Table#putIfAbsent(java.lang.Object, java.lang.Object)
+	 * @see bonafide.getRawData()store.tables.Table#putIfAbsent(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public V putIfAbsent(K key, V value) {
 		DatastoreValue result =  datastore.putIfAbsent(tableName, serializeKey(key), serializeValue(value));
-		return result != null && result.data != null ? valueSerializer.deserialize(result.data): null; 
+		return result != null && result.getRawData() != null ? valueSerializer.deserialize(result.getRawData()): null; 
 	}
 
 	/* (non-Javadoc)
-	 * @see bonafide.datastore.tables.Table#remove(java.lang.Object)
+	 * @see bonafide.getRawData()store.tables.Table#remove(java.lang.Object)
 	 */
 	@Override
 	public V remove(K key) {
 		DatastoreValue result = datastore.remove(tableName, serializeKey(key));
-		return result != null && result.data != null? valueSerializer.deserialize(result.data) : null; 
+		return result != null && result.getRawData() != null? valueSerializer.deserialize(result.getRawData()) : null; 
 	}
 
 	/* (non-Javadoc)
-	 * @see bonafide.datastore.tables.Table#put(java.lang.Object, java.lang.Object)
+	 * @see bonafide.getRawData()store.tables.Table#put(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public V put(K key, V value) {
 		DatastoreValue result = datastore.put(tableName, serializeKey(key), serializeValue(value));
-		return result != null && result.data != null ?  valueSerializer.deserialize(result.data) : null; 
+		return result != null && result.getRawData() != null ?  valueSerializer.deserialize(result.getRawData()) : null; 
 	}
 	
 	/* (non-Javadoc)
-	 * @see bonafide.datastore.tables.KeyValueTable#insert(java.lang.Object, java.lang.Object)
+	 * @see bonafide.getRawData()store.tables.KeyValueTable#insert(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public boolean insert(K key, V value) {
@@ -105,14 +105,14 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 
 
 	/* (non-Javadoc)
-	 * @see bonafide.datastore.tables.Table#get(java.lang.Object)
+	 * @see bonafide.getRawData()store.tables.Table#get(java.lang.Object)
 	 */
 	@Override
 	public V get(K key) {
 		//XXX
 		if (key == null) return null; 
 		DatastoreValue result = datastore.get(tableName, serializeKey(key));
-		return result != null ? valueSerializer.deserialize(result.data): null;
+		return result != null ? valueSerializer.deserialize(result.getRawData()): null;
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 		Collection<DatastoreValue> byte_values = datastore.values(tableName); 
 		Collection<V>  values = Lists.newArrayList(); 
 		for (DatastoreValue ba : byte_values){
-			values.add(valueSerializer.deserialize(ba.data));
+			values.add(valueSerializer.deserialize(ba.getRawData()));
 		}
 		return values; 
 	}
@@ -135,18 +135,18 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 
 
 	/* (non-Javadoc)
-	 * @see bonafide.datastore.tables.KeyValueTable#getValueByReference(java.lang.Object)
+	 * @see bonafide.getRawData()store.tables.KeyValueTable#getValueByReference(java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <V1> V1 getValueByReference(K key) {
 		DatastoreValue val = datastore.getByReference(tableName, keySerializer.serialize(key));
-		return (V1) (val !=  null && val.data != null? referenceSerializer.deserialize(val.data) : null); 
+		return (V1) (val !=  null && val.getRawData() != null? referenceSerializer.deserialize(val.getRawData()) : null); 
 	}
 
 
 	/* (non-Javadoc) 
-	 * @see bonafide.datastore.tables.KeyValueTable#replace(java.lang.Object, java.lang.Object, java.lang.Object)
+	 * @see bonafide.getRawData()store.tables.KeyValueTable#replace(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public boolean replace(K key, V currentValue, V newValue) {

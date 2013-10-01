@@ -24,8 +24,7 @@ public  class ByteArrayWrapper implements Serializable{
 		public ByteArrayWrapper(byte[] v){
 			value = v; 
 		}
-
-
+		
 		public final static Comparator<ByteArrayWrapper> COMPARE = new Comparator<ByteArrayWrapper>(){
 
 			@Override

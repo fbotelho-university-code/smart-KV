@@ -61,7 +61,6 @@ class VersionedDataBucket{
 	}
 }
 
-
 class VersionMap{
 	Map<ByteArrayWrapper, VersionedDataBucket> values;
 
@@ -670,7 +669,6 @@ public class KeyValueStore implements Datastore, Serializable{
 				Collection<byte[]> values = table.values();
 				List<byte[]> finalValues= Lists.newArrayList(values);
 				Collections.sort(finalValues, UnsignedBytes.lexicographicalComparator());
-
 				return MapSmart.serialize(finalValues); 
 			}
 			return null; 

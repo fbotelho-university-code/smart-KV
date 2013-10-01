@@ -9,6 +9,7 @@ import java.util.Collection;
  * @author fabiim
  *
  */
+
 public interface KeyValueDatastoreProxy extends TableDataStoreProxy{
 	/**
 	 * Insert a mapping from the specified key to the specified value and returns the previously existent value (if any). 
@@ -116,12 +117,11 @@ public interface KeyValueDatastoreProxy extends TableDataStoreProxy{
 	 */
 	//FIXME 
 	public Collection<DatastoreValue> values(String tableName);
-
+	
 	/**
 	 * @param tableName
 	 * @param key
 	 * @return
 	 */
 	DatastoreValue getByReference(String tableName, byte[] key);
-	
 }

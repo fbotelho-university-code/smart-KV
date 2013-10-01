@@ -18,11 +18,10 @@ import smartkv.client.util.Serializer;
  *
  */
 public abstract  class AbstractTable<K, V> implements Table<K, V> {
-	
+
 	TableDataStoreProxy datastore;
 	String tableName; 
 	Serializer<K> keySerializer;
-	
 	
 	protected AbstractTable(TableDataStoreProxy proxy, String tableName, Serializer<K> keySerializer, String reference){
 		this.tableName = tableName;

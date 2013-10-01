@@ -30,9 +30,13 @@ import com.google.common.primitives.Shorts;
 public abstract class AbstractDatastoreProxy  implements TableDataStoreProxy{
 	private static Set<Integer> cids = Sets.newHashSet();
 	private ServiceProxy  server; 
+	
 	private static int cid =1;
 	
 	private static ServiceProxy s= new ServiceProxy(1);  
+	
+		
+	
 	
 	/**
 	 * Initialize this proxy with a given client id. 
@@ -235,11 +239,9 @@ public abstract class AbstractDatastoreProxy  implements TableDataStoreProxy{
 	//TODO - catch exceptions in invokeOrdered/Unordered and throw them as RuntimeExceptions. 
 	protected DatastoreValue invokeRequest(RequestType type, byte[] request){
 		byte[] result  = invokeRequestWithRawReturn(type,request); 
-		return result != null ? new DatastoreValue(result) : null; 
+		return DatastoreValue.createValue(result);  
 	}
-		
-		
-		
+	
 	/**
 	 * Concatenates all byte arrays passed as argument.
 	 * The method signature forces the client to pass at least one array.

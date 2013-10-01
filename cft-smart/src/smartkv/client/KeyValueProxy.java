@@ -167,13 +167,13 @@ public class KeyValueProxy extends AbstractDatastoreProxy implements KeyValueDat
 		RequestType type = RequestType.VALUES;
 		byte[] request = concatArrays(type.byteArrayOrdinal, getBytes(tableName));
 		byte[] result = invokeRequestWithRawReturn(type, request);
-		
 		Collection<byte[]> vals =  result != null ?  serializer.deserialize(result) : null;
 		if (vals == null) return null; 
 		Collection<DatastoreValue> finalValues = Lists.newArrayList(); 
 		for (byte[] v : vals){
-			finalValues.add(new DatastoreValue(v)); 
+			finalValues.add(DatastoreValue.createValue(v)); 
 		}
 		return finalValues;
 	}
+	
 }

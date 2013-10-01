@@ -5,7 +5,7 @@ package smartkv.client.tables;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Map;
+import java.util.TreeMap;
 
 import smartkv.client.ColumnProxy;
 import smartkv.client.KeyValueColumnDatastoreProxy;
@@ -123,14 +123,7 @@ public class ColumnTable_<K, V> extends AbstractTable<K, V> implements
 		return (V1) deserializeValue(datastore.getValueByReference(tableName, serializeKey(key))); 
 	}
 	
-	/* (non-Javadoc)
-	 * @see bonafide.datastore.tables.Table#putAll(java.util.Map)
-	 */
-	@Override
-	public void putAll(Map<? extends K, ? extends V> m) {
-		throw new UnsupportedOperationException("Not yet implemented!");
-	}
-	
+
 	/**
 	 * @param columnName
 	 * @param column
@@ -150,8 +143,8 @@ public class ColumnTable_<K, V> extends AbstractTable<K, V> implements
 	 * @param value
 	 * @return
 	 */
-	private Map<String, byte[]> serializeValue(V value) {
-		 Map<String, byte[]> val = valueSerializer.toColumns(value);
+	private TreeMap<String, byte[]> serializeValue(V value) {
+		 TreeMap<String, byte[]> val = valueSerializer.toColumns(value);
 		 return val; 
 	}
 
@@ -159,7 +152,7 @@ public class ColumnTable_<K, V> extends AbstractTable<K, V> implements
 	 * @param putIfAbsent
 	 * @return
 	 */
-	private V deserializeValue(Map<String, byte[]> values) {
+	private V deserializeValue(TreeMap<String, byte[]> values) {
 		return values != null ? valueSerializer.fromColumns(values) : null;   
 	}
 	
@@ -175,9 +168,9 @@ public class ColumnTable_<K, V> extends AbstractTable<K, V> implements
 
 	@Override
 	public Collection<V> values(){
-		Collection<Map<String,byte[]>> byte_values = datastore.valueS(tableName); 
+		Collection<TreeMap<String,byte[]>> byte_values = datastore.valueS(tableName); 
 		Collection<V>  values = Lists.newArrayList(); 
-		for (Map<String,byte[]> m : byte_values){
+		for (TreeMap<String,byte[]> m : byte_values){
 			values.add(deserializeValue(m));
 		}
 		return values; 

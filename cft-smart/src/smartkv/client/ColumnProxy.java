@@ -4,10 +4,11 @@
 package smartkv.client;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.TreeMap;
 
 import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
+
 import smartkv.server.DataStoreVersion;
 import smartkv.server.RequestType;
 
@@ -18,7 +19,7 @@ import smartkv.server.RequestType;
 
 
 public class ColumnProxy extends KeyValueProxy implements KeyValueColumnDatastoreProxy{
-	private Serializer<Collection<Map<String,byte[]>>> valuesSerializer = UnsafeJavaSerializer.getInstance();
+	private Serializer<Collection<TreeMap<String,byte[]>>> valuesSerializer = UnsafeJavaSerializer.getInstance();
 	
 	/**
 	 * @param cid
@@ -28,7 +29,7 @@ public class ColumnProxy extends KeyValueProxy implements KeyValueColumnDatastor
 		// TODO Auto-generated constructor stub
 	}
 
-	Serializer<Map<String,byte[]>> serializer = UnsafeJavaSerializer.getInstance();
+	Serializer<TreeMap<String,byte[]>> serializer = UnsafeJavaSerializer.getInstance();
 	
 	/**
 	 * 
@@ -36,92 +37,92 @@ public class ColumnProxy extends KeyValueProxy implements KeyValueColumnDatastor
 	 * TODO: The Map must be an instance of Serializable. 
 	 */
 	@Override
-	public Map<String, byte[]> put(String tableName, byte[] key,
-			 Map<String, byte[]> value) {
+	public TreeMap<String, byte[]> put(String tableName, byte[] key,
+			 TreeMap<String, byte[]> value) {
 		DatastoreValue  result = super.put(tableName, key, serializer.serialize(value));
-		return (Map<String, byte[]>) ((result != null)  ? serializer.deserialize(result.data): null); 
+		return (TreeMap<String, byte[]>) ((result != null)  ? serializer.deserialize(result.getRawData()): null); 
 	}
 	
 	/* 
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#get(java.lang.String, java.util.Map)
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#get(java.lang.String, java.util.Map)
 	 * TODO: when fixed, change method name to get
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, byte[]> getValue(String tableName, byte[] key) {
+	public TreeMap<String, byte[]> getValue(String tableName, byte[] key) {
 		DatastoreValue  result = super.get(tableName, key); 
 		if (result != null){
-			Map<String,byte[]>  map = (Map<String, byte[]>)  serializer.deserialize(result.data);
+			TreeMap<String,byte[]>  map = (TreeMap<String, byte[]>)  serializer.deserialize(result.getRawData());
 			return map; 
 		}
 		return null; 
 	}
 
 	/* (non-Javadoc)
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#getValueByReference(java.lang.String, byte[])
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#getValueByReference(java.lang.String, byte[])
 	 */
 	@Override
-	public Map<String, byte[]> getValueByReference(String tableName,
+	public TreeMap<String, byte[]> getValueByReference(String tableName,
 			byte[] key) {
 		DatastoreValue  result = super.getByReference(tableName, key);
 		if (result != null){
-			Map<String,byte[]>  map = (Map<String, byte[]>)  serializer.deserialize(result.data);
+			TreeMap<String,byte[]>  map = (TreeMap<String, byte[]>)  serializer.deserialize(result.getRawData());
 			return map; 
 		}
 		return null;
 	}
 
 	/* 
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#insert(java.lang.String, byte[], java.util.Map)
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#insert(java.lang.String, byte[], java.util.Map)
 	 */
 	@Override
 	public boolean insert(String tableName, byte[] key,
-			Map<String, byte[]> value) {
+			TreeMap<String, byte[]> value) {
 		return super.insert(tableName, key, serializer.serialize(value)); 
 	}
 
 	/* 
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#remove(java.lang.String, java.util.Map)
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#remove(java.lang.String, java.util.Map)
 	 * TODO: when fixed, rename method to remove
 	 */
 	@Override
-	public Map<String, byte[]> removeValue(String tableName,byte[] key) {
+	public TreeMap<String, byte[]> removeValue(String tableName,byte[] key) {
 		DatastoreValue  result = super.remove(tableName, key); 
-		return (Map<String, byte[]>) ((result != null)  ? serializer.deserialize(result.data): null); 
+		return (TreeMap<String, byte[]>) ((result != null)  ? serializer.deserialize(result.getRawData()): null); 
 
 	}
 
 	/* 
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#replace(java.lang.String, byte[], java.util.Map, java.util.Map)
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#replace(java.lang.String, byte[], java.util.Map, java.util.Map)
 	 */
 	@Override
 	public boolean replace(String tableName, byte[] key,
-			Map<String, byte[]> oldValue, Map<String, byte[]> newValue) {
+			TreeMap<String, byte[]> oldValue, TreeMap<String, byte[]> newValue) {
 		return super.replace(tableName, key, serializer.serialize(oldValue),  serializer.serialize(newValue));
 	}
 
 	/* 
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#remove(java.lang.String, byte[], java.util.Map)
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#remove(java.lang.String, byte[], java.util.Map)
 	 */
 	@Override
 	public boolean remove(String tableName, byte[] key,
-			Map<String, byte[]> expectedValue) {
+			TreeMap<String, byte[]> expectedValue) {
 		return super.remove(tableName, key, serializer.serialize(expectedValue));
 	}
 
 	/* 
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#putIfAbsent(java.lang.String, byte[], java.util.Map)
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#putIfAbsent(java.lang.String, byte[], java.util.Map)
 	 */
 	@Override
-	public Map<String, byte[]> putIfAbsent(String tableName, byte[] key,
-			Map<String, byte[]> value) {
+	public TreeMap<String, byte[]> putIfAbsent(String tableName, byte[] key,
+			TreeMap<String, byte[]> value) {
 		DatastoreValue result =  super.putIfAbsent(tableName, key, serializer.serialize(value));
-		return result != null? serializer.deserialize(result.data) : null; 
+		return result != null? serializer.deserialize(result.getRawData()) : null; 
 	}
 	
 	
 	/* 
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#setColumn(java.lang.String, byte[], java.lang.String, byte[])
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#setColumn(java.lang.String, byte[], java.lang.String, byte[])
 	 */
 	@Override
 	public boolean setColumn(String tableName, byte[] key, String columnName,
@@ -133,7 +134,7 @@ public class ColumnProxy extends KeyValueProxy implements KeyValueColumnDatastor
 	}
 
 	/* 
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#getColumn(java.lang.String, byte[], java.lang.String)
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#getColumn(java.lang.String, byte[], java.lang.String)
 	 */
 	@Override
 	public byte[] getColumn(String tableName, byte[] key, String columnName) {
@@ -153,11 +154,11 @@ public class ColumnProxy extends KeyValueProxy implements KeyValueColumnDatastor
 		return result; 
 	}
 	/* (non-Javadoc)
-	 * @see bonafide.datastore.KeyValueColumnDatastoreProxy#valueS(java.lang.String)
+	 * @see bonafide.getRawData()store.KeyValueColumnDatastoreProxy#valueS(java.lang.String)
 	 */
 	//FIXME
 	@Override
-	public Collection<Map<String, byte[]>> valueS(String tableName) {
+	public Collection<TreeMap<String, byte[]>> valueS(String tableName) {
 		RequestType type  = RequestType.VALUES; 
 		byte[] request = concatArrays(type.byteArrayOrdinal, getBytes(tableName));
 		byte[] result = invokeRequestWithRawReturn(type,request); 

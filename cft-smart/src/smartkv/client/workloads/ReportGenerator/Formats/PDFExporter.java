@@ -29,7 +29,7 @@ public class PDFExporter {
 	                new DefaultFontMapper());
 	        Rectangle2D rectangle2d = new Rectangle2D.Double(0, 0, width,
 	                height);
-	 
+	        
 	        chart.draw(graphics2d, rectangle2d);
 	         
 	        graphics2d.dispose();

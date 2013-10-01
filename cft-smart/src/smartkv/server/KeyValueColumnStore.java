@@ -36,6 +36,11 @@ import com.google.common.primitives.UnsignedBytes;
 
 public class KeyValueColumnStore implements ColumnDatastore, Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private Map<String, Map<ByteArrayWrapper, Map<String,byte[]>>> datastore;
 	
 	private Map<String, Map<String,Integer>> counters;

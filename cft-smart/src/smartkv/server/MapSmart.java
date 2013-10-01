@@ -3,18 +3,15 @@ package smartkv.server;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import javax.print.attribute.IntegerSyntax;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.primitives.Ints;
-
+import smartkv.server.experience.unmarshallRequests.KeyValueColumnStoreRpc;
+import smartkv.server.experience.unmarshallRequests.KeyValueStoreRPC;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ReplicaContext;
 import bftsmart.tom.ServiceReplica;
@@ -39,8 +36,8 @@ public class MapSmart extends DefaultSingleRecoverable{
         return o.readObject();
     }
     
-    private Datastore keyValue = new KeyValueStore(); 
-	private ColumnDatastore columns = new KeyValueColumnStore(); 
+    private Datastore keyValue = new KeyValueStoreRPC(false); 
+	private ColumnDatastore columns = new KeyValueColumnStoreRpc(false); 
 	public static void main(String[] args){
 		new MapSmart(0);
 		new MapSmart(1);

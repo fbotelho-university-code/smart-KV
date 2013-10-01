@@ -18,4 +18,5 @@ public class TestInformation implements Serializable {
 		this.clients = clients; 
 		random = r.nextLong(); 
 	}
+	
 }

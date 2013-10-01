@@ -90,7 +90,6 @@ public class ServiceProxy extends TOMSender {
     public ServiceProxy(int processId, String configHome,
             Comparator<byte[]> replyComparator, Extractor replyExtractor) {
     	
-    	System.out.println("Here"); 
         if (configHome == null) {
             init(processId);
         } else {
