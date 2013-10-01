@@ -26,9 +26,15 @@ public class VersionMap extends NonNullValueMap{
 		Value bucket = super.get(key);
 		Value oldValue =Value.SingletonValues.EMPTY;
 		VersionedValue valueBucket = bucket != Value.SingletonValues.EMPTY ? (VersionedValue) bucket : null;
-		if (valueBucket!= null){
-			oldValue = new VersionedValue(valueBucket.getValue(), valueBucket.getVersion());
-			valueBucket.setValue(value);
+		if (valueBucket!= null ){
+			if (!valueBucket.getValue().equals(value)){
+				oldValue = new VersionedValue(valueBucket.getValue(), valueBucket.getVersion());
+				valueBucket.setValue(value);
+			}
+			else{
+				//Nothing to change... we don't update same values. 
+				oldValue = valueBucket; 
+			}
 		}
 		else{
 			valueBucket = new VersionedValue(value);

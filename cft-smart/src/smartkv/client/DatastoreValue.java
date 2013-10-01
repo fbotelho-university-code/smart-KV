@@ -14,7 +14,7 @@ import com.google.common.primitives.Ints;
  */
 public class DatastoreValue {
 	private final  byte[]  data;
-	public final static boolean timeStampValues = false;  
+	public final static boolean timeStampValues = true;  
 	//XXX - so all datastore values must be greater than 1 byte! :)
 	public static DatastoreValue createValue(byte[] data){
 		if (timeStampValues) return createTimestampedValue(data); 
@@ -52,15 +52,3 @@ public class DatastoreValue {
 	}
 }
 
-class TimestampedDatastoreValue extends DatastoreValue{
-	public  final int ts;
-	
-	public TimestampedDatastoreValue(byte[] reply) {
-		super(reply, 4, reply.length-1);
-		this.ts = Ints.fromByteArray(reply);
-	}
-	
-	public int getVersion() {
-		return ts;
-	}
-}

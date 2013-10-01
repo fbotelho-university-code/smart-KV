@@ -183,5 +183,13 @@ public class ColumnTable_<K, V> extends AbstractTable<K, V> implements
 	public boolean replace(K key, V currentValue, V newValue) {
 		return datastore.replace(tableName, serializeKey(key), serializeValue(currentValue), serializeValue(newValue));
 	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.KeyValueTable#getWithTimeStamp(java.lang.Object)
+	 */
+	@Override
+	public TimestampedValue<V> getWithTimeStamp(K key) {
+		throw new UnsupportedOperationException(""); 
+	}
 	
 }

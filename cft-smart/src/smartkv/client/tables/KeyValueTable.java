@@ -51,6 +51,12 @@ public interface KeyValueTable<K, V> extends Table<K,V>{
 	 * @param key
 	 * @return
 	 */
-	public <V1> V1 getValueByReference(K key); 
+	public <V1> V1 getValueByReference(K key);
+
+	/**
+	 * @param key
+	 * @return
+	 */
+	public TimestampedValue<V> getWithTimeStamp(K key); 
 	
 }

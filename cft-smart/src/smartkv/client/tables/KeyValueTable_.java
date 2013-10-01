@@ -8,7 +8,7 @@ import java.util.Collection;
 import smartkv.client.DatastoreValue;
 import smartkv.client.KeyValueDatastoreProxy;
 import smartkv.client.util.Serializer;
-
+import smartkv.client.TimestampedDatastoreValue; 
 import com.google.common.collect.Lists;
 
 /**
@@ -114,7 +114,14 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 		DatastoreValue result = datastore.get(tableName, serializeKey(key));
 		return result != null ? valueSerializer.deserialize(result.getRawData()): null;
 	}
-
+	
+	@Override
+	public TimestampedValue<V> getWithTimeStamp(K key) {
+		if (key == null) return null; 
+		TimestampedDatastoreValue result = (TimestampedDatastoreValue) datastore.get(tableName, serializeKey(key));
+		return result != null ? new TimestampedValue<V>(result.ts,valueSerializer.deserialize(result.getRawData())): null;
+	}
+	
 	@Override
 	public Collection<V> values(){
 		Collection<DatastoreValue> byte_values = datastore.values(tableName); 

@@ -3,19 +3,22 @@
  */
 package smartkv.client;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import smartkv.server.MapSmart;
 
 public class KeyValueDatastoreProxyTest {
 	//TODO - launch smart, and maybe do it in verbose mode....
@@ -323,5 +326,45 @@ public class KeyValueDatastoreProxyTest {
 		assertArrayEquals(ds.put(keys,key_2, key_1).getRawData(), key_1 );
 		DatastoreValue v = ds.getByReference(keys,key_2);
 		assertArrayEquals(v.getRawData(), value_1); 
+	}
+	
+	
+	@Test
+	public void testTimeStamps(){
+		if (DatastoreValue.timeStampValues){
+			String tableName = "cenas"; 
+			ds.createTable(tableName); 
+			ds.put(tableName, key_1, value_1);
+			TimestampedDatastoreValue value = (TimestampedDatastoreValue) ds.get(tableName, key_1);
+			assertNotNull(value);
+			assertEquals(value.ts, 0); //Start at zero.
+			value = (TimestampedDatastoreValue) ds.put(tableName, key_1, value_2);
+			assertEquals(value.ts, 0); //Previous value timestamp is 0; 
+			value = (TimestampedDatastoreValue) ds.get(tableName, key_1);
+			assertEquals(value.ts, 1); 
+			ds.put(tableName, key_1, value_2);
+			value = (TimestampedDatastoreValue) ds.get(tableName, key_1);
+			assertEquals(value.ts, 1); //still the same because the previous put did not replace the value 
+			value = (TimestampedDatastoreValue) ds.remove(tableName, key_1);
+			assertEquals(value.ts, 1); 
+			ds.put(tableName, key_1, value_1);
+			value = (TimestampedDatastoreValue) ds.remove(tableName, key_1);
+			assertEquals(value.ts, 0); //Remove cleared the timestamp
+
+			ds.putIfAbsent(tableName, key_1, value_1); 
+			value = (TimestampedDatastoreValue) ds.get(tableName, key_1); 
+			assertEquals(value.ts, 0); 
+			ds.replace(tableName, key_1,value_1, value_1);
+			value = (TimestampedDatastoreValue) ds.get(tableName, key_1); 
+			assertEquals(value.ts, 0);
+			
+			ds.replace(tableName, key_1,value_1, value_2);
+			value = (TimestampedDatastoreValue) ds.get(tableName, key_1); 
+			assertEquals(value.ts, 1);
+			
+			ds.remove(tableName, key_1, value_1);
+			value = (TimestampedDatastoreValue) ds.get(tableName, key_1); 
+			assertEquals(value.ts, 1);
+		}
 	}
 }
