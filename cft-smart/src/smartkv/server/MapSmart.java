@@ -36,8 +36,8 @@ public class MapSmart extends DefaultSingleRecoverable{
         return o.readObject();
     }
     
-    private Datastore keyValue = new KeyValueStoreRPC(false); 
-	private ColumnDatastore columns = new KeyValueColumnStoreRpc(false); 
+    private Datastore keyValue = new KeyValueStoreRPC(true); 
+	private ColumnDatastore columns = new KeyValueColumnStoreRpc(true); 
 	public static void main(String[] args){
 		new MapSmart(0);
 		new MapSmart(1);
