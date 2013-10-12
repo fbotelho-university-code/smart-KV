@@ -1,21 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- *
- * This file is part of SMaRt.
- *
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.paxosatwar.roles;
 
 
@@ -192,22 +189,39 @@ public final class Acceptor {
                 if(round.getExecution().getLearner().firstMessageProposed == null) {
                     round.getExecution().getLearner().firstMessageProposed = round.deserializedPropValue[0];
                 }
-                round.getExecution().getLearner().firstMessageProposed.consensusStartTime = consensusStartTime;
+                if (round.getExecution().getLearner().firstMessageProposed.consensusStartTime == 0) {
+                    round.getExecution().getLearner().firstMessageProposed.consensusStartTime = consensusStartTime;
+                    
+                }
                 round.getExecution().getLearner().firstMessageProposed.proposeReceivedTime = System.nanoTime();
                 
-                Logger.println("(Acceptor.executePropose) sending weak for " + eid);
+                if(reconfManager.getStaticConf().isBFT()){
+                    Logger.println("(Acceptor.executePropose) sending weak for " + eid);
 
-                round.setWeak(me, round.propValueHash);
-                round.getExecution().getLearner().firstMessageProposed.weakSentTime = System.nanoTime();
-                communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
-                        factory.createWeak(eid, round.getNumber(), round.propValueHash));
+                    round.setWeak(me, round.propValueHash);
+                    round.getExecution().getLearner().firstMessageProposed.weakSentTime = System.nanoTime();
+                    communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
+                            factory.createWeak(eid, round.getNumber(), round.propValueHash));
 
-                Logger.println("(Acceptor.executePropose) weak sent for " + eid);
+                    Logger.println("(Acceptor.executePropose) weak sent for " + eid);
                 
-                computeWeak(eid, round, round.propValueHash);
+                    computeWeak(eid, round, round.propValueHash);
                 
-                Logger.println("(Acceptor.executePropose) weak computed for " + eid);
+                    Logger.println("(Acceptor.executePropose) weak computed for " + eid);
+                
+                } else {
+                 	round.setStrong(me, round.propValueHash);
+                 	round.getExecution().getLearner().firstMessageProposed.weakSentTime = System.nanoTime();
+                        round.getExecution().getLearner().firstMessageProposed.strongSentTime = System.nanoTime();
+                 	/**** LEADER CHANGE CODE! ******/
+ 	                round.getExecution().setQuorumWeaks(round.propValueHash);
+ 	                /*****************************************/
 
+                        communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
+ 	                    factory.createStrong(eid, round.getNumber(), round.propValueHash));
+
+                        computeStrong(eid, round, round.propValueHash);
+                }
                 executionManager.processOutOfContext(round.getExecution());
             }
         }
@@ -253,7 +267,7 @@ public final class Acceptor {
                 
                 round.setStrong(me, value);
 
-                if(round.getExecution().getLearner().firstMessageProposed==null) {
+                if(round.getExecution().getLearner().firstMessageProposed!=null) {
 
                         round.getExecution().getLearner().firstMessageProposed.strongSentTime = System.nanoTime();
                 }
@@ -289,7 +303,7 @@ public final class Acceptor {
                 pm.setMACVector(macVector);
                 
                 int[] targets = this.reconfManager.getCurrentViewOtherAcceptors();
-                communication.getServersConn().send(targets, pm, false);
+                communication.getServersConn().send(targets, pm, true);
                 
                 //communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
                         //factory.createStrong(eid, round.getNumber(), value));
@@ -325,7 +339,7 @@ public final class Acceptor {
         Logger.println("(Acceptor.computeStrong) I have " + round.countStrong(value) +
                 " strongs for " + eid + "," + round.getNumber());
 
-        if (round.countStrong(value) > reconfManager.getQuorum2F() && !round.getExecution().isDecided()) {
+        if (round.countStrong(value) > reconfManager.getCertificateQuorum() && !round.getExecution().isDecided()) {
             Logger.println("(Acceptor.computeStrong) Deciding " + eid);
             decide(round, value);
         }

@@ -27,14 +27,10 @@ public class VersionMap extends NonNullValueMap{
 		Value oldValue =Value.SingletonValues.EMPTY;
 		VersionedValue valueBucket = bucket != Value.SingletonValues.EMPTY ? (VersionedValue) bucket : null;
 		if (valueBucket!= null ){
-			if (!valueBucket.getValue().equals(value)){
-				oldValue = new VersionedValue(valueBucket.getValue(), valueBucket.getVersion());
-				valueBucket.setValue(value);
-			}
-			else{
-				//Nothing to change... we don't update same values. 
-				oldValue = valueBucket; 
-			}
+			//We change the value even if it is equal to the previous. This is nice to let the client known the new timestamp according to the result of the operation.
+			//If we were not using a cache, then it would be different.   
+			oldValue = new VersionedValue(valueBucket.getValue(), valueBucket.getVersion());
+			valueBucket.setValue(value);
 		}
 		else{
 			valueBucket = new VersionedValue(value);

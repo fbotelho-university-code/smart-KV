@@ -1,6 +1,5 @@
 package smartkv.client.workloads;
 
-import smartkv.client.workloads.RequestLogWithDataInformation.Builder;
 
 public class  RequestLogWithDataInformation extends RequestLogEntry{
 	/**
@@ -97,35 +96,6 @@ public class  RequestLogWithDataInformation extends RequestLogEntry{
 		this.column =b.getColumn(); 
 	}
 	
-	public RequestLogWithDataInformation(String tableName){
-		this.table = tableName; 
-		key = value = existentValue = "-";
-		initializeFields(); 
-	}
-	public RequestLogWithDataInformation(String tableName, String key){
-	
-		this.table = tableName; 
-		this.key = key; 
-		value = existentValue = "-";
-		initializeFields(); 
-	}
-	public RequestLogWithDataInformation(String tableName, String key, String value){
-	
-		this.table = tableName; 
-		this.key = key; 
-		this.value = value; 
-		existentValue = "-";
-		initializeFields(); 
-	}
-	public RequestLogWithDataInformation(String tableName, String key, String value, String existentValue){
-	
-		this.table = tableName; 
-		this.key = key; 
-		this.value = value; 
-		this.existentValue = existentValue; 
-		initializeFields();
-		
-	}
 	
 	public String getTable() {
 		return table;
@@ -221,6 +191,13 @@ public class  RequestLogWithDataInformation extends RequestLogEntry{
 		return  super.toString() + " - RequestLogWithDataInformation [table=" + table + ", key=" + key
 				+ ", value=" + value + ", existentValue=" + existentValue
 				+ ", returnValue=" + returnValue + ", column=" + column + "]";
+	}
+
+	/**
+	 * @return
+	 */
+	public String getReturnedValue() {
+		return  returnValue; 
 	}
 	
 }

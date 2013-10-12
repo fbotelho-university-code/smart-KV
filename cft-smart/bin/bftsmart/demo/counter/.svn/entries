@@ -1,14 +1,14 @@
 10
 
 dir
-283
+334
 http://bft-smart.googlecode.com/svn/trunk/src/bftsmart/demo/counter
 http://bft-smart.googlecode.com/svn
 
 
 
-2012-05-15T10:11:53.677766Z
-261
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-061235450660df63053c2680819785ed
-2012-05-15T10:11:53.677766Z
-261
+2013-10-03T14:04:07.000000Z
+f65cd7b789a9ee647755a9045a38dafe
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -58,7 +58,7 @@ marcelmhs@gmail.com
 
 
 
-2882
+3429
 
 CounterServer.java
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-3fda1c0301d7215c710f2a95d2493405
-2012-05-15T10:11:53.677766Z
-261
+2013-10-03T14:04:07.000000Z
+9086fb231fc6a0ec9cf610d750cfb984
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 has-props
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-5606
+5614
 
 MultiCounterClient.java
 file
@@ -100,10 +100,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-c839b5c18ef558d2df16ab7d4371e4ea
-2012-05-15T10:11:53.677766Z
-261
+2013-10-03T14:04:07.000000Z
+730555a5db39515184daba4fefbc5405
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -126,7 +126,7 @@ marcelmhs@gmail.com
 
 
 
-1431
+1977
 
 CounterClient.java
 file
@@ -134,10 +134,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-3112f915241229e4031337200b458f72
-2012-05-15T10:11:53.677766Z
-261
+2013-10-03T14:04:07.000000Z
+879adae26dec04497401278937090830
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 has-props
 
@@ -160,5 +160,5 @@ has-props
 
 
 
-3889
+3703
 

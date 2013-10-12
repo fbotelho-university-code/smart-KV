@@ -11,7 +11,7 @@ import java.util.TreeMap;
  * 
  */
 
-public interface KeyValueColumnDatastoreProxy extends TableDataStoreProxy{
+public interface KeyValueColumnDatastoreProxy extends IDataStoreProxy{
 	
 	/**
 	 * Insert a mapping from the specified key to the specified value and returns the previously existent value (if any). 

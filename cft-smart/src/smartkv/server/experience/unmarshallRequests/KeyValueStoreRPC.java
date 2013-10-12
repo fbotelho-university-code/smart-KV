@@ -270,7 +270,17 @@ public class KeyValueStoreRPC implements Datastore, Serializable{
 		return datastore.atomic_replace_value_in_table(tableName, k, oldValue, newValue).asByteArray(); 
 	}
 	
-
+	@Override
+	public byte[] atomic_replace_value_in_table_with_timestamp(DataInputStream dis) throws Exception{
+		String tableName = dis.readUTF(); 
+		Key k = createKeyFromBytes(readNextByteArray(dis));
+		byte[] intBytes = new byte[4]; 
+		dis.readFully(intBytes);
+		Integer expectedVersion = Ints.fromByteArray(intBytes);
+		Value newValue = createValueFromBytes(ByteStreams.toByteArray(dis));
+		return datastore.atomic_replace_value_in_table(tableName, k,expectedVersion, newValue).asByteArray(); 
+	}
+	
 	/**
 	 * @param in
 	 * @param dis
@@ -357,4 +367,6 @@ public class KeyValueStoreRPC implements Datastore, Serializable{
 	public byte[] is_datastore_empty() throws Exception {
 		return datastore.is_datastore_empty().asByteArray(); 
 	}
+
+	
 }

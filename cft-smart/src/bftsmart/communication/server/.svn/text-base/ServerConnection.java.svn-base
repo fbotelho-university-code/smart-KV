@@ -1,20 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- *
- * This file is part of SMaRt.
- *
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.communication.server;
 
 import java.io.ByteArrayInputStream;
@@ -42,8 +40,6 @@ import bftsmart.reconfiguration.TTPMessage;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.Logger;
 import java.util.HashSet;
-import java.util.TreeSet;
-
 
 /**
  * This class represents a connection with other server.
@@ -91,15 +87,10 @@ public class ServerConnection {
         this.outQueue = new LinkedBlockingQueue<byte[]>(this.manager.getStaticConf().getOutQueueSize());
 
         this.noMACs = new HashSet<Integer>();
-        //******* EDUARDO BEGIN **************//
         // Connect to the remote process or just wait for the connection?
         if (isToConnect()) {
             //I have to connect to the remote server
             try {
-                //System.out.println("**********");
-                //System.out.println(remoteId);
-                //System.out.println(this.manager.getStaticConf().getServerToServerPort(remoteId));
-                //System.out.println(this.manager.getStaticConf().getHost(remoteId));
                 this.socket = new Socket(this.manager.getStaticConf().getHost(remoteId),
                         this.manager.getStaticConf().getServerToServerPort(remoteId));
                 ServersCommunicationLayer.setSocketOptions(this.socket);
@@ -112,7 +103,6 @@ public class ServerConnection {
             }
         }
         //else I have to wait a connection from the remote server
-        //******* EDUARDO END **************//
 
         if (this.socket != null) {
             try {
@@ -185,7 +175,6 @@ public class ServerConnection {
      * if some problem is detected, a reconnection is done
      */
     private final void sendBytes(byte[] messageData, boolean useMAC) {       
-        int i = 0;
         boolean abort = false;
         do {
             if (abort) return; // if there is a need to reconnect, abort this method
@@ -218,8 +207,6 @@ public class ServerConnection {
                 waitAndConnect();
                 abort = true;
             }
-            //br.ufsc.das.tom.util.Logger.println("(ServerConnection.sendBytes) iteration " + i);
-            i++;
         } while (doWork);
     }
 
@@ -343,6 +330,8 @@ public class ServerConnection {
                 socket.close();
             } catch (IOException ex) {
                 Logger.println("Error closing socket to "+remoteId);
+            } catch (NullPointerException npe) {
+            	Logger.println("Socket already closed");
             }
 
             socket = null;
@@ -511,7 +500,11 @@ public class ServerConnection {
 
                         //read mac
                         boolean result = true;
-                        if (manager.getStaticConf().getUseMACs() == 1) {
+                        
+                        byte hasMAC = socketInStream.readByte();
+                        if (manager.getStaticConf().getUseMACs() == 1 && hasMAC == 1) {
+                            
+                            System.out.println("TTP CON USEMAC");
                             read = 0;
                             do {
                                 read += socketInStream.read(receivedMac, read, macSize - read);

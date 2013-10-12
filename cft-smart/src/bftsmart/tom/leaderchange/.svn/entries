@@ -1,14 +1,14 @@
 10
 
 dir
-283
+334
 http://bft-smart.googlecode.com/svn/trunk/src/bftsmart/tom/leaderchange
 http://bft-smart.googlecode.com/svn
 
 
 
-2012-06-25T17:17:33.705862Z
-264
+2013-07-10T21:24:35.766314Z
+330
 liquidsnake@sapo.pt
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-531f924080d2949becf86f51cfb292fb
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:07.000000Z
+fc0bafef92904564947b2c13d76419f2
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -58,7 +58,7 @@ marcelmhs@gmail.com
 
 
 
-3535
+3392
 
 LastEidData.java
 file
@@ -66,44 +66,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-8d8c5d6868176d01eaa98c4f4d78a8ff
-2012-06-25T17:17:33.705862Z
-264
-liquidsnake@sapo.pt
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3192
-
-LCMessage.java
-file
-
-
-
-
-2012-11-08T15:15:44.000000Z
-1f960e0cea36355c4b016b36e80954b9
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:07.000000Z
+183015cf20ae59e5473f4bb5a5c761a3
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -126,7 +92,41 @@ marcelmhs@gmail.com
 
 
 
-3017
+3049
+
+LCMessage.java
+file
+
+
+
+
+2013-10-03T14:04:07.000000Z
+fc49e4ba870ecb8e4236a72c4128cf2d
+2013-06-27T17:39:57.407612Z
+326
+marcelmhs@gmail.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2874
 
 LCManager.java
 file
@@ -134,10 +134,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-d278b75fcf4138bf39687f46c3821322
-2012-06-25T17:17:33.705862Z
-264
+2013-10-03T14:04:07.000000Z
+b9f2c3feab86c9be79876ca8902e5e7e
+2013-07-10T21:24:35.766314Z
+330
 liquidsnake@sapo.pt
 
 
@@ -160,5 +160,5 @@ liquidsnake@sapo.pt
 
 
 
-25510
+25941
 

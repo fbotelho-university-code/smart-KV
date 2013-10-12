@@ -1,20 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- * 
- * This file is part of SMaRt.
- * 
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.tom;
 
 import java.util.ArrayList;
@@ -39,6 +37,7 @@ import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.server.BatchExecutable;
 import bftsmart.tom.server.Executable;
+import bftsmart.tom.server.FIFOExecutable;
 import bftsmart.tom.server.Recoverable;
 import bftsmart.tom.server.Replier;
 import bftsmart.tom.server.SingleExecutable;
@@ -48,12 +47,15 @@ import bftsmart.tom.util.TOMUtil;
 
 
 /**
- * This class implements a TOMReceiver, and also a replica for the server side of the application.
- * It receives requests from the clients, runs a TOM layer, and sends a reply back to the client
- * Applications must create a class that extends this one, and implement the executeOrdered method
- *
+ * This class receives messages from DeliveryThread and manages the execution
+ * from the application and reply to the clients. For applications where the
+ * ordered messages are executed one by one, ServiceReplica receives the batch
+ * decided in a consensus, deliver one by one and reply with the batch of replies.
+ * In cases where the application executes the messages in batches, the batch of
+ * messages is delivered to the application and ServiceReplica doesn't need to
+ * organize the replies in batches.
  */
-public class ServiceReplica implements TOMReceiver {
+public class ServiceReplica {
 
 	class MessageContextPair {
 
@@ -135,7 +137,7 @@ public class ServiceReplica implements TOMReceiver {
 		try {
 			cs = new ServerCommunicationSystem(this.SVManager, this);
 		} catch (Exception ex) {
-			Logger.getLogger(TOMReceiver.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(ServiceReplica.class.getName()).log(Level.SEVERE, null, ex);
 			throw new RuntimeException("Unable to build a communication system.");
 		}
 
@@ -205,163 +207,100 @@ public class ServiceReplica implements TOMReceiver {
 	//******* EDUARDO END **************//
 
 	/**
-	 * This is the method invoked to deliver a totally ordered request.
+	 * This message delivers a readonly message, i.e., a message that was not
+	 * ordered to the replica and gather the reply to forward to the client
 	 *
-	 * @param msg The request delivered by the delivery thread
+	 * @param message the request received from the delivery thread
 	 */
-	@Override
-	public final void receiveReadonlyMessage(TOMMessage tomMsg, MessageContext msgCtx) {
+	public final void receiveReadonlyMessage(TOMMessage message, MessageContext msgCtx) {
 		byte[] response = null;
-		response = executor.executeUnordered(tomMsg.getContent(), msgCtx);
+		if(executor instanceof FIFOExecutable) {
+			response = ((FIFOExecutable)executor).executeUnorderedFIFO(message.getContent(), msgCtx, message.getSender(), message.getOperationId());
+		} else
+			response = executor.executeUnordered(message.getContent(), msgCtx);
 
 		// build the reply and send it to the client
-                tomMsg.reply = new TOMMessage(id, tomMsg.getSession(), tomMsg.getSequence(),
-                    response, SVManager.getCurrentViewId(), TOMMessageType.UNORDERED_REQUEST);
-                cs.send(new int[]{tomMsg.getSender()}, tomMsg.reply); 
+		message.reply = new TOMMessage(id, message.getSession(), message.getSequence(),
+				response, SVManager.getCurrentViewId(), TOMMessageType.UNORDERED_REQUEST);
+		cs.send(new int[]{message.getSender()}, message.reply); 
 	}
 
-	public void receiveMessages(int consId, int regency, boolean fromConsensus, TOMMessage[] requests, byte[] decision) {
-		TOMMessage firstRequest = requests[0];
+	public void receiveMessages(int consId[], int regency, TOMMessage[][] requests) {
+		int numRequests = 0;
+		int consensusCount = 0;
+		List<TOMMessage> toBatch = new ArrayList<TOMMessage>();
+		List<MessageContext> msgCtxts = new ArrayList<MessageContext>();
 
-		if(executor instanceof BatchExecutable) {
-			//DEBUG
-			bftsmart.tom.util.Logger.println("BATCHEXECUTOR");
-
-			int numRequests = 0;
-
-			//Messages to put in the batch
-			List<TOMMessage> toBatch = new ArrayList<TOMMessage>();
-
-			//Message Contexts (one Context per message in the batch)
-			List<MessageContext> msgCtxts = new ArrayList<MessageContext>();
-
-			for (TOMMessage request : requests) {
-				if (!fromConsensus || request.getViewID() == SVManager.getCurrentViewId()) {
-
-					//If message is a request, put message in the toBatch list
+		for(TOMMessage[] requestsFromConsensus : requests) {
+			TOMMessage firstRequest = requestsFromConsensus[0];
+			for(TOMMessage request : requestsFromConsensus) {
+				if (request.getViewID() == SVManager.getCurrentViewId()) {					
 					if (request.getReqType() == TOMMessageType.ORDERED_REQUEST) {
 						numRequests++;
-
-						//Make new message context
-						MessageContext msgCtx = new MessageContext(
-								firstRequest.timestamp, firstRequest.nonces,
-								regency, consId, request.getSender(),
-								firstRequest);
-
-						//Put context in the message context list
-						msgCtxts.add(msgCtx);
-
+						MessageContext msgCtx = new MessageContext(firstRequest.timestamp, firstRequest.nonces,	regency, consId[consensusCount], request.getSender(), firstRequest);
+						if(consensusCount + 1 == requestsFromConsensus.length)
+							msgCtx.setLastInBatch();
 						request.deliveryTime = System.nanoTime();
-
-						//Add message to the ToBatch list
-						toBatch.add(request);
-					} else if (request.getReqType() == TOMMessageType.RECONFIG) {
-						// Reconfiguration request to be processed after the
-						// batch
-						SVManager.enqueueUpdate(request);
-					} else {
-						throw new RuntimeException("Should never reach here!");
-					}
-
-				} else if (fromConsensus && request.getViewID() < SVManager.getCurrentViewId()) {
-					// message sender had an old view, resend the message to
-					// him (but only if it came from consensus an not state transfer)
-					tomLayer.getCommunication().send(
-							new int[] { request.getSender() },
-							new TOMMessage(SVManager.getStaticConf()
-									.getProcessId(), request.getSession(),
-									request.getSequence(), TOMUtil
-									.getBytes(SVManager
-											.getCurrentView()),
-											SVManager.getCurrentViewId()));
-				}
-			}
-
-			//In the end, if there are messages in the Batch
-			if(numRequests > 0){
-				//Make new batch to deliver
-				byte[][] batch = new byte[numRequests][];
-
-				//Put messages in the batch
-				int line = 0;
-				for(TOMMessage m : toBatch){
-					batch[line] = m.getContent();
-					line++;
-				}
-
-				MessageContext[] msgContexts = new MessageContext[msgCtxts.size()];
-
-				msgContexts = msgCtxts.toArray(msgContexts);
-
-				//Deliver the batch and wait for replies
-				byte[][] replies = ((BatchExecutable) executor).executeBatch(batch, msgContexts);
-
-				//Send the replies back to the client
-				if (fromConsensus) {
-					for(int index = 0; index < toBatch.size(); index++){
-						TOMMessage request = toBatch.get(index);
-						request.reply = new TOMMessage(id,
-								request.getSession(), request.getSequence(),
-								replies[index], SVManager.getCurrentViewId());
-						cs.send(new int[] { request.getSender() }, request.reply);
-					}
-				}
-				//DEBUG
-				bftsmart.tom.util.Logger.println("BATCHEXECUTOR END");
-			}
-		} else {
-
-			bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) singe executor for consensus " + consId);
-			for (TOMMessage request: requests) {
-
-				if (!fromConsensus || request.getViewID() == SVManager.getCurrentViewId()) {
-
-					bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) same view");
-					if (request.getReqType() == TOMMessageType.ORDERED_REQUEST) {
-
-						bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) this is a REQUEST type message");
-						byte[] response = null;
-						//normal request execution
-						//create a context for the batch of messages to be delivered
-						MessageContext msgCtx = new MessageContext(firstRequest.timestamp, 
-								firstRequest.nonces, regency, consId, request.getSender(), firstRequest);
-						msgCtx.setBatchSize(requests.length);
-						request.deliveryTime = System.nanoTime();
-
-						bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) executing message " + request.getSequence() + " from " + request.getSender() + " decided in consensus " + consId);
-						response = ((SingleExecutable)executor).executeOrdered(request.getContent(), msgCtx);
-						// build the reply and send it to the client
-
-						if (fromConsensus) {
+						if(executor instanceof BatchExecutable) {
+							msgCtxts.add(msgCtx);
+							toBatch.add(request);
+						} else if(executor instanceof FIFOExecutable) {
+							byte[]response = ((FIFOExecutable)executor).executeOrderedFIFO(request.getContent(), msgCtx, request.getSender(), request.getOperationId());
 							request.reply = new TOMMessage(id, request.getSession(),
 									request.getSequence(), response, SVManager.getCurrentViewId());
-
 							bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) sending reply to " + request.getSender());
 							replier.manageReply(request, msgCtx);
+						} else if(executor instanceof SingleExecutable) {
+							byte[]response = ((SingleExecutable)executor).executeOrdered(request.getContent(), msgCtx);
+							request.reply = new TOMMessage(id, request.getSession(),
+									request.getSequence(), response, SVManager.getCurrentViewId());
+							bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) sending reply to " + request.getSender());
+							replier.manageReply(request, msgCtx);
+						} else {
+							throw new UnsupportedOperationException("Interface not existent");
 						}
 					} else if (request.getReqType() == TOMMessageType.RECONFIG) {
-						//Reconfiguration request to be processed after the batch
-						bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) Enqueing an update");
 						SVManager.enqueueUpdate(request);
 					} else {
 						throw new RuntimeException("Should never reach here!");
 					}
-				} else if (fromConsensus && request.getViewID() < SVManager.getCurrentViewId()) {
-
-					bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) sending current view to " + request.getSender());
-					//message sender had an old view, resend the message to him
-					tomLayer.getCommunication().send(new int[]{request.getSender()},
-							new TOMMessage(SVManager.getStaticConf().getProcessId(),
-									request.getSession(), request.getSequence(),
-									TOMUtil.getBytes(SVManager.getCurrentView()), SVManager.getCurrentViewId()));
-				} else {
-
-					System.out.println("WTF no consenso numero " + consId);
+				} else if (request.getViewID() < SVManager.getCurrentViewId()) {
+					// message sender had an old view, resend the message to
+					// him (but only if it came from consensus an not state transfer)
+					tomLayer.getCommunication().send(new int[] { request.getSender() }, new TOMMessage(SVManager.getStaticConf().getProcessId(), request.getSession(), request.getSequence(), TOMUtil.getBytes(SVManager.getCurrentView()),	SVManager.getCurrentViewId()));
 				}
 			}
+			consensusCount++;
+		}
+		
+		if(executor instanceof BatchExecutable && numRequests > 0){
+			//Make new batch to deliver
+			byte[][] batch = new byte[numRequests][];
+
+			//Put messages in the batch
+			int line = 0;
+			for(TOMMessage m : toBatch){
+				batch[line] = m.getContent();
+				line++;
+			}
+
+			MessageContext[] msgContexts = new MessageContext[msgCtxts.size()];
+			msgContexts = msgCtxts.toArray(msgContexts);
+
+			//Deliver the batch and wait for replies
+			byte[][] replies = ((BatchExecutable) executor).executeBatch(batch, msgContexts);
+
+			//Send the replies back to the client
+			for(int index = 0; index < toBatch.size(); index++){
+				TOMMessage request = toBatch.get(index);
+				request.reply = new TOMMessage(id, request.getSession(), request.getSequence(),
+						replies[index], SVManager.getCurrentViewId());
+				cs.send(new int[] { request.getSender() }, request.reply);
+			}
+			//DEBUG
+			bftsmart.tom.util.Logger.println("BATCHEXECUTOR END");
 		}
 	}
-
 
 	/**
 	 * This method makes the replica leave the group

@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/330/trunk/src/bftsmart/statemanagement/strategy/durability
+END
+StateSender.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/!svn/ver/326/trunk/src/bftsmart/statemanagement/strategy/durability/StateSender.java
+END
+CSTRequest.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/326/trunk/src/bftsmart/statemanagement/strategy/durability/CSTRequest.java
+END
+CSTRequestFGT1.java
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/!svn/ver/326/trunk/src/bftsmart/statemanagement/strategy/durability/CSTRequestFGT1.java
+END
+StateSenderServer.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/!svn/ver/326/trunk/src/bftsmart/statemanagement/strategy/durability/StateSenderServer.java
+END
+CSTRequestF1.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/326/trunk/src/bftsmart/statemanagement/strategy/durability/CSTRequestF1.java
+END
+CSTState.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/!svn/ver/326/trunk/src/bftsmart/statemanagement/strategy/durability/CSTState.java
+END
+DurableStateManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/!svn/ver/330/trunk/src/bftsmart/statemanagement/strategy/durability/DurableStateManager.java
+END
+CSTSMMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/326/trunk/src/bftsmart/statemanagement/strategy/durability/CSTSMMessage.java
+END

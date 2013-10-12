@@ -1,15 +1,15 @@
 10
 
 dir
-283
+334
 http://bft-smart.googlecode.com/svn/trunk/src/bftsmart/paxosatwar/roles
 http://bft-smart.googlecode.com/svn
 
 
 
-2012-07-18T16:48:50.698553Z
-265
-marcelmhs@gmail.com
+2013-07-10T21:24:35.766314Z
+330
+liquidsnake@sapo.pt
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2012-11-08T15:15:45.000000Z
-6994e19ec5d5ad81c91741edf6db3662
-2012-07-18T16:48:50.698553Z
-265
-marcelmhs@gmail.com
+2013-10-03T14:04:08.000000Z
+3d02dbbabb7ea9b1e117bba354f83da3
+2013-07-10T21:24:35.766314Z
+330
+liquidsnake@sapo.pt
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-14172
+15062
 
 Proposer.java
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2012-11-08T15:15:45.000000Z
-86a35a60476de689e6bc8c8695b75795
-2012-07-18T16:48:50.698553Z
-265
+2013-10-03T14:04:08.000000Z
+247f50337cab36d469d87043ceb77d5d
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 has-props
 
@@ -92,5 +92,5 @@ has-props
 
 
 
-2326
+2184
 

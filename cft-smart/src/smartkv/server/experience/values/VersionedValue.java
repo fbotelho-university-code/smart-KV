@@ -7,6 +7,8 @@ import java.util.Arrays;
 
 import com.google.common.primitives.Ints;
 
+//CRITICAL FIXME - and a static constructor, refactor code to use the static constructor that will propagate a special null value meaning nonexisting ....
+// this will remove all if (vlah) != null this : that
 
 /**
  * @author fabiim

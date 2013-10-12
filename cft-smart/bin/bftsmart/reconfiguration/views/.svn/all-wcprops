@@ -1,29 +1,29 @@
 K 25
 svn:wc:ra_dav:version-url
 V 58
-/svn/!svn/ver/265/trunk/src/bftsmart/reconfiguration/views
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/views
 END
 ViewStorage.java
 K 25
 svn:wc:ra_dav:version-url
 V 75
-/svn/!svn/ver/259/trunk/src/bftsmart/reconfiguration/views/ViewStorage.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/views/ViewStorage.java
 END
 DefaultViewStorage.java
 K 25
 svn:wc:ra_dav:version-url
 V 82
-/svn/!svn/ver/265/trunk/src/bftsmart/reconfiguration/views/DefaultViewStorage.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/views/DefaultViewStorage.java
 END
 TestViewSerialization.java
 K 25
 svn:wc:ra_dav:version-url
 V 85
-/svn/!svn/ver/259/trunk/src/bftsmart/reconfiguration/views/TestViewSerialization.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/views/TestViewSerialization.java
 END
 View.java
 K 25
 svn:wc:ra_dav:version-url
 V 68
-/svn/!svn/ver/265/trunk/src/bftsmart/reconfiguration/views/View.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/views/View.java
 END

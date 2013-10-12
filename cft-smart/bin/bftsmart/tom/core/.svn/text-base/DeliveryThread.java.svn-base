@@ -1,33 +1,32 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- * 
- * This file is part of SMaRt.
- * 
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.tom.core;
 
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import bftsmart.paxosatwar.Consensus;
 import bftsmart.reconfiguration.ServerViewManager;
-import bftsmart.statemanagment.ApplicationState;
+import bftsmart.statemanagement.ApplicationState;
 import bftsmart.tom.MessageContext;
-import bftsmart.tom.TOMReceiver;
+import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.server.Recoverable;
@@ -42,9 +41,11 @@ public final class DeliveryThread extends Thread {
 
     private LinkedBlockingQueue<Consensus> decided = new LinkedBlockingQueue<Consensus>(); // decided consensus
     private TOMLayer tomLayer; // TOM layer
-    private TOMReceiver receiver; // Object that receives requests from clients
+    private ServiceReplica receiver; // Object that receives requests from clients
     private Recoverable recoverer; // Object that uses state transfer
     private ServerViewManager manager;
+    private Lock decidedLock = new ReentrantLock();
+    private Condition notEmptyQueue = decidedLock.newCondition();
 
     /**
      * Creates a new instance of DeliveryThread
@@ -52,7 +53,7 @@ public final class DeliveryThread extends Thread {
      * @param receiver Object that receives requests from clients
      * @param conf TOM configuration
      */
-    public DeliveryThread(TOMLayer tomLayer, TOMReceiver receiver, Recoverable recoverer, ServerViewManager manager) {
+    public DeliveryThread(TOMLayer tomLayer, ServiceReplica receiver, Recoverable recoverer, ServerViewManager manager) {
         super("Delivery Thread");
 
         this.tomLayer = tomLayer;
@@ -63,10 +64,6 @@ public final class DeliveryThread extends Thread {
         //******* EDUARDO END **************//
     }
 
-    
-    public TOMReceiver getReceiver() {
-        return receiver;
-    }
     
    public Recoverable getRecoverer() {
         return recoverer;
@@ -86,7 +83,15 @@ public final class DeliveryThread extends Thread {
             tomLayer.setInExec(-1);
         }
         try {
+        	decidedLock.lock();
             decided.put(cons);
+            
+			// clean the ordered messages from the pending buffer
+            TOMMessage[] requests = extractMessagesFromDecision(cons);
+			tomLayer.clientsManager.requestsOrdered(requests);
+            
+            notEmptyQueue.signalAll();
+            decidedLock.unlock();
             Logger.println("(DeliveryThread.delivery) Consensus " + cons.getId() + " finished. Decided size=" + decided.size());
         } catch (Exception e) {
             e.printStackTrace(System.out);
@@ -102,7 +107,6 @@ public final class DeliveryThread extends Thread {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -111,13 +115,16 @@ public final class DeliveryThread extends Thread {
     private Condition canDeliver = deliverLock.newCondition();
 
     public void deliverLock() {
+    	// release the delivery lock to avoid blocking on state transfer
+		decidedLock.lock();
+		notEmptyQueue.signalAll();
+		decidedLock.unlock();
+    	
         deliverLock.lock();
-        //Logger.println("(DeliveryThread.deliverLock) Deliver lock obtained");
     }
 
     public void deliverUnlock() {
         deliverLock.unlock();
-        //Logger.println("(DeliveryThread.deliverUnlock) Deliver Released");
     }
 
     public void canDeliver() {
@@ -136,8 +143,6 @@ public final class DeliveryThread extends Thread {
         //be removed from the leaderManager and the executionManager
         if (lastEid > 2) {
             int stableConsensus = lastEid - 3;
-
-            //tomLayer.lm.removeStableMultipleConsenusInfos(lastCheckpointEid, stableConsensus);
             tomLayer.execManager.removeOutOfContexts(stableConsensus);
         }
 
@@ -145,9 +150,10 @@ public final class DeliveryThread extends Thread {
         //stateManager.setWaiting(-1);
         tomLayer.setNoExec();
 
+        System.out.print("Current decided size: " + decided.size());
         decided.clear();
 
-        Logger.println("(DeliveryThread.update) All finished from up to " + lastEid);
+        System.out.println("(DeliveryThread.update) All finished up to " + lastEid);
     }
 
     /**
@@ -157,98 +163,107 @@ public final class DeliveryThread extends Thread {
     @Override
     public void run() {
         while (true) {
-            /** THIS IS JOAO'S CODE, TO HANDLE STATE TRANSFER */
-            deliverLock();
-            while (tomLayer.isRetrievingState()) {
-                Logger.println("(DeliveryThread.run) Retrieving State.");
-                canDeliver.awaitUninterruptibly();
-            }
-            /******************************************************************/
-            try { //no exception should stop the batch delivery thread
-                // take a decided consensus
-                Consensus cons = decided.poll(1500, TimeUnit.MILLISECONDS);
-                if (cons == null) {
-                    deliverUnlock();
-                    continue; //go back to the start of the loop
-                }
-                Logger.println("(DeliveryThread.run) Consensus " + cons.getId() + " was delivered.");
+  			/** THIS IS JOAO'S CODE, TO HANDLE STATE TRANSFER */
+  			deliverLock();
+  			while (tomLayer.isRetrievingState()) {
+  				System.out.println("(DeliveryThread.run) Retrieving State.");
+  				canDeliver.awaitUninterruptibly();
+  				System.out.println("(DeliveryThread.run) canDeliver unleashed.");
+  			}
+  			try {
+  				ArrayList<Consensus> consensuses = new ArrayList<Consensus>();
+  				decidedLock.lock();
+  				if(decided.isEmpty()) {
+  					notEmptyQueue.await();
+  				}
+  				decided.drainTo(consensuses);
+  				decidedLock.unlock();
+  				if (consensuses.size() > 0) {
+  					TOMMessage[][] requests = new TOMMessage[consensuses.size()][];
+					int[] consensusIds = new int[requests.length];
+  					int count = 0;
+  					for (Consensus c : consensuses) {
+  						requests[count] = extractMessagesFromDecision(c);
+						consensusIds[count] = c.getId();
+  						// cons.firstMessageProposed contains the performance counters
+  						if (requests[count][0].equals(c.firstMessageProposed)) {
+  	                    	long time = requests[count][0].timestamp;
+  							requests[count][0] = c.firstMessageProposed;
+  	                        requests[count][0].timestamp = time;
+  						}
+  						
+  						count++;
+  					}
 
-                TOMMessage[] requests = extractMessagesFromDecision(cons);
-                
-                if (requests != null && requests.length > 0) {
-                    //cons.firstMessageProposed contains the performance counters
-                    if (requests[0].equals(cons.firstMessageProposed)) {
-                        requests[0] = cons.firstMessageProposed;
-                    }
+  					Consensus lastConsensus = consensuses.get(consensuses.size() - 1);
 
-                    //clean the ordered messages from the pending buffer
-                    tomLayer.clientsManager.requestsOrdered(requests);
+  					if (requests != null && requests.length > 0) {
+  						deliverMessages(consensusIds, tomLayer.getLCManager().getLastReg(), requests);
 
-                    deliverMessages(cons.getId(), tomLayer.getLCManager().getLastReg(), true, requests, cons.getDecision());
+  						// ******* EDUARDO BEGIN ***********//
+  						if (manager.hasUpdates()) {
+  							processReconfigMessages(lastConsensus.getId(),
+  									lastConsensus.getDecisionRound()
+  											.getNumber());
 
-                    //******* EDUARDO BEGIN **************//
-                    if (manager.hasUpdates()) {
-                        processReconfigMessages(cons.getId(), cons.getDecisionRound().getNumber());
-                        //set this consensus as the last executed
-                        tomLayer.setLastExec(cons.getId());
-                        //define that end of this execution
-                        tomLayer.setInExec(-1);
-                    }
-                    //******* EDUARDO END **************//
-                }
-                
-                /** THIS IS JOAO'S CODE, TO HANDLE CHECKPOINTS */
-                //logDecision(cons);
-                /********************************************************/
-                //define the last stable consensus... the stable consensus can
-                //be removed from the leaderManager and the executionManager
-                //TODO: Is this part necessary? If it is, can we put it inside setLastExec
-                if (cons.getId() > 2) {
-                    int stableConsensus = cons.getId() - 3;
+  							// set this consensus as the last executed
+  							tomLayer.setLastExec(lastConsensus.getId());
+  							// define that end of this execution
+  							tomLayer.setInExec(-1);
+  							// ******* EDUARDO END **************//
+  						}
+  					}
 
-                    tomLayer.lm.removeStableConsenusInfos(stableConsensus);
-                    tomLayer.execManager.removeExecution(stableConsensus);
-                }
+  					// define the last stable consensus... the stable consensus can
+  					// be removed from the leaderManager and the executionManager
+  					// TODO: Is this part necessary? If it is, can we put it
+  					// inside setLastExec
+  					int eid = lastConsensus.getId();
+  					if (eid > 2) {
+  						int stableConsensus = eid - 3;
 
-            } catch (Exception e) {
-                e.printStackTrace(System.err);
-            }
+  						tomLayer.lm.removeStableConsenusInfos(stableConsensus);
+  						tomLayer.execManager.removeExecution(stableConsensus);
+  					}
+  				}
+  			} catch (Exception e) {
+  				e.printStackTrace(System.err);
+  			}
 
-            /** THIS IS JOAO'S CODE, TO HANDLE STATE TRANSFER */
-            deliverUnlock();
-            /******************************************************************/
-        }
+  			/** THIS IS JOAO'S CODE, TO HANDLE STATE TRANSFER */
+  			deliverUnlock();
+  			/******************************************************************/
+  		}
     }
-
+    
     private TOMMessage[] extractMessagesFromDecision(Consensus cons) {
-        TOMMessage[] requests = (TOMMessage[]) cons.getDeserializedDecision();
+    	TOMMessage[] requests = (TOMMessage[]) cons.getDeserializedDecision();
+    	if (requests == null) {
+    		// there are no cached deserialized requests
+    		// this may happen if this batch proposal was not verified
+    		// TODO: this condition is possible?
 
-        if (requests == null) {
-            //there are no cached deserialized requests
-            //this may happen if this batch proposal was not verified
-            //TODO: this condition is possible?
+    		Logger.println("(DeliveryThread.run) interpreting and verifying batched requests.");
 
-            Logger.println("(DeliveryThread.run) interpreting and verifying batched requests.");
+    		// obtain an array of requests from the taken consensus
+    		BatchReader batchReader = new BatchReader(cons.getDecision(),
+    				manager.getStaticConf().getUseSignatures() == 1);
+    		requests = batchReader.deserialiseRequests(manager);
+    	} else {
+    		Logger.println("(DeliveryThread.run) using cached requests from the propose.");
+    	}
 
-            // obtain an array of requests from the taken consensus
-            BatchReader batchReader = new BatchReader(cons.getDecision(),
-                    manager.getStaticConf().getUseSignatures() == 1);
-            requests = batchReader.deserialiseRequests(manager);
-        } else {
-            Logger.println("(DeliveryThread.run) using cached requests from the propose.");
-        }
-
-        return requests;
+    	return requests;
     }
-
-    public void deliverUnordered(TOMMessage request, int regency) {
+    
+    protected void deliverUnordered(TOMMessage request, int regency) {
         MessageContext msgCtx = new MessageContext(System.currentTimeMillis(),
                 new byte[0], regency, -1, request.getSender(), null);
         receiver.receiveReadonlyMessage(request, msgCtx);
     }
 
-    private void deliverMessages(int consId, int regency, boolean fromConsensus, TOMMessage[] requests, byte[] decision) {
-        receiver.receiveMessages(consId, regency, fromConsensus, requests, decision);
+    private void deliverMessages(int consId[], int regency, TOMMessage[][] requests) {
+        receiver.receiveMessages(consId, regency, requests);
     }
 
     private void processReconfigMessages(int consId, int decisionRoundNumber) {
@@ -259,22 +274,10 @@ public final class DeliveryThread extends Thread {
             tomLayer.getCommunication().send(new int[]{dests[i].getSender()},
                     new TOMMessage(manager.getStaticConf().getProcessId(),
                     dests[i].getSession(), dests[i].getSequence(), response,
-                    manager.getCurrentViewId()));
+                    manager.getCurrentViewId(),TOMMessageType.RECONFIG));
         }
 
         tomLayer.getCommunication().updateServersConnections();
     }
 
-    private void logDecision(Consensus cons) {
-        if (manager.getStaticConf().getCheckpointPeriod() > 0) {
-            if ((cons.getId() > 0) && ((cons.getId() % manager.getStaticConf().getCheckpointPeriod()) == 0)) {
-                Logger.println("(DeliveryThread.run) Performing checkpoint for consensus " + cons.getId());
-                //byte[] state = receiver.getState();
-                //tomLayer.getStateManager().saveState(state, cons.getId(), cons.getDecisionRound().getNumber(), tomLayer.lm.getCurrentLeader()/*tomLayer.lm.getLeader(cons.getId(), cons.getDecisionRound().getNumber())*/);
-            } else {
-                Logger.println("(DeliveryThread.run) Storing message batch in the state log for consensus " + cons.getId());
-                //tomLayer.getStateManager().saveBatch(cons.getDecision(), cons.getId(), cons.getDecisionRound().getNumber(), tomLayer.lm.getCurrentLeader()/*tomLayer.lm.getLeader(cons.getId(), cons.getDecisionRound().getNumber())*/);
-            }
-        }
-    }
 }

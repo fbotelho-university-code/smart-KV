@@ -40,11 +40,12 @@ public class ReportGenerator {
 				//readLogAndCreateReport("./workloads/logs","./workloads/report/", "100 No arp - Ping between known hosts", "Hosts have static arp tables", 260,10000);			
 				//readLogAndCreateReport("./workloads/ewsdn.device.man","./workloads/report/", "100 No arp - Ping between known hosts", "Hosts have static arp tables", 310,10000);			
 				//readLogAndCreateReport("./workloads/report/300.known/usedLog.200.265","./workloads/report/", "Logs", "", 220, 265);
-				readLogAndCreateReport("./workloads/logs.objectsctrlc","./workloads/report/", "Test", "",0, 1000);
+				readLogAndCreateReport("/Users/fabiim/dev/open/floodlight/workloadResults/lastLog","/Users/fabiim/dev/open/floodlight/workloadResults/reports/micro/lsw/lsw1/", "LSW1 - Original with Broadcast and unicast address", "mininet@mininet-vm:~$ sudo mn --topo single,2 --controller=remote,ip=192.168.87.1,port=6633 --mac \n*** Creating network\n*** Adding controller\n*** Adding hosts:\nh1 h2 \n*** Adding switches:\ns1 \n*** Adding links:\n(h1, s1) (h2, s1) \n*** Configuring hosts\nh1 h2 \n*** Starting controller\n*** Starting 1 switches\ns1 \n*** Starting CLI:\nmininet> h1 ping -c1 h2 \nPING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.\n64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=989 ms\n\n--- 10.0.0.2 ping statistics ---\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\nrtt min/avg/max/mdev = 989.296/989.296/989.296/0.000 ms\nmininet> exit\n*** Stopping 2 hosts\nh1 h2 \n*** Stopping 1 switches\ns1 ...\n*** Stopping 1 controllers\nc0 \n*** Done\ncompleted in 719.269 seconds",0, 10000);
 				break; 
 			default: 
 				System.out.println("Unknown command... See command line arguments"); 
 		}
+		System.out.println("end");
 	}
 	
 	public static int BEGIN; 
@@ -64,27 +65,26 @@ public class ReportGenerator {
 	
 	private static void generateElementsFromInputFile() throws IOException{
 		createReadWriteThroughput();
-		System.out.println("Created Read/Write Throughput"); 
+
 		//createSize(); 
-		System.out.println("Created Sizes"); 
+
 		WorkLoadResults rs = new WorkLoadResults(fileInput);
 		
 		Stats[] st= {
-				//StatsCreator.readRequestSize(rs),
+				StatsCreator.readRequestSize(rs),
 				StatsCreator.readResponseSize(rs),
-				//StatsCreator.requestSize(rs),
-				//StatsCreator.responseSize(rs),
+				StatsCreator.requestSize(rs),
+				StatsCreator.responseSize(rs),
 				StatsCreator.writeRequestSize(rs),
-				//StatsCreator.writeResponseSize(rs),
+				StatsCreator.writeResponseSize(rs),
 		};
 		
 		int i = 0; 
 		for (Stats s : st){
-			System.out.println("One more s "); 
 			i++; 
 			GroupedElement gp = new GroupedElement(s.getTitle(), s.getDescription());
 			gp.addElement(new FrequencyGenerator("Frequency Table", "X -> Tamanho em bytes da mensagem", s.freq, true));
-			//addFrequencyGraphic(i, s, gp);
+			addFrequencyGraphic(i, s, gp);
 			
 		/*	List<Stats> perMethod = StatsCreator.getPerMethodStats(s);
 			gp.addElement(new FrequencyGenerator("Frequency of Methods used", "", StatsCreator.getMethodCallStat(s),false));
@@ -133,7 +133,7 @@ public class ReportGenerator {
 		SourceElement img2 = new Image("Events over time", "Events (green - link addition ; yellow - new topology ; blue - link removal) -happening over time ","read.write.throughput.requests.png");
 		
 		rootFile.addElement(new GroupedElement ("ReadWrite Throughput", "Requests sent to the databse", Lists.newArrayList(img, img2))); 
-	}	
+	}
 	
 	private static void createSize() throws IOException{
 		JFreeChart chart = GenerateGraphics.createSize(new WorkLoadResults(fileInput), false);
@@ -179,9 +179,9 @@ public class ReportGenerator {
 		}
 		copyFile(new File(input), new File(outputFolder + "usedLog." + BEGIN + "." + END ));
 		if (!outputFolder.endsWith("workloads/report/"))
-			copyFile(new File("./workloads/report/style.css"), new File(outputFolder + "style.css")); 
-		
-		rootFile = new Source(title2, description, outputFolder) ;
+			copyFile(new File("/Users/fabiim/dev/open/floodlight/workloadResults/reports/style.css"), new File(outputFolder + "style.css")); 
+		dsc = dsc.replaceAll("\n", "<br/>"); 
+		rootFile = new Source(title2, dsc, outputFolder) ;
 	}
 	
 	public static void copyFile(File sourceFile, File destFile) throws IOException {

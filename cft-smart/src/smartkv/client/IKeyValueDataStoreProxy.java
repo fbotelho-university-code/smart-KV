@@ -10,7 +10,7 @@ import java.util.Collection;
  *
  */
 
-public interface KeyValueDatastoreProxy extends TableDataStoreProxy{
+public interface IKeyValueDataStoreProxy extends IDataStoreProxy{
 	/**
 	 * Insert a mapping from the specified key to the specified value and returns the previously existent value (if any). 
 	 * <p>
@@ -124,4 +124,18 @@ public interface KeyValueDatastoreProxy extends TableDataStoreProxy{
 	 * @return
 	 */
 	DatastoreValue getByReference(String tableName, byte[] key);
+
+
+	/**
+	 * Replace based on a timestamp value. 
+	 * @param tableName
+	 * @param serialize
+	 * @param knownVersion
+	 * @param serialize2
+	 * @return
+	 */
+	public boolean replace(String tableName, byte[] serialize,
+			int knownVersion, byte[] serialize2);
+	
+	
 }

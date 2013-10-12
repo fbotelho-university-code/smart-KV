@@ -1,21 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- * 
- * This file is part of SMaRt.
- * 
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.tom.core.messages;
 
 import java.io.ByteArrayInputStream;
@@ -41,7 +38,10 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	//******* EDUARDO END **************//
 
 	private int session; // Sequence number defined by the client
-	private int sequence; // Sequence number defined by the client
+	// Sequence number defined by the client.
+	// There is a sequence number for ordered and anothre for unordered messages
+	private int sequence;
+	private int operationId; // Sequence number defined by the client
 
 	private byte[] content = null; // Content of the message
 
@@ -78,6 +78,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	public TOMMessage() {
 	}
 
+
 	/**
 	 * Creates a new instance of TOMMessage
 	 *
@@ -102,15 +103,30 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	 * @param type Type of the request
 	 */
 	public TOMMessage(int sender, int session, int sequence, byte[] content, int view, TOMMessageType type) {
+		this(sender, session, sequence, -1, content, view, type);
+	}
+
+	/**
+	 * Creates a new instance of TOMMessage. This one has an operationId parameter
+	 * used for FIFO executions
+	 * @param sender The client id
+	 * @param session The session id of the sender
+	 * @param sequence The sequence number created based on the message type
+	 * @param operationId The operation sequence number disregarding message type
+	 * @param content The command to be executed
+	 * @param view The view in which the message was sent
+	 * @param type Ordered or Unordered request
+	 */
+	public TOMMessage(int sender, int session, int sequence, int operationId, byte[] content, int view, TOMMessageType type) {
 		super(sender);
 		this.session = session;
 		this.sequence = sequence;
+		this.operationId = operationId;
 		this.viewID = view;
 		buildId();
 		this.content = content;
 		this.type = type;
 	}
-
 
 
 	/** THIS IS JOAO'S CODE, FOR DEBUGGING */
@@ -147,6 +163,10 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	 */
 	public int getSequence() {
 		return sequence;
+	}
+	
+	public int getOperationId() {
+		return operationId;
 	}
 
 	public int getViewID() {
@@ -192,7 +212,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 
 		TOMMessage mc = (TOMMessage) o;
 
-		return (mc.getSender() == sender) && (mc.getSequence() == sequence);
+		return (mc.getSender() == sender) && (mc.getSequence() == sequence) && (mc.getOperationId() == operationId);
 	}
 
 	@Override
@@ -200,6 +220,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		int hash = 5;
 		hash = 59 * hash + this.sequence;
 		hash = 59 * hash + this.getSender();
+		hash = 59 * hash + this.getOperationId();
 		return hash;
 	}
 
@@ -214,6 +235,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		out.writeInt(type.toInt());
 		out.writeInt(session);
 		out.writeInt(sequence);
+		out.writeInt(operationId);
 
 		if (content == null) {
 			out.writeInt(-1);
@@ -229,6 +251,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		type = TOMMessageType.fromInt(in.readInt());
 		session = in.readInt();
 		sequence = in.readInt();
+		operationId = in.readInt();
 
 		int toRead = in.readInt();
 		if (toRead != -1) {
@@ -274,7 +297,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		 try{
 			 m.rExternal(dis);
 		 }catch(Exception e) {
-			 System.out.println("deu merda "+e);
+			 System.out.println("error on bytesToMessage " + e);
 			 return null;
 		 }
 
@@ -305,6 +328,11 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		 if (this.getSequence() < tm.getSequence())
 			 return BEFORE;
 		 if (this.getSequence() > tm.getSequence())
+			 return AFTER;
+
+		 if(this.getOperationId() < tm.getOperationId())
+			 return BEFORE;
+		 if(this.getOperationId() > tm.getOperationId())
 			 return AFTER;
 
 		 return EQUAL;

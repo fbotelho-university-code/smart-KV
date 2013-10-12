@@ -1,3 +1,18 @@
+/**
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.demo.bftmap;
 
 import java.io.ByteArrayInputStream;
@@ -36,8 +51,9 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public Map<String,byte[]> get(String tableName) {
 		try {
 			out = new ByteArrayOutputStream();
-			new DataOutputStream(out).writeInt(BFTMapRequestType.GET);
-			new DataOutputStream(out).writeUTF(tableName);
+			DataOutputStream dos = new DataOutputStream(out); 
+			dos.writeInt(BFTMapRequestType.GET);
+			dos.writeUTF(tableName);
 
 			byte[] rep = KVProxy.invokeUnordered(out.toByteArray());
 			ByteArrayInputStream bis = new ByteArrayInputStream(rep) ;
@@ -58,9 +74,10 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public byte[] getEntry(String tableName,String key) {
 		try {
 			out = new ByteArrayOutputStream();
-			new DataOutputStream(out).writeInt(BFTMapRequestType.GET);
-			new DataOutputStream(out).writeUTF(tableName);
-			new DataOutputStream(out).writeUTF(key);
+			DataOutputStream dos = new DataOutputStream(out); 
+			dos.writeInt(BFTMapRequestType.GET);
+			dos.writeUTF(tableName);
+			dos.writeUTF(key);
 			byte[] rep = KVProxy.invokeUnordered(out.toByteArray());
 			return rep;
 		} catch (IOException ex) {
@@ -73,8 +90,9 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public Map<String,byte[]> put(String key, Map<String,byte[]> value) {
 		try {
 			out = new ByteArrayOutputStream();
-			new DataOutputStream(out).writeInt(BFTMapRequestType.TAB_CREATE);
-			new DataOutputStream(out).writeUTF(key);
+			DataOutputStream dos = new DataOutputStream(out); 
+			dos.writeInt(BFTMapRequestType.TAB_CREATE);
+			dos.writeUTF(key);
 			//ByteArrayOutputStream bos = new ByteArrayOutputStream() ;
 			ObjectOutputStream  out1 = new ObjectOutputStream(out) ;
 			out1.writeObject(value);
@@ -87,9 +105,11 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 			return table;
 
 		} catch (ClassNotFoundException ex) {
+			ex.printStackTrace();
 			Logger.getLogger(BFTMap.class.getName()).log(Level.SEVERE, null, ex);
 			return null;
 		} catch (IOException ex) {
+			ex.printStackTrace();
 			Logger.getLogger(BFTMap.class.getName()).log(Level.SEVERE, null, ex);
 			return null;
 		}
@@ -98,13 +118,15 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public byte[] putEntry(String tableName, String key, byte[] value) {
 		try {
 			out = new ByteArrayOutputStream();
-			new DataOutputStream(out).writeInt(BFTMapRequestType.PUT);
-			new DataOutputStream(out).writeUTF(tableName);
-			new DataOutputStream(out).writeUTF(key);
-			new DataOutputStream(out).writeUTF(new String(value));
+			DataOutputStream dos = new DataOutputStream(out); 
+			dos.writeInt(BFTMapRequestType.PUT);
+			dos.writeUTF(tableName);
+			dos.writeUTF(key);
+			dos.writeUTF(new String(value));
 			byte[] rep = KVProxy.invokeOrdered(out.toByteArray());
 			return rep;
 		} catch (IOException ex) {
+			ex.printStackTrace();
 			Logger.getLogger(BFTMap.class.getName()).log(Level.SEVERE, null, ex);
 			return null;
 		}
@@ -115,8 +137,9 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public Map<String,byte[]> remove(Object key) {
 		try {
 			out = new ByteArrayOutputStream();
-			new DataOutputStream(out).writeInt(BFTMapRequestType.TAB_REMOVE);
-			new DataOutputStream(out).writeUTF((String) key);
+			DataOutputStream dos = new DataOutputStream(out); 
+			dos.writeInt(BFTMapRequestType.TAB_REMOVE);
+			dos.writeUTF((String) key);
 			byte[] rep = KVProxy.invokeOrdered(out.toByteArray());
 
 			ByteArrayInputStream bis = new ByteArrayInputStream(rep) ;
@@ -137,9 +160,10 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public byte[] removeEntry(String tableName,String key)  {
 		try {
 			out = new ByteArrayOutputStream();
-			new DataOutputStream(out).writeInt(BFTMapRequestType.REMOVE);
-			new DataOutputStream(out).writeUTF((String) tableName);
-			new DataOutputStream(out).writeUTF((String) key);
+			DataOutputStream dos = new DataOutputStream(out); 
+			dos.writeInt(BFTMapRequestType.REMOVE);
+			dos.writeUTF((String) tableName);
+			dos.writeUTF((String) key);
 			byte[] rep = KVProxy.invokeOrdered(out.toByteArray());
 			return rep;
 		} catch (IOException ex) {
@@ -166,8 +190,9 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public int size1(String tableName) {
 		try {
 			out = new ByteArrayOutputStream();
-			new DataOutputStream(out).writeInt(BFTMapRequestType.SIZE);
-			new DataOutputStream(out).writeUTF(tableName);
+			DataOutputStream dos = new DataOutputStream(out); 
+			dos.writeInt(BFTMapRequestType.SIZE);
+			dos.writeUTF(tableName);
 			byte[] rep;
 			rep = KVProxy.invokeUnordered(out.toByteArray());
 			ByteArrayInputStream in = new ByteArrayInputStream(rep);
@@ -182,15 +207,16 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public boolean containsKey(String key) {
 		try {
 			out = new ByteArrayOutputStream();
-			new DataOutputStream(out).writeInt(BFTMapRequestType.TAB_CREATE_CHECK);
-			new DataOutputStream(out).writeUTF((String) key);
+			DataOutputStream dos = new DataOutputStream(out); 
+			dos.writeInt(BFTMapRequestType.TAB_CREATE_CHECK);
+			dos.writeUTF((String) key);
 			byte[] rep;
 			rep = KVProxy.invokeUnordered(out.toByteArray());
 			ByteArrayInputStream in = new ByteArrayInputStream(rep);
 			boolean res = new DataInputStream(in).readBoolean();
 			return res;
-
 		} catch (IOException ex) {
+			ex.printStackTrace();
 			Logger.getLogger(BFTMap.class.getName()).log(Level.SEVERE, null, ex);
 			return false;
 		}
@@ -200,9 +226,10 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public boolean containsKey1(String tableName, String key) {
 		try {
 			out = new ByteArrayOutputStream();
-			new DataOutputStream(out).writeInt(BFTMapRequestType.CHECK);
-			new DataOutputStream(out).writeUTF((String) tableName);
-			new DataOutputStream(out).writeUTF((String) key);
+			DataOutputStream dos = new DataOutputStream(out); 
+			dos.writeInt(BFTMapRequestType.CHECK);
+			dos.writeUTF((String) tableName);
+			dos.writeUTF((String) key);
 			byte[] rep;
 			rep = KVProxy.invokeUnordered(out.toByteArray());
 			ByteArrayInputStream in = new ByteArrayInputStream(rep);
@@ -253,7 +280,4 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-
 }
-
-

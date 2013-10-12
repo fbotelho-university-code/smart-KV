@@ -1,7 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/**
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.reconfiguration;
 
 import java.net.InetSocketAddress;
@@ -26,9 +37,9 @@ public class ServerViewManager extends ViewManager {
     public static final int CHANGE_F = 2;
     
     private int quorumF; // f replicas
-    private int quorumCFT_Strong; // QUORUM PARA CASO CFT // QUORUM UTILIZADO PARA SABER O MINIMO DE RESPOSTAS NECESSARIAS PARA CHEGAR A UMA CONCLUSÃO
-    private int quorum2F; // f * 2 replicas // QUORUM UTILIZADO PARA SABER O MINIMO DE RESPOSTAS NECESSARIAS PARA CHEGAR A UMA CONCLUSÃO
+    private int quorum2F; // f * 2 replicas
     private int quorumStrong; // ((n + f) / 2) replicas
+    private int quorumCFT_Strong; // Quorum para caso CFT
     private int quorumFastDecide; // ((n + 3 * f) / 2) replicas
     private int[] otherProcesses;
     private int[] lastJoinStet;
@@ -63,7 +74,7 @@ public class ServerViewManager extends ViewManager {
         InetSocketAddress[] addresses = new InetSocketAddress[nextV.length];
         for (int i = 0; i < nextV.length; i++) {
             addresses[i] = getStaticConf().getRemoteAddress(nextV[i]);
-        }// QUORUM UTILIZADO PARA SABER O MINIMO DE RESPOSTAS NECESSARIAS PARA CHEGAR A UMA CONCLUSÃO
+        }
 
         return addresses;
     }
@@ -91,7 +102,7 @@ public class ServerViewManager extends ViewManager {
 
     public void enqueueUpdate(TOMMessage up) {
         ReconfigureRequest request = (ReconfigureRequest) TOMUtil.getObject(up.getContent());
-        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getSender()),
+        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(),
                 request.toString().getBytes(), request.getSignature())) {
             if (request.getSender() == getStaticConf().getTTPId()) {
                 this.updates.add(up);
@@ -294,7 +305,6 @@ public class ServerViewManager extends ViewManager {
             }
 
             this.quorumF = this.currentView.getF();
-            //this.quorumCFT_F1 = this.quorumF; //isto é assim porque do outro lado é maior--> logo maior que f = f+1
             this.quorum2F = 2 * this.quorumF;
             this.quorumStrong = (int) Math.ceil((this.currentView.getN() + this.quorumF) / 2);
             this.quorumCFT_Strong = (int) Math.ceil(this.currentView.getN() / 2);
@@ -308,27 +318,31 @@ public class ServerViewManager extends ViewManager {
         }
     }
 
+    /*public int getQuorum2F() {
+        return quorum2F;
+    }*/
+    
     /**
-     * This is the certificate quorum ncessary for some parts of the protocol.
-     * Byzantine case = 2f+1
-     * CFT case = f+1
-     * @return
-     */
-    public int getCertificateQuorum() {
-    	//return quorum2F;
-    	return getStaticConf().isBFT() ? quorum2F : quorumF;
+      * This is the certificate quorum ncessary for some parts of the protocol.
+      * Byzantine case = 2f+1
+      * CFT case = f+1
+      * @return
+      */
+     public int getCertificateQuorum() {
+     	//return quorum2F;
+     	return getStaticConf().isBFT() ? quorum2F : quorumF;
     }
-
+     
     public int getQuorumF() {
         return quorumF;
     }
-/*
+
     public int getQuorumFastDecide() {
         return quorumFastDecide;
-    }*/
+    }
 
     public int getQuorumStrong() {
-    	return getStaticConf().isBFT() ? quorumStrong : quorumCFT_Strong;
+        return getStaticConf().isBFT() ? quorumStrong : quorumCFT_Strong;
         //return quorumStrong;
     }
 }

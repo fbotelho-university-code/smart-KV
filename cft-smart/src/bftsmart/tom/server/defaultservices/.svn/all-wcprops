@@ -1,41 +1,59 @@
 K 25
 svn:wc:ra_dav:version-url
 V 63
-/svn/!svn/ver/267/trunk/src/bftsmart/tom/server/defaultservices
+/svn/!svn/ver/333/trunk/src/bftsmart/tom/server/defaultservices
+END
+FIFOExecutableRecoverable.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/!svn/ver/333/trunk/src/bftsmart/tom/server/defaultservices/FIFOExecutableRecoverable.java
 END
 DefaultSingleRecoverable.java
 K 25
 svn:wc:ra_dav:version-url
 V 93
-/svn/!svn/ver/267/trunk/src/bftsmart/tom/server/defaultservices/DefaultSingleRecoverable.java
+/svn/!svn/ver/333/trunk/src/bftsmart/tom/server/defaultservices/DefaultSingleRecoverable.java
 END
 StateLog.java
 K 25
 svn:wc:ra_dav:version-url
 V 77
-/svn/!svn/ver/267/trunk/src/bftsmart/tom/server/defaultservices/StateLog.java
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/StateLog.java
 END
 DefaultReplier.java
 K 25
 svn:wc:ra_dav:version-url
 V 83
-/svn/!svn/ver/259/trunk/src/bftsmart/tom/server/defaultservices/DefaultReplier.java
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/DefaultReplier.java
 END
 DefaultApplicationState.java
 K 25
 svn:wc:ra_dav:version-url
 V 92
-/svn/!svn/ver/259/trunk/src/bftsmart/tom/server/defaultservices/DefaultApplicationState.java
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/DefaultApplicationState.java
+END
+FileRecoverer.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/FileRecoverer.java
 END
 CommandsInfo.java
 K 25
 svn:wc:ra_dav:version-url
 V 81
-/svn/!svn/ver/259/trunk/src/bftsmart/tom/server/defaultservices/CommandsInfo.java
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/CommandsInfo.java
+END
+DiskStateLog.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/DiskStateLog.java
 END
 DefaultRecoverable.java
 K 25
 svn:wc:ra_dav:version-url
 V 87
-/svn/!svn/ver/259/trunk/src/bftsmart/tom/server/defaultservices/DefaultRecoverable.java
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/DefaultRecoverable.java
 END

@@ -11,3 +11,7 @@ Cenas/*
 try/*
 .metadata/*
 */keys/*
+cft-smart/config
+cft-smart/bin
+*.svn-base
+cft-smart/src/bftsmart/statemanagement/strategy/.svn

@@ -1,7 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/**
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.tom.server.defaultservices;
 
 import java.security.MessageDigest;
@@ -9,8 +20,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
-import bftsmart.statemanagment.ApplicationState;
+import bftsmart.reconfiguration.util.TOMConfiguration;
+import bftsmart.statemanagement.ApplicationState;
+import bftsmart.statemanagement.StateManager;
+import bftsmart.statemanagement.strategy.StandardStateManager;
 import bftsmart.tom.MessageContext;
+import bftsmart.tom.ReplicaContext;
 import bftsmart.tom.server.BatchExecutable;
 import bftsmart.tom.server.Recoverable;
 import bftsmart.tom.util.Logger;
@@ -21,15 +36,19 @@ import bftsmart.tom.util.Logger;
  */
 public abstract class DefaultRecoverable implements Recoverable, BatchExecutable {
     
-    public static final int CHECKPOINT_PERIOD = 50;
+	private int checkpointPeriod;
 
     private ReentrantLock logLock = new ReentrantLock();
     private ReentrantLock hashLock = new ReentrantLock();
     private ReentrantLock stateLock = new ReentrantLock();
     
+    private TOMConfiguration config;
+
     private MessageDigest md;
         
     private StateLog log;
+    
+    private StateManager stateManager;
     
     public DefaultRecoverable() {
 
@@ -38,8 +57,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         } catch (NoSuchAlgorithmException ex) {
             java.util.logging.Logger.getLogger(DefaultRecoverable.class.getName()).log(Level.SEVERE, null, ex);
         }
-        byte[] state = getSnapshot();
-        log = new StateLog(CHECKPOINT_PERIOD, state, computeHash(state));
     }
     
     public byte[][] executeBatch(byte[][] commands, MessageContext[] msgCtxs) {
@@ -47,17 +64,17 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         int eid = msgCtxs[0].getConsensusId();
             
         stateLock.lock();
-        byte[][] replies = executeBatch2(commands, msgCtxs);
+        byte[][] replies = appExecuteBatch(commands, msgCtxs);
         stateLock.unlock();
         
-        if ((eid > 0) && ((eid % CHECKPOINT_PERIOD) == 0)) {
-            Logger.println("(DefaultRecoverable.executeBatch) Performing checkpoint for consensus " + eid);
+        if ((eid > 0) && ((eid % checkpointPeriod) == 0)) {
+            Logger.println("(DurabilityCoordinator.executeBatch) Performing checkpoint for consensus " + eid);
             stateLock.lock();
             byte[] snapshot = getSnapshot();
             stateLock.unlock();
             saveState(snapshot, eid, 0, 0/*tomLayer.lm.getLeader(cons.getId(), cons.getDecisionRound().getNumber())*/);
         } else {
-            Logger.println("(DefaultRecoverable.executeBatch) Storing message batch in the state log for consensus " + eid);
+            Logger.println("(DurabilityCoordinator.executeBatch) Storing message batch in the state log for consensus " + eid);
             saveCommands(commands, eid, 0, 0/*tomLayer.lm.getLeader(cons.getId(), cons.getDecisionRound().getNumber())*/);
         }
 
@@ -77,7 +94,8 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
     private StateLog getLog() {
         return log;
     }
-    public void saveState(byte[] snapshot, int lastEid, int decisionRound, int leader) {
+    
+    private void saveState(byte[] snapshot, int lastEid, int decisionRound, int leader) {
 
         StateLog thisLog = getLog();
 
@@ -92,9 +110,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         thisLog.setLastCheckpointLeader(leader);
 
         logLock.unlock();
-        /*System.out.println("fiz checkpoint");
-        System.out.println("tamanho do snapshot: " + snapshot.length);
-        System.out.println("tamanho do log: " + thisLog.getMessageBatches().length);*/
         Logger.println("(TOMLayer.saveState) Finished saving state of EID " + lastEid + ", round " + decisionRound + " and leader " + leader);
     }
 
@@ -110,8 +125,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 
         logLock.unlock();
         
-        /*System.out.println("guardei comandos");
-        System.out.println("tamanho do log: " + thisLog.getNumBatches());*/
         Logger.println("(TOMLayer.saveBatch) Finished saving batch of EID " + lastEid + ", round " + decisionRound + " and leader " + leader);
     }
 
@@ -131,8 +144,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             
             DefaultApplicationState state = (DefaultApplicationState) recvState;
             
-            System.out.println("(DefaultRecoverable.setState) last eid in state: " + state.getLastEid());
-            
             getLog().update(state);
             
             int lastCheckpointEid = state.getLastCheckpointEid();
@@ -140,7 +151,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             lastEid = state.getLastEid();
             //lastEid = lastCheckpointEid + (state.getMessageBatches() != null ? state.getMessageBatches().length : 0);
 
-            bftsmart.tom.util.Logger.println("(DefaultRecoverable.setState) I'm going to update myself from EID "
+            bftsmart.tom.util.Logger.println("(DurabilityCoordinator.setState) I'm going to update myself from EID "
                     + lastCheckpointEid + " to EID " + lastEid);
 
             stateLock.lock();
@@ -149,44 +160,20 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             // INUTIL??????
             //tomLayer.lm.addLeaderInfo(lastCheckpointEid, state.getLastCheckpointRound(),
             //        state.getLastCheckpointLeader());
-
+            
             for (int eid = lastCheckpointEid + 1; eid <= lastEid; eid++) {
                 try {
                     
-                    bftsmart.tom.util.Logger.println("(DefaultRecoverable.setState) interpreting and verifying batched requests for eid " + eid);
-                    System.out.println("(DefaultRecoverable.setState) interpreting and verifying batched requests for eid " + eid);
-                    if (state.getMessageBatch(eid) == null) System.out.println("(DefaultRecoverable.setState) " + eid + " NULO!!!");
+                    bftsmart.tom.util.Logger.println("(DurabilityCoordinator.setState) interpreting and verifying batched requests for eid " + eid);
+                    if (state.getMessageBatch(eid) == null) System.out.println("(DurabilityCoordinator.setState) " + eid + " NULO!!!");
                     
                     byte[][] commands = state.getMessageBatch(eid).commands; // take a batch
 
                     if (commands == null || commands.length <= 0) continue;
-                    // INUTIL??????
-                    //tomLayer.lm.addLeaderInfo(eid, state.getMessageBatch(eid).round,
-                    //        state.getMessageBatch(eid).leader);
-
-                    //TROCAR POR EXECUTE E ARRAY DE MENSAGENS!!!!!!
-                    //TOMMessage[] requests = new BatchReader(batch,
-                    //        manager.getStaticConf().getUseSignatures() == 1).deserialiseRequests(manager);
-                    executeBatch2(commands, null);
-                    
-                    // ISTO E UM PROB A RESOLVER!!!!!!!!!!!!
-                    //tomLayer.clientsManager.requestsOrdered(requests);
-
-                    // INUTIL??????
-                    //deliverMessages(eid, tomLayer.getLCManager().getLastReg(), false, requests, batch);
-
-                    // IST E UM PROB A RESOLVER!!!!
-                    //******* EDUARDO BEGIN **************//
-                    /*if (manager.hasUpdates()) {
-                        processReconfigMessages(lastCheckpointEid, state.getLastCheckpointRound());
-                    }*/
-                    //******* EDUARDO END **************//
+                    appExecuteBatch(commands, null);
                 } catch (Exception e) {
                     e.printStackTrace(System.err);
                     if (e instanceof ArrayIndexOutOfBoundsException) {
-
-
-
                         System.out.println("Eid do ultimo checkpoint: " + state.getLastCheckpointEid());
                         System.out.println("Eid do ultimo consenso: " + state.getLastEid());
                         System.out.println("numero de mensagens supostamente no batch: " + (state.getLastEid() - state.getLastCheckpointEid() + 1));
@@ -202,7 +189,31 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         return lastEid;
     }
         
+    @Override
+    public void setReplicaContext(ReplicaContext replicaContext) {
+    	this.config = replicaContext.getStaticConfiguration();
+    	if(log == null) {
+    		checkpointPeriod = config.getCheckpointPeriod();
+            byte[] state = getSnapshot();
+            if(config.isToLog() && config.logToDisk()) {
+            	int replicaId = config.getProcessId();
+            	boolean isToLog = config.isToLog();
+            	boolean syncLog = config.isToWriteSyncLog();
+            	boolean syncCkp = config.isToWriteSyncCkp();
+            	log = new DiskStateLog(replicaId, state, computeHash(state), isToLog, syncLog, syncCkp);
+            } else
+            	log = new StateLog(checkpointPeriod, state, computeHash(state));
+    	}
+    }
+    
+    @Override
+    public StateManager getStateManager() {
+    	if(stateManager == null)
+    		stateManager = new StandardStateManager();
+    	return stateManager;
+    }
+    
     public abstract void installSnapshot(byte[] state);
     public abstract byte[] getSnapshot();
-    public abstract byte[][] executeBatch2(byte[][] commands, MessageContext[] msgCtxs);
+    public abstract byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs);
 }

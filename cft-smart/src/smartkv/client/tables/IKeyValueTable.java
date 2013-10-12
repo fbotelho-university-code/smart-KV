@@ -7,7 +7,7 @@ package smartkv.client.tables;
  * @author fabiim
  *
  */
-public interface KeyValueTable<K, V> extends Table<K,V>{
+public interface IKeyValueTable<K, V> extends ITable<K,V>{
 
 	
 	/**
@@ -53,10 +53,23 @@ public interface KeyValueTable<K, V> extends Table<K,V>{
 	 */
 	public <V1> V1 getValueByReference(K key);
 
+
+	/**
+	 * @param key
+	 * @param knownVersion
+	 * @param newValue
+	 * @return
+	 */
+	boolean replace(K key, int knownVersion, V newValue);
+	
+	public <V1> VersionedValue<V1> getValueByReferenceWithTimestamp(K key); 
+
 	/**
 	 * @param key
 	 * @return
 	 */
-	public TimestampedValue<V> getWithTimeStamp(K key); 
+	public VersionedValue<V> getWithTimeStamp(K key);
 	
+	public VersionedValue<V> putAndGetPreviousWithTimestamp(K key, V value);
+	public VersionedValue<V> putIfAbsentWithTimestamp(K key, V value); 
 }

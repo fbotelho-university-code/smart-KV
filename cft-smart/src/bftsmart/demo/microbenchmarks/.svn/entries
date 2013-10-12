@@ -1,14 +1,14 @@
 10
 
 dir
-283
+334
 http://bft-smart.googlecode.com/svn/trunk/src/bftsmart/demo/microbenchmarks
 http://bft-smart.googlecode.com/svn
 
 
 
-2012-05-15T10:11:53.677766Z
-261
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-1ab914b20606d74a5370e890d4c52b8c
-2012-05-15T10:11:53.677766Z
-261
+2013-10-03T14:04:07.000000Z
+524d52428f32097f2ef99bd07a86747a
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -58,7 +58,7 @@ marcelmhs@gmail.com
 
 
 
-7282
+7419
 
 LatencyServer.java
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-29c9a88f0c126c817b9f33b97ae3abba
-2012-05-15T10:11:53.677766Z
-261
+2013-10-03T14:04:07.000000Z
+ee6bac4e0bdfdaf6e2d0dc17ede7664f
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -92,7 +92,7 @@ marcelmhs@gmail.com
 
 
 
-6184
+6360
 
 ThroughputLatencyClient.java
 file
@@ -100,10 +100,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-abf87ccccce30c8193055dc7af981d1c
-2012-05-15T10:11:53.677766Z
-261
+2013-10-03T14:04:07.000000Z
+4df78b22f310e696ccac8197ecf3c8dd
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -126,7 +126,7 @@ marcelmhs@gmail.com
 
 
 
-7126
+6979
 
 LatencyClient.java
 file
@@ -134,10 +134,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-d761c099ab7debf2cbe569db482a6b94
-2012-05-15T10:11:53.677766Z
-261
+2013-10-03T14:04:07.000000Z
+0cc364d9a3743a68b208b2b733de1a73
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -160,5 +160,5 @@ marcelmhs@gmail.com
 
 
 
-3581
+3433
 

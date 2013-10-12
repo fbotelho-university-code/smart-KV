@@ -419,14 +419,14 @@ public class StateManager {
             if (sendState) Logger.println("(TOMLayer.SMRequestDeliver) I should be the one sending the state");
 
             //TransferableState thisState = getLog().getTransferableState(msg.getEid(), sendState);
-            ApplicationState thisState = dt.getRecoverer().getState(msg.getEid(), sendState);
+            ApplicationState thisState = (ApplicationState) dt.getRecoverer().getState(msg.getEid(), sendState);
                     
             //lockState.unlock();
 
             if (thisState == null) {
                 Logger.println("(TOMLayer.SMRequestDeliver) I don't have the state requested :-(");
 
-              thisState = dt.getRecoverer().getState(-1, sendState);
+              thisState = (ApplicationState) dt.getRecoverer().getState(-1, sendState);
             }
 
             int[] targets = { msg.getSender() };
@@ -536,7 +536,7 @@ public class StateManager {
 
                         //Logger.debug = true;
                         
-                        dt.update(recvState);
+                        dt.update((bftsmart.statemanagement.ApplicationState) recvState);
                         
                         //Deal with stopped messages that may come from synchronization phase
                         if (!appStateOnly && execManager.stopped()) {

@@ -1,15 +1,15 @@
 10
 
 dir
-283
+334
 http://bft-smart.googlecode.com/svn/trunk/src/bftsmart/tom/server/defaultservices
 http://bft-smart.googlecode.com/svn
 
 
 
-2012-09-18T17:23:25.224507Z
-267
-marcelmhs@gmail.com
+2013-08-05T13:40:31.574385Z
+333
+marcelmhs
 
 
 
@@ -26,17 +26,51 @@ marcelmhs@gmail.com
 
 da8fb158-e395-11de-a668-6fd11605f5ce
 
+FIFOExecutableRecoverable.java
+file
+
+
+
+
+2013-10-03T14:04:07.000000Z
+66ba8cbf7248861e9eb356452c712047
+2013-08-05T13:40:31.574385Z
+333
+marcelmhs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9738
+
 DefaultSingleRecoverable.java
 file
 
 
 
 
-2012-11-08T15:15:44.000000Z
-b85823027b65c00e15e0306c1b493b27
-2012-09-18T17:23:25.224507Z
-267
-marcelmhs@gmail.com
+2013-10-03T14:04:07.000000Z
+5d30bc2769fdc1d66da9e2bcbf7faa6c
+2013-08-05T13:40:31.574385Z
+333
+marcelmhs
 
 
 
@@ -58,7 +92,7 @@ marcelmhs@gmail.com
 
 
 
-8595
+7976
 
 StateLog.java
 file
@@ -66,10 +100,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-9a84bfcda34f0c3570716560eefbe4fc
-2012-09-18T17:23:25.224507Z
-267
+2013-10-03T14:04:07.000000Z
+d80c76cef078fb84cbd7e15605fcb784
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 has-props
 
@@ -92,7 +126,7 @@ has-props
 
 
 
-9314
+9219
 
 DefaultReplier.java
 file
@@ -100,10 +134,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-d99ab542093eb20711abb391ea00574e
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:07.000000Z
+c07184869a2eb5f0a9abfc7ece5ac546
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -126,7 +160,10 @@ marcelmhs@gmail.com
 
 
 
-609
+1254
+
+durability
+dir
 
 DefaultApplicationState.java
 file
@@ -134,10 +171,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-26e0abf8701ebce720fe631af80a32e2
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:07.000000Z
+af8711d720545b31f7e5b67f2b8c64b6
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 has-props
 
@@ -160,7 +197,41 @@ has-props
 
 
 
-9761
+10172
+
+FileRecoverer.java
+file
+
+
+
+
+2013-10-03T14:04:07.000000Z
+0071a4c639065c6e77de09cf78c7b5e9
+2013-06-27T17:39:57.407612Z
+326
+marcelmhs@gmail.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11662
 
 CommandsInfo.java
 file
@@ -168,10 +239,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-6fe54d3fcbf71eec9a203faf7691ba90
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:07.000000Z
+aeefb533a05e27dc8cfc360a1ac81b39
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -194,7 +265,41 @@ marcelmhs@gmail.com
 
 
 
-4107
+3863
+
+DiskStateLog.java
+file
+
+
+
+
+2013-10-03T14:04:07.000000Z
+aee4f748190ff2024e8d403115486a35
+2013-06-27T17:39:57.407612Z
+326
+marcelmhs@gmail.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7749
 
 DefaultRecoverable.java
 file
@@ -202,10 +307,10 @@ file
 
 
 
-2012-11-08T15:15:44.000000Z
-8871fd76acbba09159ac6a4a84222a5b
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:07.000000Z
+d11641231218c889a6f9cee6a63ed1b6
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -228,5 +333,5 @@ marcelmhs@gmail.com
 
 
 
-8429
+8422
 

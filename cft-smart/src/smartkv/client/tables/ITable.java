@@ -14,7 +14,7 @@ import smartkv.client.workloads.RequestLogEntry;
  * @author fabiim
  *
  */
-public interface Table<K,V> {
+public interface ITable<K,V> {
 	public void clear() ;
 	public boolean containsKey(K key);
 	

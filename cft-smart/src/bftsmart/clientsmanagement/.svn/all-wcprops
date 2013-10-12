@@ -1,23 +1,23 @@
 K 25
 svn:wc:ra_dav:version-url
 V 54
-/svn/!svn/ver/265/trunk/src/bftsmart/clientsmanagement
+/svn/!svn/ver/326/trunk/src/bftsmart/clientsmanagement
 END
 RequestList.java
 K 25
 svn:wc:ra_dav:version-url
 V 71
-/svn/!svn/ver/265/trunk/src/bftsmart/clientsmanagement/RequestList.java
+/svn/!svn/ver/326/trunk/src/bftsmart/clientsmanagement/RequestList.java
 END
 ClientData.java
 K 25
 svn:wc:ra_dav:version-url
 V 70
-/svn/!svn/ver/259/trunk/src/bftsmart/clientsmanagement/ClientData.java
+/svn/!svn/ver/326/trunk/src/bftsmart/clientsmanagement/ClientData.java
 END
 ClientsManager.java
 K 25
 svn:wc:ra_dav:version-url
 V 74
-/svn/!svn/ver/259/trunk/src/bftsmart/clientsmanagement/ClientsManager.java
+/svn/!svn/ver/326/trunk/src/bftsmart/clientsmanagement/ClientsManager.java
 END

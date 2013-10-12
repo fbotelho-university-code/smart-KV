@@ -1,26 +1,25 @@
-package bftsmart.tom.server.defaultservices;
-
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- * 
- * This file is part of SMaRt.
- * 
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+package bftsmart.tom.server.defaultservices;
 
 import java.util.Arrays;
 
-import bftsmart.statemanagment.ApplicationState;
+import bftsmart.tom.server.defaultservices.CommandsInfo;
+
+import bftsmart.statemanagement.ApplicationState;
 
 /**
  * This classe represents a state tranfered from a replica to another. The state associated with the last
@@ -42,6 +41,7 @@ public class DefaultApplicationState implements ApplicationState {
     private int lastCheckpointEid; // Execution ID for the last checkpoint
     private int lastCheckpointRound; // Round for the last checkpoint
     private int lastCheckpointLeader; // Leader for the last checkpoint
+    private byte[] logHash;
 
     /**
      * Constructs a TansferableState
@@ -60,6 +60,11 @@ public class DefaultApplicationState implements ApplicationState {
         this.state = state; // State associated with the last checkpoint
         this.stateHash = stateHash;
         this.hasState = true;
+    }
+
+    public DefaultApplicationState(CommandsInfo[] messageBatches, byte[] logHash, int lastCheckpointEid, int lastCheckpointRound, int lastCheckpointLeader, int lastEid, byte[] state, byte[] stateHash) {
+    	this(messageBatches, lastCheckpointEid, lastCheckpointRound, lastCheckpointLeader, lastEid, state, stateHash);
+    	this.logHash = logHash;
     }
 
     /**
@@ -134,6 +139,10 @@ public class DefaultApplicationState implements ApplicationState {
      */
     public CommandsInfo[] getMessageBatches() {
         return messageBatches;
+    }
+
+    public void setMessageBatches(CommandsInfo[] messageBatches) {
+    	this.messageBatches = messageBatches;
     }
 
     /**

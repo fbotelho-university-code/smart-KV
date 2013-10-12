@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import smartkv.client.TableDataStoreProxy;
+import smartkv.client.IDataStoreProxy;
 import smartkv.client.util.JavaSerializer;
 import smartkv.client.util.Serializer;
 
@@ -17,13 +17,13 @@ import smartkv.client.util.Serializer;
  * @author fabiim
  *
  */
-public abstract  class AbstractTable<K, V> implements Table<K, V> {
+public abstract  class AbstractTable<K, V> implements ITable<K, V> {
 
-	TableDataStoreProxy datastore;
+	IDataStoreProxy datastore;
 	String tableName; 
 	Serializer<K> keySerializer;
 	
-	protected AbstractTable(TableDataStoreProxy proxy, String tableName, Serializer<K> keySerializer, String reference){
+	protected AbstractTable(IDataStoreProxy proxy, String tableName, Serializer<K> keySerializer, String reference){
 		this.tableName = tableName;
 		this.datastore = proxy;
 		this.keySerializer = keySerializer;
@@ -37,7 +37,7 @@ public abstract  class AbstractTable<K, V> implements Table<K, V> {
 		}
 	}
 	
-	protected AbstractTable(TableDataStoreProxy proxy, String tableName, Serializer<K> keySerializer){
+	protected AbstractTable(IDataStoreProxy proxy, String tableName, Serializer<K> keySerializer){
 		this(proxy, tableName, keySerializer, null);
 	}
 	
@@ -122,5 +122,24 @@ public abstract  class AbstractTable<K, V> implements Table<K, V> {
 	 */
 	protected byte[] serializeKey(K key) {
 		return keySerializer.serialize(key);
+	}
+
+	/**
+	 * @param key
+	 * @param timestamp
+	 * @return
+	 */
+	public V getCached(K key, long timestamp) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * @param key
+	 * @return
+	 */
+	public V getCached(K key) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -20,9 +20,8 @@ public class ListOperations extends SourceElement{
 		begin_list();
 		Iterator<ActivityEvent>  it = rs.getActivityLog().iterator();
 		ActivityEvent current = it.hasNext() ? it.next(): null; 
-		
 		for (RequestLogEntry en  : rs.getRequestLog()){
-			if ( (current != null) && current.getStart() == en.serial ){
+			if ( (current != null) && current.getTimeStart() <=  en.getTimeStarted() ){
 				render_element(current); 
 				current = it.hasNext() ?  it.next(): null;  
 			}
@@ -60,7 +59,8 @@ public class ListOperations extends SourceElement{
 				(!data.getKey().equals("-")?   ", key = " + data.getKey() :"") +
 				(!data.getValue().equals("-") ?  ", value = " + data.getValue() : "") +
 				(!data.getExistentValue().equals("-")? ", existentValue = " + data.getExistentValue() : "") +
-				 ", request size = " + en.getSizeOfRequest() + ", response size =" + en.getSizeOfResponse() 
+				(!data.getReturnedValue().equals("-")? ", return = " + data.getReturnedValue() : "") +
+				 ", <b>request size = " + en.getSizeOfRequest() + ", response size =" + en.getSizeOfResponse() + "</b>" 
 			);
 		}
 		else{

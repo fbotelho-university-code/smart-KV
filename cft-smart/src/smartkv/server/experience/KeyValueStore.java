@@ -198,6 +198,28 @@ public class KeyValueStore implements Serializable{
 		 return Value.SingletonValues.FALSE;
 	}
 	
+	/**
+	 * @param tableName
+	 * @param k
+	 * @param expectedVersion
+	 * @param newValue
+	 * @return
+	 */
+	public Value atomic_replace_value_in_table(String tableName, Key k,
+			int expectedVersion, Value newValue) {
+		 if (datastore.containsKey(tableName)){
+			 Map<Key,Value> table = datastore.get(tableName);
+			 if (table.containsKey(k)){
+				 VersionedValue v = (VersionedValue) table.get(k);
+				 if (v.getVersion() == (expectedVersion)){
+					 table.put(k, newValue);
+					 return Value.TRUE;  
+				 }
+			 }
+		 }
+		 return Value.SingletonValues.FALSE;
+	}
+	
 	public Value atomic_remove_if_value(String tableName, Key key , Value expectedValue){
 		 if (datastore.containsKey(tableName)){
 			 Map<Key,Value> table = datastore.get(tableName);
@@ -274,4 +296,6 @@ public class KeyValueStore implements Serializable{
 	public int size_of_table(String tableName) {
 		return datastore.containsKey(tableName) ? datastore.get(tableName).size() : 0;  
 	}
+
+	
 }

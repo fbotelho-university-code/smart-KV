@@ -1,14 +1,14 @@
 10
 
 dir
-283
+334
 http://bft-smart.googlecode.com/svn/trunk/src/bftsmart/clientsmanagement
 http://bft-smart.googlecode.com/svn
 
 
 
-2012-07-18T16:48:50.698553Z
-265
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2012-11-08T15:15:45.000000Z
-361f1cc5b2d08b6287221d62ace699b1
-2012-07-18T16:48:50.698553Z
-265
+2013-10-03T14:04:08.000000Z
+15a46e9ed62f47ef7633fa788cb02eea
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-3312
+3164
 
 ClientData.java
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2012-11-08T15:15:45.000000Z
-b67ebce9bdbc5e3187986b7958caf0bb
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:08.000000Z
+292b39b1d58504d9db556aa3eaa8f9e0
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 has-props
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-4890
+4747
 
 ClientsManager.java
 file
@@ -100,10 +100,10 @@ file
 
 
 
-2012-11-08T15:15:45.000000Z
-4c5e33f6046dfb00ff1ad7811f2aa693
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:08.000000Z
+d83e0540e7e00032c49b93059e371d95
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 has-props
 
@@ -126,5 +126,5 @@ has-props
 
 
 
-12737
+12587
 

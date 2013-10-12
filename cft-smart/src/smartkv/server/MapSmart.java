@@ -151,6 +151,8 @@ public class MapSmart extends DefaultSingleRecoverable{
 				return this.columns.get_column_by_reference(dis);
 			case GET_VALUE_IN_TABLE_BY_REFERENCE:
 				return ds.get_referenced_value(dis);
+			case REPLACE_WITH_TIMESTAMP:
+				return ds.atomic_replace_value_in_table_with_timestamp(dis); 
 			default:
 				break;
 			 }

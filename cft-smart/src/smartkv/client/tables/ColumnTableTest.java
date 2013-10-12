@@ -107,7 +107,7 @@ public class ColumnTableTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.tables.KeyValueTable#remove(java.lang.Object, java.lang.Object)}.
+	 * Test method for {@link smartkv.client.tables.IKeyValueTable#remove(java.lang.Object, java.lang.Object)}.
 	 */
 	@Test
 	public void testRemoveKV() {
@@ -119,7 +119,7 @@ public class ColumnTableTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.tables.KeyValueTable#putIfAbsent(java.lang.Object, java.lang.Object)}.
+	 * Test method for {@link smartkv.client.tables.IKeyValueTable#putIfAbsent(java.lang.Object, java.lang.Object)}.
 	 */
 	@Test
 	public void testPutIfAbsent() {
@@ -132,7 +132,7 @@ public class ColumnTableTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.tables.KeyValueTable#remove(java.lang.Object)}.
+	 * Test method for {@link smartkv.client.tables.IKeyValueTable#remove(java.lang.Object)}.
 	 */
 	@Test
 	public void testRemoveK() {
@@ -143,7 +143,7 @@ public class ColumnTableTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.tables.KeyValueTable#put(java.lang.Object, java.lang.Object)}.
+	 * Test method for {@link smartkv.client.tables.IKeyValueTable#put(java.lang.Object, java.lang.Object)}.
 	 */
 	@Test
 	public void testPut() {
@@ -157,7 +157,7 @@ public class ColumnTableTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.tables.KeyValueTable#get(java.lang.Object)}.
+	 * Test method for {@link smartkv.client.tables.IKeyValueTable#get(java.lang.Object)}.
 	 */
 	@Test
 	public void testGet() {
@@ -171,7 +171,7 @@ public class ColumnTableTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.tables.Table#clear()}.
+	 * Test method for {@link smartkv.client.tables.ITable#clear()}.
 	 */
 	@Test
 	public void testClear() {
@@ -181,7 +181,7 @@ public class ColumnTableTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.tables.Table#containsKey(java.lang.Object)}.
+	 * Test method for {@link smartkv.client.tables.ITable#containsKey(java.lang.Object)}.
 	 */
 	@Test
 	public void testContainsKey() {
@@ -193,7 +193,7 @@ public class ColumnTableTest {
 
 
 	/**
-	 * Test method for {@link smartkv.client.tables.Table#isEmpty()}.
+	 * Test method for {@link smartkv.client.tables.ITable#isEmpty()}.
 	 */
 	@Test
 	public void testIsEmpty() {
@@ -206,7 +206,7 @@ public class ColumnTableTest {
 
 
 	/**
-	 * Test method for {@link smartkv.client.tables.Table#size()}.
+	 * Test method for {@link smartkv.client.tables.ITable#size()}.
 	 */
 	@Test
 	public void testSize() {
@@ -218,7 +218,7 @@ public class ColumnTableTest {
 
 
 	/**
-	 * Test method for {@link smartkv.client.tables.Table#getAndIncrement(java.lang.String)}.
+	 * Test method for {@link smartkv.client.tables.ITable#getAndIncrement(java.lang.String)}.
 	 */
 	@Test
 	public void testGetAndIncrement() {

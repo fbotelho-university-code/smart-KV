@@ -80,7 +80,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 	
 	/**
-	 * Test method for {@link smartkv.client.KeyValueDatastoreProxy#put(java.lang.String, byte[], byte[])}.
+	 * Test method for {@link smartkv.client.IKeyValueDataStoreProxy#put(java.lang.String, byte[], byte[])}.
 	 */
 	@Test
 	public void testPut() {
@@ -108,12 +108,11 @@ public class KeyValueColumnDatastoreProxyTest {
 		return false; 
 	}
 	
-	
 	private  void assertMapAreEqual(final TreeMap<?,byte[]> a , final TreeMap<?,byte[]> b){
 		assertTrue(areByteArrayValueMapEqual(a,b));
 	}
 	/**
-	 * Test method for {@link smartkv.client.KeyValueDatastoreProxy#insert(java.lang.String, byte[], byte[])}.
+	 * Test method for {@link smartkv.client.IKeyValueDataStoreProxy#insert(java.lang.String, byte[], byte[])}.
 	 */
 	@Test
 	public void testInsert() {
@@ -129,7 +128,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.KeyValueDatastoreProxy#get(java.lang.String, byte[])}.
+	 * Test method for {@link smartkv.client.IKeyValueDataStoreProxy#get(java.lang.String, byte[])}.
 	 */
 	@Test
 	public void testGet() {
@@ -149,7 +148,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	
 
 	/**
-	 * Test method for {@link smartkv.client.KeyValueDatastoreProxy#remove(java.lang.String, byte[])}.
+	 * Test method for {@link smartkv.client.IKeyValueDataStoreProxy#remove(java.lang.String, byte[])}.
 	 */
 	@Test
 	public void testRemoveStringByteArray() {
@@ -162,7 +161,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 	
 	/**
-	 * Test method for {@link smartkv.client.KeyValueDatastoreProxy#replace(java.lang.String, byte[], byte[], byte[])}.
+	 * Test method for {@link smartkv.client.IKeyValueDataStoreProxy#replace(java.lang.String, byte[], byte[], byte[])}.
 	 */
 	@Test
 	public void testReplace() {
@@ -179,7 +178,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.KeyValueDatastoreProxy#remove(java.lang.String, byte[], byte[])}.
+	 * Test method for {@link smartkv.client.IKeyValueDataStoreProxy#remove(java.lang.String, byte[], byte[])}.
 	 */
 	@Test
 	public void testRemoveStringByteArrayByteArray() {
@@ -196,7 +195,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.KeyValueDatastoreProxy#putIfAbsent(java.lang.String, byte[], byte[])}.
+	 * Test method for {@link smartkv.client.IKeyValueDataStoreProxy#putIfAbsent(java.lang.String, byte[], byte[])}.
 	 */
 	@Test
 	public void testPutIfAbsent() {
@@ -210,7 +209,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#clear()}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#clear()}.
 	 */
 	@Test
 	public void testClear() {
@@ -224,7 +223,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#createTable(java.lang.String)}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#createTable(java.lang.String)}.
 	 */
 	@Test
 	public void testCreateTableString() {
@@ -233,7 +232,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#createTable(java.lang.String, long)}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#createTable(java.lang.String, long)}.
 	 */
 	@Test
 	public void testCreateTableStringLong() {
@@ -251,7 +250,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#removeTable(java.lang.String)}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#removeTable(java.lang.String)}.
 	 */
 	@Test
 	public void testRemoveTable() {
@@ -262,7 +261,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#containsTable(java.lang.String)}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#containsTable(java.lang.String)}.
 	 */
 	@Test
 	public void testContainsTable() {
@@ -272,7 +271,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#clear(java.lang.String)}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#clear(java.lang.String)}.
 	 */
 	@Test
 	public void testClearString() {
@@ -285,7 +284,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#isEmpty(java.lang.String)}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#isEmpty(java.lang.String)}.
 	 */
 	@Test
 	public void testIsEmpty() {
@@ -298,7 +297,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#size(java.lang.String)}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#size(java.lang.String)}.
 	 */
 	@Test
 	public void testSize() {
@@ -317,7 +316,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#containsKey(java.lang.String, byte[])}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#containsKey(java.lang.String, byte[])}.
 	 */
 	@Test
 	public void testContainsKey() {
@@ -329,7 +328,7 @@ public class KeyValueColumnDatastoreProxyTest {
 	}
 	
 	/**
-	 * Test method for {@link smartkv.client.TableDataStoreProxy#getAndIncrement(java.lang.String, java.lang.String)}.
+	 * Test method for {@link smartkv.client.IDataStoreProxy#getAndIncrement(java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testGetAndIncrement() {

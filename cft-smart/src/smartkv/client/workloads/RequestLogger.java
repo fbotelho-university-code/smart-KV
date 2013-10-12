@@ -12,29 +12,26 @@ import java.util.Queue;
 import com.google.common.collect.Lists;
 
 
-
+//XXX - most confusing code ever!:|  
 public class RequestLogger {
-	public static final String SERIALIZED = ".objects";
-	public static final String TXT = ".string";
+
 	static private RequestLogger instance = null;
+	static public String OUT_PATH  = "/Users/fabiim/dev/open/floodlight/workloadResults/lastLog";
 	
 	public synchronized static void startRequestLogger(String path){
 		if (instance == null){
 			instance = new RequestLogger(path);
-			
 			// Activate server to receive events from mininet 			
 			new Thread( new WebService(instance)).start();
-			
 			System.out.println("Starting request logger"); 
-
-				System.out.println("Adding shutdown hook");
-				//Add shutdown hook to save file 
+			System.out.println("Adding shutdown hook");
+			//Add shutdown hook to save file 
 			Runtime.getRuntime().addShutdownHook( 
 		    		new Thread(
 		    			new Runnable() {
 		    				public void run() {
 		    					try {
-									instance.end("ctrlc");
+									instance.end(OUT_PATH);
 								} catch (Throwable e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
@@ -47,19 +44,18 @@ public class RequestLogger {
 		}
 	}
 	
-	
 	public synchronized static RequestLogger getRequestLogger(){
+		if (instance == null){
+			startRequestLogger(RequestLogger.OUT_PATH);
+		}
 		return instance; 
 	}
 	
-	
 	private Queue<RequestLogEntry> operations;
 	private Queue<ActivityEvent> events; 
-	private String fileOutput; 
 	
 	
 	private RequestLogger(String fileOutput){
-		this.fileOutput = fileOutput; 
 		operations = new LinkedList<RequestLogEntry>();
 		events = new LinkedList<ActivityEvent>(); 
 	}
@@ -94,15 +90,15 @@ public class RequestLogger {
 		return Lists.newArrayList(operations);
 	}
 	
-	public synchronized void end(String s){
-		writeRequestToFileSerialized(s);
+	public synchronized void end(String path){
+		writeRequestToFileSerialized(path);
 		//writeRequestToFileInText() // NEVER TESTED!
 	}
 	
 	private synchronized void  writeRequestToFileSerialized(String ss){
 		try {
 			
-			String s = this.fileOutput + SERIALIZED + ss; 
+			String s = ss; 
 			System.out.println("File outputed: " + s);
 			File f = new File(s);
 			if (f.exists()){
@@ -124,30 +120,7 @@ public class RequestLogger {
 		} 
 	}
 	
-	
-	/*private void writeRequestToFileInText() {
-		//TODO not writing events 
-		StringBuilder s = new StringBuilder();
-		Joiner joiner = Joiner.on(';').useForNull("null");
 
-		for (RequestLogEntry r : operations){
-			joiner.join(r.getType(), 
-					r.getTimeStarted(), r.getTimeEnded(),
-					r.getSizeOfRequest(), r.getSizeOfResponse()); 	
-		}
-		try {
-			DataOutputStream out = new DataOutputStream(new FileOutputStream(fileOuput + TXT,true));
-			out.writeUTF(s.toString());
-			out.close(); 
-		} catch (FileNotFoundException e) {
-			System.err.println("Could not save the requests to file");
-			e.printStackTrace(System.err); 
-		} catch (IOException e) {
-			System.err.println("Could not save the requests to file");
-			e.printStackTrace(System.err); 
-		}  
-	}*/
-	
 	
 }
 

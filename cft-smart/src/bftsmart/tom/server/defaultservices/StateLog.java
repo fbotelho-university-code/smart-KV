@@ -1,21 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- * 
- * This file is part of SMaRt.
- * 
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.tom.server.defaultservices;
 
 import bftsmart.tom.server.defaultservices.CommandsInfo;
@@ -45,6 +42,7 @@ public class StateLog {
      * @param k The chekpoint period
      */
     public StateLog(int k, byte[] initialState, byte[] initialHash) {
+
         this.messageBatches = new CommandsInfo[k - 1];
         this.lastCheckpointEid = -1;
         this.lastCheckpointRound = -1;
@@ -71,6 +69,15 @@ public class StateLog {
         this.lastEid = -1;
     }
 
+    public StateLog(byte[] initialState, byte[] initialHash) {
+        this.lastCheckpointEid = -1;
+        this.lastCheckpointRound = -1;
+        this.lastCheckpointLeader = -1;
+        this.state = initialState;
+        this.stateHash = initialHash;
+        this.lastEid = -1;
+	}
+    
     /**
      * Sets the state associated with the last checkpoint, and updates the execution ID associated with it
      * @param state State associated with the last checkpoint
@@ -91,7 +98,6 @@ public class StateLog {
      * @param lastCheckpointEid Execution ID for the last checkpoint
      */
     public void setLastCheckpointEid(int lastCheckpointEid) {
-
         this.lastCheckpointEid = lastCheckpointEid;
     }
 
@@ -228,9 +234,7 @@ public class StateLog {
 
         int lastEid = -1;
 
-        if (/*lastCheckpointEid > -1 && */eid >= lastCheckpointEid && eid <= this.lastEid) {
-
-             //if  (eid <= this.lastEid) {
+        if (eid >= lastCheckpointEid && eid <= this.lastEid) {
             int size = eid - lastCheckpointEid ;
 
             if (size > 0) {
@@ -240,11 +244,6 @@ public class StateLog {
                     batches[i] = messageBatches[i];
             }
             lastEid = eid;
-             //} else if (this.lastEid > -1) {
-
-             //       batches = messageBatches;
-             //       lastEid = this.lastEid;
-             //}
             return new DefaultApplicationState(batches, lastCheckpointEid, lastCheckpointRound, lastCheckpointLeader, lastEid, (setState ? state : null), stateHash);
 
         }

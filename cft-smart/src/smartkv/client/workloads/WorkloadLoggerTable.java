@@ -8,15 +8,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import smartkv.client.AbstractDatastoreProxy;
-import smartkv.client.ColumnProxy;
 import smartkv.client.KeyValueProxy;
-import smartkv.client.tables.AnnotatedColumnObject;
-import smartkv.client.tables.ColumnObject;
-import smartkv.client.tables.ColumnTable;
-import smartkv.client.tables.ColumnTable_;
-import smartkv.client.tables.KeyValueTable;
+import smartkv.client.tables.IKeyValueTable;
 import smartkv.client.tables.KeyValueTable_;
+import smartkv.client.tables.VersionedValue;
 import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
 import smartkv.server.RequestType;
@@ -103,10 +98,10 @@ import smartkv.server.RequestType;
  * This is not meant to be used when performance is the issue. 
  */
 
-public class WorkloadLoggerTable<K,V>  implements KeyValueTable<K,V>{
+public class WorkloadLoggerTable<K,V>  implements IKeyValueTable<K,V>{
 
 	
-	KeyValueTable<K,V> table;
+	IKeyValueTable<K,V> table;
 	RequestLogEntry entry;
 	
 	String tableName;
@@ -115,35 +110,41 @@ public class WorkloadLoggerTable<K,V>  implements KeyValueTable<K,V>{
 	/**
 	 * Construct a TableLogger with default (unsafe) serializers for keys and values.
 	 */
-	public WorkloadLoggerTable(String tableName, RequestLogger logger){
-		this(tableName, logger, UnsafeJavaSerializer.<K>getInstance(), UnsafeJavaSerializer.<V>getInstance()); 
+	public WorkloadLoggerTable(int cid,String tableName, RequestLogger logger){
+		this(cid, tableName, logger, UnsafeJavaSerializer.<K>getInstance(), UnsafeJavaSerializer.<V>getInstance()); 
 	}
+	
 	
 	protected WorkloadLoggerTable(){
 		
 	}
 	
-	public WorkloadLoggerTable(String tableName, RequestLogger logger, Serializer<K> keys, Serializer<V> values){
-		this(tableName, logger, keys, values, null, null); 
+	
+	public WorkloadLoggerTable(int cid, String tableName, RequestLogger logger, Serializer<K> keys, Serializer<V> values){
+		this(cid, tableName, logger, keys, values, null, null); 
 	}
 	
-	public WorkloadLoggerTable(String tableName, RequestLogger logger, Serializer<K> keys, Serializer<V> values, String tablereference, Serializer<Object> referenceSerializer){
+	
+	public WorkloadLoggerTable(int cid, String tableName, RequestLogger logger, Serializer<K> keys, Serializer<V> values, String tablereference, Serializer<Object> referenceSerializer){
 		this.entry = new RequestLogEntry(); 
 		this.logger = logger;
 		this.tableName = tableName; 
-		this.table = KeyValueTable_.getTable( new KeyValueProxy(0){
+		this.table = KeyValueTable_.getTable( new KeyValueProxy(cid){
 			@Override
 			protected byte[] invokeRequestWithRawReturn(RequestType type, byte[] request) {
 				entry.setTimeStarted(System.currentTimeMillis());
 				entry.setSizeOfRequest(request.length);
 				entry.setType(type);
-				byte[] result =  invokeRequestWithRawReturn(type, request);
+				byte[] result =  super.invokeRequestWithRawReturn(type, request);
 				entry.setTimeEnded(System.currentTimeMillis());
+				entry.setSizeOfResponse( result != null ? result.length : 0);
 				return result; 
 			}; 
 		}
 		, tableName, keys,values, tablereference, referenceSerializer); 
 	}
+	
+
 	
 	@Override
 	public synchronized boolean remove(K key, V value) {
@@ -332,6 +333,35 @@ public class WorkloadLoggerTable<K,V>  implements KeyValueTable<K,V>{
 				setValue(newValue!= null ?newValue.toString() : "null"). 
 				setReturnedValue(val.toString()).build(entry)); 
 		return val; 
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.KeyValueTable#getWithTimeStamp(java.lang.Object)
+	 */
+	@Override
+	public VersionedValue<V> getWithTimeStamp(K key) {
+		VersionedValue<V> value =  table.getWithTimeStamp(key); 
+		logEntry(new RequestLogWithDataInformation.Builder(). 
+				setTable(tableName).
+				setKey(key != null ? key.toString() : "null").
+				setReturnedValue(value != null ? value.toString() : null).build(entry));
+		return value; 
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.KeyValueTable#replace(java.lang.Object, int, java.lang.Object)
+	 */
+	@Override
+	public boolean replace(K key, int knownVersion, V newValue) {
+		Boolean val = table.replace(key, knownVersion, newValue); 
+		logEntry(new RequestLogWithDataInformation.Builder(). 
+				setTable(tableName).
+				setKey(key != null ? key.toString() : "null").
+				setExistentValue("" + knownVersion).
+				setValue(newValue!= null ?newValue.toString() : "null"). 
+				setReturnedValue(val.toString()).build(entry)); 
+		return val; 
+	
 	}
 
 

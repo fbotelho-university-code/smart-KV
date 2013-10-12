@@ -1,21 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- *
- * This file is part of SMaRt.
- *
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.paxosatwar.roles;
 
 
@@ -71,7 +68,6 @@ public final class Acceptor {
      */
     public Acceptor(ServerCommunicationSystem communication, MessageFactory factory,
                                 LeaderModule lm, ServerViewManager manager) {
-    	
         this.communication = communication;
         this.me = manager.getStaticConf().getProcessId();
         this.factory = factory;
@@ -79,12 +75,11 @@ public final class Acceptor {
         this.reconfManager = manager;
         try {
             this.cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
-        } catch (NoSuchAlgorithmException ex) {
+        } catch (NoSuchAlgorithmException ex){
             ex.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        }catch(  NoSuchPaddingException ex) {
+        	ex.printStackTrace();
+        }
     }
 
     public MessageFactory getFactory() {
@@ -196,34 +191,39 @@ public final class Acceptor {
                 if(round.getExecution().getLearner().firstMessageProposed == null) {
                     round.getExecution().getLearner().firstMessageProposed = round.deserializedPropValue[0];
                 }
-                round.getExecution().getLearner().firstMessageProposed.consensusStartTime = consensusStartTime;
-                round.getExecution().getLearner().firstMessageProposed.proposeReceivedTime = System.nanoTime();
-
-                if(reconfManager.getStaticConf().isBFT()){ // cortar a fase weak no lider
-	                Logger.println("(Acceptor.executePropose) sending weak for " + eid);
-	
-	                round.setWeak(me, round.propValueHash);
-	                round.getExecution().getLearner().firstMessageProposed.weakSentTime = System.nanoTime();
-	                communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
-	                        factory.createWeak(eid, round.getNumber(), round.propValueHash));
-	
-	                Logger.println("(Acceptor.executePropose) weak sent for " + eid);
-	                
-                	computeWeak(eid, round, round.propValueHash);
-                	Logger.println("(Acceptor.executePropose) weak computed for " + eid);
-                }else{
-                	round.setStrong(me, round.propValueHash);
-                	round.getExecution().getLearner().firstMessageProposed.weakSentTime = System.nanoTime();
-                	/**** LEADER CHANGE CODE! ******/
-	                round.getExecution().setQuorumWeaks(round.propValueHash);
-	                /*****************************************/
-                	communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
-	                        factory.createStrong(eid, round.getNumber(), round.propValueHash));
-               	 	computeStrong(eid, round, round.propValueHash);
+                if (round.getExecution().getLearner().firstMessageProposed.consensusStartTime == 0) {
+                    round.getExecution().getLearner().firstMessageProposed.consensusStartTime = consensusStartTime;
+                    
                 }
+                round.getExecution().getLearner().firstMessageProposed.proposeReceivedTime = System.nanoTime();
                 
-                
+                if(reconfManager.getStaticConf().isBFT()){
+                    Logger.println("(Acceptor.executePropose) sending weak for " + eid);
 
+                    round.setWeak(me, round.propValueHash);
+                    round.getExecution().getLearner().firstMessageProposed.weakSentTime = System.nanoTime();
+                    communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
+                            factory.createWeak(eid, round.getNumber(), round.propValueHash));
+
+                    Logger.println("(Acceptor.executePropose) weak sent for " + eid);
+                
+                    computeWeak(eid, round, round.propValueHash);
+                
+                    Logger.println("(Acceptor.executePropose) weak computed for " + eid);
+                
+                } else {
+                 	round.setStrong(me, round.propValueHash);
+                 	round.getExecution().getLearner().firstMessageProposed.weakSentTime = System.nanoTime();
+                        round.getExecution().getLearner().firstMessageProposed.strongSentTime = System.nanoTime();
+                 	/**** LEADER CHANGE CODE! ******/
+ 	                round.getExecution().setQuorumWeaks(round.propValueHash);
+ 	                /*****************************************/
+
+                        communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
+ 	                    factory.createStrong(eid, round.getNumber(), round.propValueHash));
+
+                        computeStrong(eid, round, round.propValueHash);
+                }
                 executionManager.processOutOfContext(round.getExecution());
             }
         }
@@ -240,9 +240,8 @@ public final class Acceptor {
         int eid = round.getExecution().getId();
         Logger.println("(Acceptor.weakAcceptReceived) WEAK from " + a + " for consensus " + eid);
         round.setWeak(a, value);
+
         computeWeak(eid, round, value);
-       
-        		
     }
 
     /**
@@ -259,67 +258,65 @@ public final class Acceptor {
 
         Logger.println("(Acceptor.computeWeak) I have " + weakAccepted +
                 " weaks for " + eid + "," + round.getNumber());
+
+        if (weakAccepted > reconfManager.getQuorumStrong() && Arrays.equals(value, round.propValueHash)) { // Can a send a STRONG message?
+            if (!round.isStrongSetted(me)) {
+                Logger.println("(Acceptor.computeWeak) sending STRONG for " + eid);
+
+                /**** LEADER CHANGE CODE! ******/
+                round.getExecution().setQuorumWeaks(value);
+                /*****************************************/
+                
+                round.setStrong(me, value);
+
+                if(round.getExecution().getLearner().firstMessageProposed!=null) {
+
+                        round.getExecution().getLearner().firstMessageProposed.strongSentTime = System.nanoTime();
+                }
+                
+                PaxosMessage pm = factory.createStrong(eid, round.getNumber(), value);
+
+                // override default authentication and create a vector of MACs
+                ByteArrayOutputStream bOut = new ByteArrayOutputStream(248);
+                try {
+                    new ObjectOutputStream(bOut).writeObject(pm);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                byte[] data = bOut.toByteArray();
         
-	        if (weakAccepted > reconfManager.getQuorumStrong() && Arrays.equals(value, round.propValueHash)) { // Can a send a STRONG message?
-	            if (!round.isStrongSetted(me)) {
-	                Logger.println("(Acceptor.computeWeak) sending STRONG for " + eid);
-	
-	                /**** LEADER CHANGE CODE! ******/
-	                round.getExecution().setQuorumWeaks(value);
-	                /*****************************************/
-	                
-	                round.setStrong(me, value);
-	
-	                if(round.getExecution().getLearner().firstMessageProposed==null) {
-	
-	                        round.getExecution().getLearner().firstMessageProposed.strongSentTime = System.nanoTime();
-	                }
-	                
-	                PaxosMessage pm = factory.createStrong(eid, round.getNumber(), value);
-	
-	                // override default authentication and create a vector of MACs
-	                ByteArrayOutputStream bOut = new ByteArrayOutputStream(248);
-	                try {
-	                    new ObjectOutputStream(bOut).writeObject(pm);
-	                } catch (IOException ex) {
-	                    ex.printStackTrace();
-	                }
-	
-	                byte[] data = bOut.toByteArray();
-	        
-	                byte[] hash = tomLayer.computeHash(data);
-	                
-	                int[] processes = this.reconfManager.getCurrentViewAcceptors();
-	                
-	                HashMap<Integer, byte[]> macVector = new HashMap<Integer, byte[]>();
-	                
-	                for (int id : processes) {
-	                    try {
-	                        SecretKeySpec key = new SecretKeySpec(communication.getServersConn().getSecretKey(id).getEncoded(), "DES");
-	                        this.cipher.init(Cipher.ENCRYPT_MODE, key);
-	                        macVector.put(id, this.cipher.doFinal(hash));
-	                    } catch (IllegalBlockSizeException ex) {
-	                        ex.printStackTrace();
-	                    } catch (InvalidKeyException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (BadPaddingException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-	                }
-	                
-	                pm.setMACVector(macVector);
-	                
-	                int[] targets = this.reconfManager.getCurrentViewOtherAcceptors();
-	                communication.getServersConn().send(targets, pm, true);
-	                
-	                //communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
-	                        //factory.createStrong(eid, round.getNumber(), value));
-	                round.addToProof(pm);
-	                computeStrong(eid, round, value);
-	            }
-	        }
+                byte[] hash = tomLayer.computeHash(data);
+                
+                int[] processes = this.reconfManager.getCurrentViewAcceptors();
+                
+                HashMap<Integer, byte[]> macVector = new HashMap<Integer, byte[]>();
+                
+                for (int id : processes) {
+                    try {
+                        SecretKeySpec key = new SecretKeySpec(communication.getServersConn().getSecretKey(id).getEncoded(), "DES");
+                        this.cipher.init(Cipher.ENCRYPT_MODE, key);
+                        macVector.put(id, this.cipher.doFinal(hash));
+                    } catch (IllegalBlockSizeException ex){
+                    	ex.printStackTrace();
+                    }catch (BadPaddingException ex){
+                    	ex.printStackTrace();
+                    }catch(InvalidKeyException ex) {
+                    	ex.printStackTrace();
+                    }
+                }
+                
+                pm.setMACVector(macVector);
+                
+                int[] targets = this.reconfManager.getCurrentViewOtherAcceptors();
+                communication.getServersConn().send(targets, pm, true);
+                
+                //communication.send(this.reconfManager.getCurrentViewOtherAcceptors(),
+                        //factory.createStrong(eid, round.getNumber(), value));
+                round.addToProof(pm);
+                computeStrong(eid, round, value);
+            }
+        }
     }
 
     /**
@@ -345,17 +342,13 @@ public final class Acceptor {
      * @param value Value sent in the message
      */
     private void computeStrong(int eid, Round round, byte[] value) {
-    	/*if(this.leaderModule.getCurrentLeader() == this.me && (eid == 1000 || eid == 5000) )
-    		System.exit(0);*/
-    	
         Logger.println("(Acceptor.computeStrong) I have " + round.countStrong(value) +
                 " strongs for " + eid + "," + round.getNumber());
-        int quorum = reconfManager.getStaticConf().isBFT() ? reconfManager.getCertificateQuorum() : reconfManager.getQuorumStrong();
-       
-	        if (round.countStrong(value) > reconfManager.getCertificateQuorum() && !round.getExecution().isDecided()) {
-	            Logger.println("(Acceptor.computeStrong) Deciding " + eid);
-	            decide(round, value);
-	        }
+
+        if (round.countStrong(value) > reconfManager.getCertificateQuorum() && !round.getExecution().isDecided()) {
+            Logger.println("(Acceptor.computeStrong) Deciding " + eid);
+            decide(round, value);
+        }
     }
 
     /**

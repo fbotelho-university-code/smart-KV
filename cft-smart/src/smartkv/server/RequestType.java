@@ -30,7 +30,8 @@ public enum RequestType implements Serializable{
 	VALUES(SuperType.READ, "Read all values in a table"),
 	CREATE_POINTER_TABLE(SuperType.WRITE, "Creates a table that has, as values, keys to be used in another table"), 
 	GET_VALUE_IN_TABLE_BY_REFERENCE(SuperType.READ, "Get value by reference (pointer table) "),
-	GET_COLUMN_BY_REFERENCE(SuperType.READ, "Get Column value by reference");
+	GET_COLUMN_BY_REFERENCE(SuperType.READ, "Get Column value by reference"), 
+	REPLACE_WITH_TIMESTAMP(SuperType.WRITE, "Replace a value based on the previous known timestamp");
 	
 	public enum SuperType{
 		WRITE,

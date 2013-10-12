@@ -1,21 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- * 
- * This file is part of SMaRt.
- * 
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.tom.core;
 
 import java.io.ByteArrayOutputStream;
@@ -50,8 +47,8 @@ import bftsmart.paxosatwar.messages.PaxosMessage;
 import bftsmart.paxosatwar.roles.Acceptor;
 import bftsmart.reconfiguration.ServerViewManager;
 import bftsmart.reconfiguration.StatusReply;
-import bftsmart.statemanagment.StateManager;
-import bftsmart.tom.TOMReceiver;
+import bftsmart.statemanagement.StateManager;
+import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.core.timer.ForwardedMessage;
@@ -110,7 +107,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     /*************************************************************/
 
     private PrivateKey prk;
-    
     public ServerViewManager reconfManager;
     
     /**
@@ -123,7 +119,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      * @param recManager Reconfiguration Manager
      */
     public TOMLayer(ExecutionManager manager,
-            TOMReceiver receiver,
+            ServiceReplica receiver,
             Recoverable recoverer,
             LeaderModule lm,
             Acceptor a,
@@ -131,19 +127,19 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             ServerViewManager recManager) {
 
         super("TOM Layer");
-
+        
         this.execManager = manager;
         this.lm = lm;
         this.acceptor = a;
         this.communication = cs;
         this.reconfManager = recManager;
-
+               
         //do not create a timer manager if the timeout is 0
         if (reconfManager.getStaticConf().getRequestTimeout() == 0){
             this.requestsTimer = null;
         }
         else this.requestsTimer = new RequestsTimer(this, communication, reconfManager); // Create requests timers manager (a thread)
-
+       
         this.clientsManager = new ClientsManager(reconfManager, requestsTimer); // Create clients manager
 
         try {
@@ -159,17 +155,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         }
 
         this.prk = reconfManager.getStaticConf().getRSAPrivateKey();
-
-        /** THIS IS JOAO'S CODE, RELATED TO LEADER CHANGE */
         this.lcManager = new LCManager(this,recManager, md);
-        /*************************************************************/
-
         this.dt = new DeliveryThread(this, receiver, recoverer, this.reconfManager); // Create delivery thread
         this.dt.start();
-
-        /** THIS IS JOAO'S CODE, TO HANDLE CHECKPOINTS AND STATE TRANSFER */
-        this.stateManager = new StateManager(this.reconfManager, this, dt, lcManager, execManager);
-        /*******************************************************/
+        this.stateManager = recoverer.getStateManager();
+        stateManager.init(this, dt);
     }
 
     ReentrantLock hashLock = new ReentrantLock();
@@ -200,12 +190,12 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     /**
      * Verifies the signature of a signed object
      * @param so Signed object to be verified
-     * @param sender Replica id that supposably signed this object
+     * @param sender Replica id that supposedly signed this object
      * @return True if the signature is valid, false otherwise
      */
     public boolean verifySignature(SignedObject so, int sender) {
         try {
-            return so.verify(reconfManager.getStaticConf().getRSAPublicKey(sender), engine);
+            return so.verify(reconfManager.getStaticConf().getRSAPublicKey(), engine);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -389,9 +379,32 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 // Sets the current execution
                 int execId = getLastExec() + 1;
                 setInExec(execId);
+                
+                Consensus cons = execManager.getExecution(execId).getLearner();
 
+                // Bypass protocol if service is not replicated
+                if (reconfManager.getCurrentViewN() == 1) {
+                    
+                    Logger.println("(TOMLayer.run) Only one replica, bypassing consensus.");
+                    
+                    byte[] value = createPropose(cons);
+                    
+                    Execution execution = execManager.getExecution(cons.getId());
+                    Round round = execution.getRound(0, reconfManager);
+                    round.propValue = value;
+                    round.propValueHash = computeHash(value);
+                    round.getExecution().addWritten(value);
+                    round.deserializedPropValue = checkProposedValue(value, true);
+                    round.getExecution().getLearner().firstMessageProposed = round.deserializedPropValue[0];
+                    cons.decided(round);
+                    
+                    //System.out.println("ESTOU AQUI!");
+                    dt.delivery(cons);
+                    continue;
+                
+                }
                 execManager.getProposer().startExecution(execId,
-                        createPropose(execManager.getExecution(execId).getLearner()));
+                        createPropose(cons));
             }
         }
     }
@@ -449,11 +462,12 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
         return requests;
     }
+    
     public void forwardRequestToLeader(TOMMessage request) {
         int leaderId = lm.getCurrentLeader();
         //******* EDUARDO BEGIN **************//
         if (this.reconfManager.isCurrentViewMember(leaderId)) {
-            //System.out.println("(TOMLayer.forwardRequestToLeader) forwarding " + request + " to " + leaderId);
+            Logger.println("(TOMLayer.forwardRequestToLeader) forwarding " + request + " to " + leaderId);
             communication.send(new int[]{leaderId}, 
                 new ForwardedMessage(this.reconfManager.getStaticConf().getProcessId(), request));
         }
@@ -462,7 +476,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
     public boolean isRetrievingState() {
         //lockTimer.lock();
-        boolean result =  stateManager != null && stateManager.getWaiting() != -1;
+        boolean result =  stateManager != null && stateManager.isRetrievingState();
         //lockTimer.unlock();
 
         return result;
@@ -482,7 +496,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         for (int nextExecution = getLastExec() + 1;
                 execManager.receivedOutOfContextPropose(nextExecution);
                 nextExecution = getLastExec() + 1) {
-
             execManager.processOutOfContextPropose(execManager.getExecution(nextExecution));
         }
     }
@@ -575,16 +588,9 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
     // this method is called when a timeout occurs or when a STOP message is recevied
     private void evaluateStops(int nextReg) {
-    	boolean enterFirstPhase = true;
-    	boolean condition = false; // THIS IS USED IN THE NEXT IF AND IN THE EN OF THE IF ON THE FIRST PHASE
-    	
-    	if(!this.reconfManager.getStaticConf().isBFT()){
-    		enterFirstPhase = false;
-    		condition = (lcManager.getStopsSize(nextReg) > this.reconfManager.getQuorumStrong() && lcManager.getNextReg() > lcManager.getLastReg());
-    	}
-    		
-    	
-    	
+
+        boolean enterFirstPhase = this.reconfManager.getStaticConf().isBFT();
+        boolean condition = false;
         ObjectOutputStream out = null;
         ByteArrayOutputStream bos = null;
 
@@ -643,12 +649,16 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                     java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            condition = (lcManager.getStopsSize(nextReg) > this.reconfManager.getCertificateQuorum() && lcManager.getNextReg() > lcManager.getLastReg());
+        }
+        
+        if(this.reconfManager.getStaticConf().isBFT()) {
+        	condition = lcManager.getStopsSize(nextReg) > this.reconfManager.getCertificateQuorum() && lcManager.getNextReg() > lcManager.getLastReg();
+        } else {
+        	condition = (lcManager.getStopsSize(nextReg) > this.reconfManager.getQuorumStrong() && lcManager.getNextReg() > lcManager.getLastReg());
         }
         // May I proceed to the synchronization phase?
-        //CHECK THE FIRST IF O THE METHOD()
-        if (condition) { 
-
+        //if (lcManager.getStopsSize(nextReg) > this.reconfManager.getQuorum2F() && lcManager.getNextReg() > lcManager.getLastReg()) {
+        if (condition) {
             
             Logger.println("(TOMLayer.evaluateStops) installing regency " + lcManager.getNextReg());
             lcManager.setLastReg(lcManager.getNextReg()); // define last timestamp
@@ -834,7 +844,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      * @param msg Message received from the other replica
      */
     public void deliverTimeoutRequest(LCMessage msg) {
-
         ByteArrayInputStream bis = null;
         ObjectInputStream ois = null;
 
@@ -856,7 +865,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                             clientsManager.getClientsLock().lock();
 
                             if (hasReqs) {
-
                                 // Store requests that the other replica did not manage to order
                                 //TODO: The requests have to be verified!
                                 byte[] temp = (byte[]) ois.readObject();
@@ -885,9 +893,8 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                     }
                 }
                 break;
-            case TOMUtil.STOPDATA: // STOPDATA messages
-                {
-
+            case TOMUtil.STOPDATA: {
+            	 // STOPDATA messages
                     int regency = msg.getReg();
 
                     // Am I the new leader, and am I expecting this messages?
@@ -934,17 +941,17 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
                             int bizantineQuorum = (reconfManager.getCurrentViewN() + reconfManager.getCurrentViewF()) / 2;
                             int cftQuorum = (reconfManager.getCurrentViewN()) / 2;
-                            // I already got messages from a Byzantine quorum,
+                            
+                            // I already got messages from a Byzantine/Crash quorum,
                             // related to the last eid as well as for the current?
-                            if (reconfManager.getStaticConf().isBFT() && lcManager.getLastEidsSize(regency) > bizantineQuorum &&
-                                    lcManager.getCollectsSize(regency) > bizantineQuorum) {
+                            
+                            boolean conditionBFT = (reconfManager.getStaticConf().isBFT() && lcManager.getLastEidsSize(regency) > bizantineQuorum &&
+                                    lcManager.getCollectsSize(regency) > bizantineQuorum);
+                            
+                            boolean conditionCFT = (lcManager.getLastEidsSize(regency) > cftQuorum && lcManager.getCollectsSize(regency) > cftQuorum);
 
-                                catch_up(regency);
-                            }else // This is for CFT operation mode
-                            	if(lcManager.getLastEidsSize(regency) > cftQuorum && lcManager.getCollectsSize(regency) > cftQuorum){
-                            		catch_up(regency);
-                            	}
-                            	
+                            if (conditionBFT || conditionCFT) catch_up(regency);
+
                         } catch (IOException ex) {
                             ex.printStackTrace(System.err);
                         } catch (ClassNotFoundException ex) {

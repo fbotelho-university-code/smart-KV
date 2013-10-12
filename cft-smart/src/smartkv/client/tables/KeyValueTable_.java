@@ -6,30 +6,50 @@ package smartkv.client.tables;
 import java.util.Collection;
 
 import smartkv.client.DatastoreValue;
-import smartkv.client.KeyValueDatastoreProxy;
+import smartkv.client.IKeyValueDataStoreProxy;
+import smartkv.client.KeyValueProxy;
+import smartkv.client.TimestampedDatastoreValue;
 import smartkv.client.util.Serializer;
-import smartkv.client.TimestampedDatastoreValue; 
+import smartkv.client.util.UnsafeJavaSerializer;
+
 import com.google.common.collect.Lists;
 
 /**
  * @author fabiim
  *
  */
-public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValueTable<K,V>{
+public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValueTable<K,V>{
 	
 	//Shadow "re-declaration" of datastore. Because we need a more specific type. 
-	protected KeyValueDatastoreProxy datastore;
+	protected IKeyValueDataStoreProxy datastore;
 	protected Serializer<V> valueSerializer;
 	protected Serializer<Object> referenceSerializer; 
 	
-	public static <K,V> KeyValueTable_<K,V> getTable(KeyValueDatastoreProxy proxy, String tableName,
+	public static <K,V> KeyValueTable_<K,V> getTable(IKeyValueDataStoreProxy proxy, String tableName,
 			Serializer<K> keySerializer, Serializer<V> valueSerializer) {
 		return new KeyValueTable_<K,V>(proxy,tableName,  keySerializer, valueSerializer); 
 	}
 	
-	public static <K,V> KeyValueTable_<K,V> getTable(KeyValueDatastoreProxy proxy, String tableName,
+	public static <K,V> KeyValueTable_<K,V> getTable(IKeyValueDataStoreProxy proxy, String tableName,
 			Serializer<K> keySerializer, Serializer<V> valueSerializer, String tableReference, Serializer<Object> referenceSerializer) {
 		return new KeyValueTable_<K,V>(proxy,tableName,  keySerializer, valueSerializer,tableReference , referenceSerializer );
+	}
+	
+
+	/**
+	 * If datastoreId is being used... you will be in a world of pain! 
+	 * @param stringId
+	 * @param string
+	 * @param s
+	 * @return
+	 */
+	public static <K,V> KeyValueTable_<K, V> getTableAndCreateProxy(int datastoreId, String tableName,
+			Serializer<K> keySerializer, Serializer<V> valueSerializer){
+		return new KeyValueTable_<K,V>(new KeyValueProxy(datastoreId), tableName, keySerializer, valueSerializer);
+	}
+	
+	public static <K,V> ITable<K, V> getTableWithJavaSerialization(int datastoreId, String tableName){
+		return new KeyValueTable_<K,V>(new KeyValueProxy(datastoreId), tableName, UnsafeJavaSerializer.<K>getInstance(),  UnsafeJavaSerializer.<V>getInstance());
 	}
 	
 	/**
@@ -38,7 +58,7 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 	 * @param keySerializer
 	 * @param valueSerializer
 	 */
-	protected KeyValueTable_(KeyValueDatastoreProxy proxy, String tableName,
+	protected KeyValueTable_(IKeyValueDataStoreProxy proxy, String tableName,
 			Serializer<K> keySerializer, Serializer<V> valueSerializer){
 		this(proxy, tableName, keySerializer, valueSerializer, null, null); 
 	
@@ -50,13 +70,12 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 	 * @param keySerializer
 	 * @param valueSerializer
 	 */
-	protected KeyValueTable_(KeyValueDatastoreProxy proxy, String tableName,
+	protected KeyValueTable_(IKeyValueDataStoreProxy proxy, String tableName,
 			Serializer<K> keySerializer, Serializer<V> valueSerializer,String tableReference, Serializer<Object> referenceSerializer) {
 		super(proxy, tableName, keySerializer, tableReference);
 		this.valueSerializer = valueSerializer; 
 		datastore = proxy;
 		this.referenceSerializer = referenceSerializer;
-		
 	}
 
 	
@@ -72,9 +91,14 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 	 * @see bonafide.getRawData()store.tables.Table#putIfAbsent(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public V putIfAbsent(K key, V value) {
+	public V putIfAbsent(K key, V value){
+		VersionedValue<V> v = putIfAbsentWithTimestamp(key, value);
+		return v != null ? v.value : null; 
+	}
+	
+	public VersionedValue<V> putIfAbsentWithTimestamp(K key, V value) {
 		DatastoreValue result =  datastore.putIfAbsent(tableName, serializeKey(key), serializeValue(value));
-		return result != null && result.getRawData() != null ? valueSerializer.deserialize(result.getRawData()): null; 
+		return result != null  ?  new VersionedValue<V>(DatastoreValue.timeStampValues ? ((TimestampedDatastoreValue) result).ts : 0, valueSerializer.deserialize(result.getRawData())) : null;
 	}
 
 	/* (non-Javadoc)
@@ -91,8 +115,13 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 	 */
 	@Override
 	public V put(K key, V value) {
+		VersionedValue<V> v = putAndGetPreviousWithTimestamp(key,value);
+		return v != null ? v.value : null;
+	}
+	
+	public VersionedValue<V> putAndGetPreviousWithTimestamp(K key, V value) {
 		DatastoreValue result = datastore.put(tableName, serializeKey(key), serializeValue(value));
-		return result != null && result.getRawData() != null ?  valueSerializer.deserialize(result.getRawData()) : null; 
+		return result != null  ?  new VersionedValue<V>(DatastoreValue.timeStampValues ? ((TimestampedDatastoreValue) result).ts : 0, valueSerializer.deserialize(result.getRawData())) : null;
 	}
 	
 	/* (non-Javadoc)
@@ -109,17 +138,15 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 	 */
 	@Override
 	public V get(K key) {
-		//XXX
-		if (key == null) return null; 
-		DatastoreValue result = datastore.get(tableName, serializeKey(key));
-		return result != null ? valueSerializer.deserialize(result.getRawData()): null;
+		VersionedValue<V> v = getWithTimeStamp(key);
+		return v != null ?  v.value : null;
 	}
 	
 	@Override
-	public TimestampedValue<V> getWithTimeStamp(K key) {
-		if (key == null) return null; 
-		TimestampedDatastoreValue result = (TimestampedDatastoreValue) datastore.get(tableName, serializeKey(key));
-		return result != null ? new TimestampedValue<V>(result.ts,valueSerializer.deserialize(result.getRawData())): null;
+	public VersionedValue<V> getWithTimeStamp(K key) {
+		if (key == null) return null;
+		DatastoreValue result =  datastore.get(tableName, serializeKey(key));
+		return result != null ? new VersionedValue<V>( DatastoreValue.timeStampValues ? ((TimestampedDatastoreValue) result).ts : 0 ,valueSerializer.deserialize(result.getRawData())): null;
 	}
 	
 	@Override
@@ -131,7 +158,7 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 		}
 		return values; 
 	}
-
+	
 	/**
 	 * @param value
 	 * @return
@@ -139,18 +166,28 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 	protected byte[] serializeValue(V value) {
 		return valueSerializer.serialize(value);
 	}
-
-
+	
 	/* (non-Javadoc)
 	 * @see bonafide.getRawData()store.tables.KeyValueTable#getValueByReference(java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <V1> V1 getValueByReference(K key) {
-		DatastoreValue val = datastore.getByReference(tableName, keySerializer.serialize(key));
-		return (V1) (val !=  null && val.getRawData() != null? referenceSerializer.deserialize(val.getRawData()) : null); 
+		VersionedValue<V1> val = this.getValueByReferenceWithTimestamp(key);
+		return val != null ? val.value : null; 
 	}
+	
+	
+	@SuppressWarnings("unchecked")
+	public <V1> VersionedValue<V1> getValueByReferenceWithTimestamp(K key) {
+		DatastoreValue val = datastore.getByReference(tableName, keySerializer.serialize(key));
+		return val != null  ?  new VersionedValue<V1>(
+							DatastoreValue.timeStampValues ? ((TimestampedDatastoreValue) val).ts : 0, (V1) valueSerializer.deserialize(val.getRawData())) 
+							: null;
 
+	}
+	
+	
 
 	/* (non-Javadoc) 
 	 * @see bonafide.getRawData()store.tables.KeyValueTable#replace(java.lang.Object, java.lang.Object, java.lang.Object)
@@ -159,6 +196,12 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements KeyValue
 	public boolean replace(K key, V currentValue, V newValue) {
 		return datastore.replace(tableName, keySerializer.serialize(key), valueSerializer.serialize(currentValue), valueSerializer.serialize(newValue));
 	}
-
 	
+	@Override
+	public boolean replace(K key, int knownVersion , V newValue) {
+		return datastore.replace(tableName, keySerializer.serialize(key), knownVersion, valueSerializer.serialize(newValue));
+	}
+
 }
+	
+

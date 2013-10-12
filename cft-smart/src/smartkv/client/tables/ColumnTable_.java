@@ -188,7 +188,7 @@ public class ColumnTable_<K, V> extends AbstractTable<K, V> implements
 	 * @see smartkv.client.tables.KeyValueTable#getWithTimeStamp(java.lang.Object)
 	 */
 	@Override
-	public TimestampedValue<V> getWithTimeStamp(K key) {
+	public VersionedValue<V> getWithTimeStamp(K key) {
 		throw new UnsupportedOperationException(""); 
 	}
 	

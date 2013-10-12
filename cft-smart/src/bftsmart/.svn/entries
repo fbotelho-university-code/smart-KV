@@ -1,15 +1,15 @@
 10
 
 dir
-283
+334
 http://bft-smart.googlecode.com/svn/trunk/src/bftsmart
 http://bft-smart.googlecode.com/svn
 
 
 
-2012-11-08T12:00:17.977859Z
-283
-marcelmhs@gmail.com
+2013-08-09T18:43:31.862487Z
+334
+liquidsnake@sapo.pt
 
 
 
@@ -35,10 +35,10 @@ dir
 communication
 dir
 
-statemanagment
+paxosatwar
 dir
 
-paxosatwar
+statemanagement
 dir
 
 clientsmanagement

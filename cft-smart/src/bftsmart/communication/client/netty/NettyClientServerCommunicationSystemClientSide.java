@@ -1,20 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- *
- * This file is part of SMaRt.
- *
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.communication.client.netty;
 
 import java.io.ByteArrayOutputStream;
@@ -39,13 +37,13 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.DefaultChannelFuture;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
@@ -125,14 +123,15 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                     Mac macReceive = Mac.getInstance(manager.getStaticConf().getHmacAlgorithm());
                     macReceive.init(authKey);
                     NettyClientServerSession cs = new NettyClientServerSession(future.getChannel(), macSend,
-                            macReceive, currV[i], manager.getStaticConf().getRSAPublicKey(currV[i]), new ReentrantLock());
+                            macReceive, currV[i], manager.getStaticConf().getRSAPublicKey(), new ReentrantLock());
                     sessionTable.put(currV[i], cs);
 
-                    //System.out.println("Connecting to replica " + currV[i] + " at " + manager.getRemoteAddress(currV[i]));
+                    System.out.println("Connecting to replica " + currV[i] + " at " + manager.getRemoteAddress(currV[i]));
                     //******* EDUARDO END **************//
 
+                    DefaultChannelFuture.setUseDeadLockChecker( false );
                     future.awaitUninterruptibly();
-
+                    DefaultChannelFuture.setUseDeadLockChecker( true);
                     if (!future.isSuccess()) {
                         System.err.println("Impossible to connect to " + currV[i]);
                     }
@@ -194,10 +193,10 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                         macSend.init(authKey);
                         Mac macReceive = Mac.getInstance(manager.getStaticConf().getHmacAlgorithm());
                         macReceive.init(authKey);
-                        NettyClientServerSession cs = new NettyClientServerSession(future.getChannel(), macSend, macReceive, currV[i], manager.getStaticConf().getRSAPublicKey(currV[i]), new ReentrantLock());
+                        NettyClientServerSession cs = new NettyClientServerSession(future.getChannel(), macSend, macReceive, currV[i], manager.getStaticConf().getRSAPublicKey(), new ReentrantLock());
                         sessionTable.put(currV[i], cs);
 
-                        //System.out.println("Connecting to replica " + currV[i] + " at " + manager.getRemoteAddress(currV[i]));
+                        System.out.println("Connecting to replica " + currV[i] + " at " + manager.getRemoteAddress(currV[i]));
                         //******* EDUARDO END **************//
 
                         future.awaitUninterruptibly();
@@ -222,18 +221,21 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             System.out.println("Impossible to connect to replica.");
         } else {
         	System.out.println("Replica disconnected.");
+        	e.getCause().printStackTrace();
         }
     }
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
+    public void messageReceived(
+            ChannelHandlerContext ctx, MessageEvent e) {
         TOMMessage sm = (TOMMessage) e.getMessage();
         //delivers message to replyReceived callback
         trr.replyReceived(sm);
     }
 
     @Override
-    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
-        //System.out.println("Channel connected");
+    public void channelConnected(
+            ChannelHandlerContext ctx, ChannelStateEvent e) {
+        System.out.println("Channel connected");
     }
 
     @Override
@@ -274,7 +276,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                         //creates MAC stuff
                         Mac macSend = ncss.getMacSend();
                         Mac macReceive = ncss.getMacReceive();
-                        NettyClientServerSession cs = new NettyClientServerSession(future.getChannel(), macSend, macReceive, ncss.getReplicaId(), manager.getStaticConf().getRSAPublicKey(ncss.getReplicaId()), new ReentrantLock());
+                        NettyClientServerSession cs = new NettyClientServerSession(future.getChannel(), macSend, macReceive, ncss.getReplicaId(), manager.getStaticConf().getRSAPublicKey(), new ReentrantLock());
                         sessionTable.remove(ncss.getReplicaId());
                         sessionTable.put(ncss.getReplicaId(), cs);
                         //System.out.println("RE-Connecting to replica "+ncss.getReplicaId()+" at " + conf.getRemoteAddress(ncss.getReplicaId()));
@@ -412,7 +414,6 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
         ArrayList<NettyClientServerSession> sessions = new ArrayList<NettyClientServerSession>(sessionTable.values());
         rl.readLock().unlock();
         for (NettyClientServerSession ncss : sessions) {
-
             ncss.getChannel().close();
         }
     }

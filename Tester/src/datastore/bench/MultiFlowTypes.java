@@ -26,39 +26,42 @@ class OpenFlowMessageWorkload{
 }
 */
 public class MultiFlowTypes extends BenchClient{
+	
 	static class LearningSwitch{
-		
-		
-		
-		//ORIGINAL 
-		public static int[][] lsw_1_ops = { 
+		//LSW-0 : Original (with java serialization)   
+		public static int[][] lsw_0_broadcast_ops = { 
 			{ FlowSimulation.WRITE_OP,113,1}, 
 		};
-		public static String[] lsw_1_dsc = { 
+		public static String[] lsw_0_brodcast_dsc = { 
 			"Write source address in ingress switch-table", 
 		};
 		
-		public static int[][] lsw_2_ops = {// ARP REPLY 
+		public static int[][] lsw_0_unicast_ops = {// ARP REPLY 
 			{ FlowSimulation.WRITE_OP,113,1}, //Write arp reply source
 			{ FlowSimulation.READ_OP,36,77}, //Read destiny device 
 		};
-		public static String[] lsw_2_dsc = { 
+		public static String[] lsw_0_unicast_dsc = { 
 			"Write source address in ingress switch-table",
 			"Read egress port for destination in ingress switch-table",
 		};
 		
 		
-		//Optimization : Serialize value has been exchanged by just writing the bytes. 
-		public static int[][] lsw_1_1_ops = { 
-			{ FlowSimulation.WRITE_OP,38,1}, 
+		//LSW-1 : Original   
+		public static int[][] lsw_1_broadcast_ops = { 
+			{ FlowSimulation.WRITE_OP,29,1}, 
+		};
+		public static String[] lsw_1_dsc = { 
+			"Write source address in ingress switch-table", 
 		};
 		
-		
-		public static int[][] lsw_2_1_ops = {// ARP REPLY 
-			{ FlowSimulation.WRITE_OP,38,1}, //Write arp reply source
-			{ FlowSimulation.READ_OP,36,2}, //Read destiny device 
+		public static int[][] lsw_1_unicast_ops = {// ARP REPLY 
+			{ FlowSimulation.WRITE_OP,29,1}, //Write arp reply source
+			{ FlowSimulation.READ_OP,27,6}, //Read destiny device 
 		};
-		
+		public static String[] lsw_1_unicast_dsc = { 
+			"Write source address in ingress switch-table",
+			"Read egress port for destination in ingress switch-table",
+		};
 	}
 	
 	static class LoadBalancer{

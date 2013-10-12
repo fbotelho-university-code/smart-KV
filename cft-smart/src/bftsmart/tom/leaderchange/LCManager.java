@@ -1,21 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- *
- * This file is part of SMaRt.
- *
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.tom.leaderchange;
 
 import java.io.IOException;
@@ -96,12 +93,11 @@ public class LCManager {
 
         try {
             this.cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
-        } catch (NoSuchAlgorithmException ex) {
+        } catch (NoSuchAlgorithmException ex){
             ex.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        }catch (NoSuchPaddingException ex) {
+        	ex.printStackTrace();
+        }
 
     }
     public int getNewLeader() {
@@ -128,7 +124,6 @@ public class LCManager {
     }
     
     public void setNewLeader(int leader) {
-        
         currentLeader = leader;
     }
     
@@ -335,7 +330,7 @@ public class LCManager {
      * @return see pages 252 and 253 from "Introduction to Reliable and Secure Distributed Programming"
      */
     public boolean sound(HashSet<CollectData> collects) {
-    	
+
         if (collects == null) return false;
         
         HashSet<Integer> timestamps = new HashSet<Integer>();
@@ -358,7 +353,6 @@ public class LCManager {
                 if (insert) values.add(c.getQuorumWeaks().getValue());
             }
             for (TimestampValuePair rv : c.getWriteSet()) { // store all timestamps and written values
-            	
                 timestamps.add(rv.getRound());
 
                 boolean insert = true; // this loop avoids putting duplicated values in the set
@@ -379,12 +373,12 @@ public class LCManager {
             for (byte[] v : values) {
 
                 if (binds(r, v, collects)) {
-                	
+
                     return true;
                 }
             }
         }
-        
+
         return unbound(collects);
     }
 
@@ -398,7 +392,7 @@ public class LCManager {
      * @return see pages 252 and 253 from "Introduction to Reliable and Secure Distributed Programming"
      */
     public boolean binds(int timestamp, byte[] value, HashSet<CollectData> collects) {
-    	//System.out.println("-----------------------------INSIDE BINDS--------------------------------------");
+
         return (value != null && collects != null && collects.size() > (SVManager.getCurrentViewN() - SVManager.getCurrentViewF()))
                 && quorumHighest(timestamp, value, collects) && certifiedValue(timestamp, value, collects);
     }
@@ -497,11 +491,13 @@ public class LCManager {
             }
         }
         else return false;
-        
-        if(SVManager.getStaticConf().isBFT())
-        	unbound = count > ((SVManager.getCurrentViewN() + SVManager.getCurrentViewF()) / 2);
-        else
+
+        if(SVManager.getStaticConf().isBFT()) {
+            unbound = count > ((SVManager.getCurrentViewN() + SVManager.getCurrentViewF()) / 2);
+        }
+        else {
         	unbound = count > ((SVManager.getCurrentViewN()) / 2);
+        }
         return unbound;
         
     }
@@ -540,11 +536,12 @@ public class LCManager {
 
         }
 
-        if(SVManager.getStaticConf().isBFT())
-        	quorum = count > ((SVManager.getCurrentViewN() + SVManager.getCurrentViewF()) / 2);
-        else
-        	quorum = count > ((SVManager.getCurrentViewN())/2);
-        
+        if(SVManager.getStaticConf().isBFT()) {
+            quorum = count > ((SVManager.getCurrentViewN() + SVManager.getCurrentViewF()) / 2);
+        }
+        else {
+            quorum = count > ((SVManager.getCurrentViewN())/2);
+        }      
         return appears && quorum;
     }
 
@@ -573,11 +570,12 @@ public class LCManager {
             }
 
         }
-        if(SVManager.getStaticConf().isBFT())
-        	certified = count > SVManager.getCurrentViewF();
-        else
-        	certified = count > 0;
 
+        if(SVManager.getStaticConf().isBFT()) {
+            certified = count > SVManager.getCurrentViewF();
+        } else {
+            certified = count > 0;
+        }
         return certified;
     }
 
@@ -685,14 +683,13 @@ public class LCManager {
         if (lasts == null) return null;
        
         for (LastEidData l : lasts) {
-        	
+
             //TODO: CHECK OF THE PROOF IS MISSING!!!!
-        		if (tomLayer.reconfManager.getStaticConf().isBFT() && hasValidProof(l) && l.getEid() > highest.getEid()) 
-        			highest = l;
-        		else
-        			if(l.getEid() > highest.getEid()){
-        				 highest = l;
-        			}
+            if (tomLayer.reconfManager.getStaticConf().isBFT() && hasValidProof(l) && l.getEid() > highest.getEid()) 
+                    highest = l;
+            else if(l.getEid() > highest.getEid()){
+                    highest = l;
+             }
         }
 
         return highest;
@@ -732,12 +729,12 @@ public class LCManager {
             try {
                 this.cipher.init(Cipher.ENCRYPT_MODE, key);                   
                 myMAC = this.cipher.doFinal(hash);
-            } catch (IllegalBlockSizeException ex) {
+            } catch (IllegalBlockSizeException ex){
                 ex.printStackTrace();
-            } catch (InvalidKeyException e) {
+            } catch (BadPaddingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (BadPaddingException e) {
+			} catch (InvalidKeyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

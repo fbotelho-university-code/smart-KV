@@ -1,14 +1,14 @@
 10
 
 dir
-283
+334
 http://bft-smart.googlecode.com/svn/trunk/src/bftsmart/reconfiguration/views
 http://bft-smart.googlecode.com/svn
 
 
 
-2012-07-18T16:48:50.698553Z
-265
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2012-11-08T15:15:45.000000Z
-df3fb40ee46d93abb915cfcd416bf48e
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:08.000000Z
+49a4232debe2e5f315d6e83d4949dc17
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -58,7 +58,7 @@ marcelmhs@gmail.com
 
 
 
-283
+829
 
 DefaultViewStorage.java
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2012-11-08T15:15:45.000000Z
-2aeabbc1bf6ef20d0b5817eb28a28896
-2012-07-18T16:48:50.698553Z
-265
+2013-10-03T14:04:08.000000Z
+54cc2435457eece0085d3813240ffdd4
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -92,7 +92,7 @@ marcelmhs@gmail.com
 
 
 
-2347
+2893
 
 TestViewSerialization.java
 file
@@ -100,10 +100,10 @@ file
 
 
 
-2012-11-08T15:15:45.000000Z
-24920cccf64e8f70a89e890c6ed9db07
-2012-05-15T09:48:17.347707Z
-259
+2013-10-03T14:04:08.000000Z
+27ae1617d2be38bea6d3390432cf3296
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -126,7 +126,7 @@ marcelmhs@gmail.com
 
 
 
-1548
+1401
 
 View.java
 file
@@ -134,10 +134,10 @@ file
 
 
 
-2012-11-08T15:15:45.000000Z
-6bfa165fdef9a339ddb79d9480c3245e
-2012-07-18T16:48:50.698553Z
-265
+2013-10-03T14:04:08.000000Z
+93a70d934c9275f5414f0d9201efc62c
+2013-06-27T17:39:57.407612Z
+326
 marcelmhs@gmail.com
 
 
@@ -160,5 +160,5 @@ marcelmhs@gmail.com
 
 
 
-2481
+3026
 

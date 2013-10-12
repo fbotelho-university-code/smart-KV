@@ -1,21 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- * 
- * This file is part of SMaRt.
- * 
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.demo.counter;
 
 import java.io.ByteArrayInputStream;
@@ -28,22 +25,22 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import bftsmart.statemanagment.ApplicationState;
+import bftsmart.statemanagement.ApplicationState;
+import bftsmart.statemanagement.StateManager;
+import bftsmart.statemanagement.strategy.StandardStateManager;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ReplicaContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.BatchExecutable;
 import bftsmart.tom.server.Recoverable;
-import bftsmart.tom.server.SingleExecutable;
-
 
 /**
  * Example replica that implements a BFT replicated service (a counter).
  *
  */
+
 public final class CounterServer implements BatchExecutable, Recoverable  {
     
-    private ServiceReplica replica;
     private int counter = 0;
     private int iterations = 0;
     private ReplicaContext replicaContext = null;
@@ -52,8 +49,10 @@ public final class CounterServer implements BatchExecutable, Recoverable  {
     private ReentrantLock stateLock = new ReentrantLock();
     private int lastEid = -1;
     
+    private StateManager stateManager;
+
     public CounterServer(int id) {
-    	replica = new ServiceReplica(id, this, this);
+    	new ServiceReplica(id, this, this);
 
         try {
             md = MessageDigest.getInstance("MD5"); // TODO: shouldn't it be SHA?
@@ -64,7 +63,7 @@ public final class CounterServer implements BatchExecutable, Recoverable  {
     
      //******* EDUARDO BEGIN **************//
     public CounterServer(int id, boolean join) {
-    	replica = new ServiceReplica(id, join, this, this);
+    	new ServiceReplica(id, join, this, this);
     }
      //******* EDUARDO END **************//
     
@@ -171,5 +170,11 @@ public final class CounterServer implements BatchExecutable, Recoverable  {
         return state.getLastEid();
     }
 
-    /********************************************************/
+    @Override
+    public StateManager getStateManager() {
+    	if(stateManager == null)
+    		stateManager = new StandardStateManager();
+    	return stateManager;
+    }
+
 }

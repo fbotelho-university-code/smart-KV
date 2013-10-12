@@ -1,83 +1,83 @@
 K 25
 svn:wc:ra_dav:version-url
 V 52
-/svn/!svn/ver/283/trunk/src/bftsmart/reconfiguration
+/svn/!svn/ver/330/trunk/src/bftsmart/reconfiguration
 END
 StatusReply.java
 K 25
 svn:wc:ra_dav:version-url
 V 69
-/svn/!svn/ver/265/trunk/src/bftsmart/reconfiguration/StatusReply.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/StatusReply.java
 END
 ReconfigureRequest.java
 K 25
 svn:wc:ra_dav:version-url
 V 76
-/svn/!svn/ver/259/trunk/src/bftsmart/reconfiguration/ReconfigureRequest.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/ReconfigureRequest.java
 END
 ClientViewManager.java
 K 25
 svn:wc:ra_dav:version-url
 V 75
-/svn/!svn/ver/259/trunk/src/bftsmart/reconfiguration/ClientViewManager.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/ClientViewManager.java
 END
 ReconfigureReply.java
 K 25
 svn:wc:ra_dav:version-url
 V 74
-/svn/!svn/ver/259/trunk/src/bftsmart/reconfiguration/ReconfigureReply.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/ReconfigureReply.java
 END
 ViewManager.java
 K 25
 svn:wc:ra_dav:version-url
 V 69
-/svn/!svn/ver/265/trunk/src/bftsmart/reconfiguration/ViewManager.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/ViewManager.java
 END
 StatusReplyListener.java
 K 25
 svn:wc:ra_dav:version-url
 V 77
-/svn/!svn/ver/265/trunk/src/bftsmart/reconfiguration/StatusReplyListener.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/StatusReplyListener.java
 END
 TTP.java
 K 25
 svn:wc:ra_dav:version-url
 V 61
-/svn/!svn/ver/267/trunk/src/bftsmart/reconfiguration/TTP.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/TTP.java
 END
 View.java
 K 25
 svn:wc:ra_dav:version-url
 V 62
-/svn/!svn/ver/259/trunk/src/bftsmart/reconfiguration/View.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/View.java
 END
 TTPServices.java
 K 25
 svn:wc:ra_dav:version-url
 V 69
-/svn/!svn/ver/265/trunk/src/bftsmart/reconfiguration/TTPServices.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/TTPServices.java
 END
 TTPMessage.java
 K 25
 svn:wc:ra_dav:version-url
 V 68
-/svn/!svn/ver/259/trunk/src/bftsmart/reconfiguration/TTPMessage.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/TTPMessage.java
 END
 ServerViewManager.java
 K 25
 svn:wc:ra_dav:version-url
 V 75
-/svn/!svn/ver/265/trunk/src/bftsmart/reconfiguration/ServerViewManager.java
+/svn/!svn/ver/330/trunk/src/bftsmart/reconfiguration/ServerViewManager.java
 END
 ReconfigurationTest.java
 K 25
 svn:wc:ra_dav:version-url
 V 77
-/svn/!svn/ver/259/trunk/src/bftsmart/reconfiguration/ReconfigurationTest.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/ReconfigurationTest.java
 END
 Reconfiguration.java
 K 25
 svn:wc:ra_dav:version-url
 V 73
-/svn/!svn/ver/265/trunk/src/bftsmart/reconfiguration/Reconfiguration.java
+/svn/!svn/ver/326/trunk/src/bftsmart/reconfiguration/Reconfiguration.java
 END

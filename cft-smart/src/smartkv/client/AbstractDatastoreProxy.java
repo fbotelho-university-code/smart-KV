@@ -3,18 +3,20 @@ package smartkv.client;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import smartkv.client.util.UnsafeJavaSerializer;
 import smartkv.server.DataStoreVersion;
 import smartkv.server.RequestType;
 import bftsmart.tom.ServiceProxy;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
-import com.google.common.primitives.Shorts;
 
 
 /*
@@ -27,29 +29,40 @@ import com.google.common.primitives.Shorts;
 
 
 
-public abstract class AbstractDatastoreProxy  implements TableDataStoreProxy{
+public abstract class AbstractDatastoreProxy  implements IDataStoreProxy{
 	private static Set<Integer> cids = Sets.newHashSet();
 	private ServiceProxy  server; 
 	
 	private static int cid =1;
 	
-	private static ServiceProxy s= new ServiceProxy(1);  
+	//FIXME- There should no byte manipulation in the Datastore classes. Byte manipulation (creating DataStoreValue) should exist in Tables. Where they know what they want to do in order to give values to the users. 
+	// Right now you are creating Maps and Sets and shit here, that will simply be put to waste later...
+	//Just return byte[] in here.. Let the Tables do their job...
 	
-		
-	
+	private static Map<Long, ServiceProxy> proxiesByClients = new HashMap<Long,ServiceProxy>(); 
+	private static int counter = 0; 
+	private static synchronized ServiceProxy createThreadServiceProxy(int id){
+		long id2 = Thread.currentThread().getId();
+		if (proxiesByClients.containsKey(id2)){
+			return proxiesByClients.get(id2); 
+		}
+		else{
+			ServiceProxy toReturn  = new ServiceProxy(counter++);
+			proxiesByClients.put(id2, toReturn);
+			return toReturn; 
+		}
+	}
 	
 	/**
 	 * Initialize this proxy with a given client id. 
 	 * @param cid The client id used in {@link ServiceProxy} . Remember that is must be globally unique. 
 	 */
-	protected AbstractDatastoreProxy(int ignore){
+	protected AbstractDatastoreProxy(int id){
 		//FIXME
-		
 		///TODO have a testing setting that verifies if the same cid is being used, and throws an exception to find out where. 
-//		server = new ServiceProxy(AbstractDatastoreProxy.cid);
-
-		AbstractDatastoreProxy.cid += 1; 
-		server = s; 
+		
+		//server = createThreadServiceProxy(id);
+		server = new ServiceProxy(counter++); 
 	}
 	
 	/* 
@@ -177,7 +190,24 @@ public abstract class AbstractDatastoreProxy  implements TableDataStoreProxy{
 		byte[] result = invokeRequestWithRawReturn(type, request);
 		return result != null; 
 	}
-
+	
+	@Override
+	public Map<byte[], DatastoreValue> getTable(String tableName){
+		RequestType type = RequestType.GET_TABLE;
+		byte[] request = concatArrays(
+				type.byteArrayOrdinal, 
+				getBytes(tableName) 
+				);
+		byte[] result = invokeRequestWithRawReturn(type, request); 
+		if (result != null){
+			Map<byte[], byte[]> map =  UnsafeJavaSerializer.<Map<byte[],byte[]>>getInstance().deserialize(result);
+			Map<byte[], DatastoreValue> resultMap = Maps.newHashMap(); 
+			for (Entry<byte[], byte[]> en : map.entrySet()){
+				resultMap.put(en.getKey(), DatastoreValue.createValue(en.getValue()));
+			}
+		}
+		return null;
+	}
 
 	/* 
 	 * @see bonafide.datastore.DatastoreProxy#size(java.lang.String)
@@ -242,6 +272,7 @@ public abstract class AbstractDatastoreProxy  implements TableDataStoreProxy{
 		return DatastoreValue.createValue(result);  
 	}
 	
+
 	/**
 	 * Concatenates all byte arrays passed as argument.
 	 * The method signature forces the client to pass at least one array.
@@ -252,6 +283,7 @@ public abstract class AbstractDatastoreProxy  implements TableDataStoreProxy{
 	 * @returns a newly created array in the form <code>a0:a1:...:an</code>.
 	 */
 	protected byte[] concatArrays(byte[] a0, byte[]... an){
+		//FIXME - urgent : use Guava.concat 
 		int len = a0.length; //total length of result array 
 		for (byte[] ax : an){
 			len += ax.length;
@@ -293,6 +325,7 @@ public abstract class AbstractDatastoreProxy  implements TableDataStoreProxy{
 	protected byte[] getBytes(Long l){
 		return ByteBuffer.allocate(8).putLong(l).array();
 	}
+	
 	
 }
 

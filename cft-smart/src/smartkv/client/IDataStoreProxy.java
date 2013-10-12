@@ -1,6 +1,8 @@
 
 package smartkv.client;
 
+import java.util.Map;
+
 
 
 /**
@@ -35,7 +37,7 @@ package smartkv.client;
  *
  */
 
-public interface TableDataStoreProxy{
+public interface IDataStoreProxy{
 	/**
 	 * Empties all the data store data. 
 	 * 
@@ -138,6 +140,12 @@ public interface TableDataStoreProxy{
 	 * @return
 	 */
 	boolean createPointerTable(String tableName, String reference);
+
+	/**
+	 * @param tableName
+	 * @return
+	 */
+	Map<byte[], DatastoreValue> getTable(String tableName);
 	
 }
 

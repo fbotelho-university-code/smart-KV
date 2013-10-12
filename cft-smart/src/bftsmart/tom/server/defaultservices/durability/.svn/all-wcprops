@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/durability
+END
+DurableStateLog.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/durability/DurableStateLog.java
+END
+DurabilityCoordinator.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/server/defaultservices/durability/DurabilityCoordinator.java
+END

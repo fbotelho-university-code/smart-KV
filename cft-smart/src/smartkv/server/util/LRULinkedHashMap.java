@@ -17,7 +17,6 @@
 
 package smartkv.server.util;
 
-import java.util.LinkedHashMap;
 
 public class LRULinkedHashMap<K, V> extends LinkedHashMap<K, V> {
     private static final long serialVersionUID = -2964986094089626647L;

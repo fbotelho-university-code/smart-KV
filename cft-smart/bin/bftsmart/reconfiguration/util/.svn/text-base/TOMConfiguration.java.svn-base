@@ -1,20 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- * 
- * This file is part of SMaRt.
- * 
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.reconfiguration.util;
 
 import java.security.PrivateKey;
@@ -46,9 +44,17 @@ public class TOMConfiguration extends Configuration {
     private int useSignatures;
     private boolean stateTransferEnabled;
     private int checkpointPeriod;
+    private int globalCheckpointPeriod;
     private int useControlFlow;
     private int[] initialView;
     private int ttpId;
+	private boolean isToLog;
+	private boolean syncLog;
+	private boolean parallelLog;
+	private boolean logToDisk;
+	private boolean isToWriteCkpsToDisk;
+	private boolean syncCkp;
+    private boolean isBFT;
     
     /** Creates a new instance of TOMConfiguration */
     public TOMConfiguration(int processId) {
@@ -252,8 +258,64 @@ public class TOMConfiguration extends Configuration {
                 }
             }
 
-            rsaLoader = new RSAKeyLoader(this, TOMConfiguration.configHome);
+			s = (String) configs.remove("system.totalordermulticast.log");
+			if (s != null) {
+				isToLog = Boolean.parseBoolean(s);
+			} else {
+				isToLog = false;
+			}
 
+			s = (String) configs
+					.remove("system.totalordermulticast.log_parallel");
+			if (s != null) {
+				parallelLog = Boolean.parseBoolean(s);
+			} else {
+				parallelLog = false;
+			}
+
+			s = (String) configs
+					.remove("system.totalordermulticast.log_to_disk");
+			if (s != null) {
+				logToDisk = Boolean.parseBoolean(s);
+			} else {
+				logToDisk = false;
+			}
+			
+			s = (String) configs
+					.remove("system.totalordermulticast.sync_log");
+			if (s != null) {
+				syncLog = Boolean.parseBoolean(s);
+			} else {
+				syncLog = false;
+			}
+
+			s = (String) configs
+					.remove("system.totalordermulticast.checkpoint_to_disk");
+			if (s == null) {
+				isToWriteCkpsToDisk = false;
+			} else {
+				isToWriteCkpsToDisk = Boolean.parseBoolean(s);
+			}
+			
+			s = (String) configs
+					.remove("system.totalordermulticast.sync_ckp");
+			if (s == null) {
+				syncCkp = false;
+			} else {
+				syncCkp = Boolean.parseBoolean(s);
+			}
+
+            s = (String) configs.remove("system.totalordermulticast.global_checkpoint_period");
+            if (s == null) {
+                globalCheckpointPeriod = 1;
+            } else {
+                globalCheckpointPeriod = Integer.parseInt(s);
+            }
+            
+            rsaLoader = new RSAKeyLoader(TOMConfiguration.configHome);
+
+            s = (String) configs.remove("system.bft");
+            isBFT = (s != null) ? Boolean.parseBoolean(s) : true;
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
@@ -297,7 +359,7 @@ public class TOMConfiguration extends Configuration {
     public int getF() {
         return f;
     }
-
+    
     public int getPaxosHighMark() {
         return paxosHighMark;
     }
@@ -367,6 +429,38 @@ public class TOMConfiguration extends Configuration {
         return checkpointPeriod;
     }
 
+	public boolean isToWriteCkpsToDisk() {
+		return isToWriteCkpsToDisk;
+	}
+	
+	public boolean isToWriteSyncCkp() {
+		return syncCkp;
+	}
+
+	public boolean isToLog() {
+		return isToLog;
+	}
+
+	public boolean isToWriteSyncLog() {
+		return syncLog;
+	}
+
+	public boolean logToDisk() {
+		return logToDisk;
+	}
+
+	public boolean isToLogParallel() {
+		// TODO Auto-generated method stub
+		return parallelLog;
+	}
+
+    /**
+     * Indicates the checkpoint period used when fetching the state from the application
+     */
+    public int getGlobalCheckpointPeriod() {
+        return globalCheckpointPeriod;
+    }
+
     /**
      * Indicates if a simple control flow mechanism should be used to avoid an overflow of client requests
      */
@@ -374,9 +468,9 @@ public class TOMConfiguration extends Configuration {
         return useControlFlow;
     }
 
-    public PublicKey getRSAPublicKey(int id) {
+    public PublicKey getRSAPublicKey() {
         try {
-            return rsaLoader.loadPublicKey(id);
+            return rsaLoader.loadPublicKey();
         } catch (Exception e) {
             e.printStackTrace(System.err);
             return null;
@@ -391,5 +485,14 @@ public class TOMConfiguration extends Configuration {
             e.printStackTrace(System.err);
             return null;
         }
+    }
+
+    public boolean isBFT(){
+    	if(this.isBFT)
+    		Logger.println("----------------ISBFT--------------");
+    	else
+    		Logger.println("----------------ISCFT---------------");
+    	
+    	return this.isBFT;
     }
 }

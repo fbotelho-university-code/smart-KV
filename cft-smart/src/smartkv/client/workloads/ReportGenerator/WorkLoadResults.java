@@ -252,12 +252,10 @@ public class WorkLoadResults {
 					requestLogFinal.add(en);
 				}
 			}*/
-			System.out.println();
-			System.out.println(requestLog.size()); 
 			int cenas=0; 
-			motherfucker: 
+	//		motherfucker: 
 			for (RequestLogEntry en : requestLog){
-				if ((en.getTimeStarted() - timeZero) > (ReportGenerator.BEGIN * 1000)
+				if ((en.getTimeStarted() - timeZero) >= (ReportGenerator.BEGIN * 1000)
 					&& (en.getTimeStarted() - timeZero) <= (ReportGenerator.END * 1000)
 						){
 					
@@ -273,13 +271,18 @@ public class WorkLoadResults {
 					cenas++; 
 					requestLogFinal.add(en);
 				}
+				else{
+					System.out.println(en.getTimeStarted());
+					System.out.println(timeZero); 
+					System.out.println(en.getTimeStarted() - timeZero); 
+				}
 			}
-			System.out.println(cenas); 
+			
+			
 			List<ActivityEvent> ev = Lists.newArrayList();
 			for (ActivityEvent e : this.activityLog){
-				if (e.getStart() >= requestLogFinal.get(0).serial){
 					ev.add(e);
-				}
+
 			}
 			
 			activityLog = ev; 

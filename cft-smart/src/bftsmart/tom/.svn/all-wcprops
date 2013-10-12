@@ -1,41 +1,35 @@
 K 25
 svn:wc:ra_dav:version-url
 V 40
-/svn/!svn/ver/283/trunk/src/bftsmart/tom
+/svn/!svn/ver/334/trunk/src/bftsmart/tom
 END
 ServiceReplica.java
 K 25
 svn:wc:ra_dav:version-url
 V 60
-/svn/!svn/ver/265/trunk/src/bftsmart/tom/ServiceReplica.java
+/svn/!svn/ver/333/trunk/src/bftsmart/tom/ServiceReplica.java
 END
 TOMSender.java
 K 25
 svn:wc:ra_dav:version-url
 V 55
-/svn/!svn/ver/265/trunk/src/bftsmart/tom/TOMSender.java
+/svn/!svn/ver/333/trunk/src/bftsmart/tom/TOMSender.java
 END
 ServiceProxy.java
 K 25
 svn:wc:ra_dav:version-url
 V 58
-/svn/!svn/ver/283/trunk/src/bftsmart/tom/ServiceProxy.java
-END
-TOMReceiver.java
-K 25
-svn:wc:ra_dav:version-url
-V 57
-/svn/!svn/ver/259/trunk/src/bftsmart/tom/TOMReceiver.java
+/svn/!svn/ver/334/trunk/src/bftsmart/tom/ServiceProxy.java
 END
 ReplicaContext.java
 K 25
 svn:wc:ra_dav:version-url
 V 60
-/svn/!svn/ver/259/trunk/src/bftsmart/tom/ReplicaContext.java
+/svn/!svn/ver/326/trunk/src/bftsmart/tom/ReplicaContext.java
 END
 MessageContext.java
 K 25
 svn:wc:ra_dav:version-url
 V 60
-/svn/!svn/ver/259/trunk/src/bftsmart/tom/MessageContext.java
+/svn/!svn/ver/333/trunk/src/bftsmart/tom/MessageContext.java
 END

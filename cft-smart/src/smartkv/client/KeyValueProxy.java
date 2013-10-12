@@ -11,12 +11,13 @@ import smartkv.server.DataStoreVersion;
 import smartkv.server.RequestType;
 
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Ints;
 
 /**
  * @author fabiim
  *
  */
-public class KeyValueProxy extends AbstractDatastoreProxy implements KeyValueDatastoreProxy{
+public class KeyValueProxy extends AbstractDatastoreProxy implements IKeyValueDataStoreProxy{
 	//FIXME set version of the data store. 
 	
 	private Serializer<Collection<byte[]>> serializer = UnsafeJavaSerializer.getInstance();  
@@ -118,6 +119,23 @@ public class KeyValueProxy extends AbstractDatastoreProxy implements KeyValueDat
 	}
 
 	
+	/* (non-Javadoc)
+	 * @see smartkv.client.KeyValueDatastoreProxy#replace(java.lang.String, byte[], int, byte[])
+	 */
+	@Override
+	public boolean replace(String tableName, byte[] key,
+			int knownVersion, byte[] serialize2) {
+		RequestType type =RequestType.REPLACE_WITH_TIMESTAMP; 
+		byte[] request = concatArrays(type.byteArrayOrdinal, 
+				getBytes(tableName), 
+				getBytes(key.length), 
+				key,
+				Ints.toByteArray(knownVersion), 
+				serialize2); 
+		byte[] result = invokeRequestWithRawReturn(type,request);
+		return result != null; 
+	}
+	
 	@Override
 	public boolean remove(String tableName, byte[] key, byte[] expectedValue) {
 		RequestType type = RequestType.ATOMIC_REMOVE_IF_VALUE;
@@ -175,5 +193,6 @@ public class KeyValueProxy extends AbstractDatastoreProxy implements KeyValueDat
 		}
 		return finalValues;
 	}
+
 	
 }

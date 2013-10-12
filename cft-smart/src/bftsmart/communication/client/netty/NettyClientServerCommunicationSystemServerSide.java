@@ -1,20 +1,18 @@
 /**
- * Copyright (c) 2007-2009 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- *
- * This file is part of SMaRt.
- *
- * SMaRt is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * SMaRt is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with SMaRt.  If not, see <http://www.gnu.org/licenses/>.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.communication.client.netty;
 
 import java.io.ByteArrayOutputStream;
@@ -106,14 +104,14 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                     manager.getStaticConf().getProcessId()),
                     manager.getStaticConf().getPort(manager.getStaticConf().getProcessId())));
 
-            /*System.out.println("#Bound to port " + manager.getStaticConf().getPort(manager.getStaticConf().getProcessId()));
+            System.out.println("#Bound to port " + manager.getStaticConf().getPort(manager.getStaticConf().getProcessId()));
             System.out.println("#myId " + manager.getStaticConf().getProcessId());
             System.out.println("#n " + manager.getCurrentViewN());
             System.out.println("#f " + manager.getCurrentViewF());
             System.out.println("#requestTimeout= " + manager.getStaticConf().getRequestTimeout());
             System.out.println("#maxBatch= " + manager.getStaticConf().getMaxBatchSize());
             System.out.println("#Using MACs = " + manager.getStaticConf().getUseMACs());
-            System.out.println("#Using Signatures = " + manager.getStaticConf().getUseSignatures());*/
+            System.out.println("#Using Signatures = " + manager.getStaticConf().getUseSignatures());
             //******* EDUARDO END **************//
         } catch (InvalidKeySpecException ex) {
         } catch (NoSuchAlgorithmException ex) {
@@ -123,9 +121,9 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
     @Override
     public void exceptionCaught( ChannelHandlerContext ctx, ExceptionEvent e) {
     	if(e.getCause() instanceof ClosedChannelException)
-            ; //System.out.println("Connection with client closed.");
+            System.out.println("Connection with client closed.");
     	else if(e.getCause() instanceof ConnectException) {
-            ; //Systbem.out.println("Impossible to connect to client.");
+            System.out.println("Impossible to connect to client.");
         } else {
             e.getCause().printStackTrace(System.err);
         }
@@ -141,7 +139,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
     @Override
     public void channelConnected( ChannelHandlerContext ctx, ChannelStateEvent e) {
         Logger.println("Session Created, active clients=" + sessionTable.size());
-        //System.out.println("Session Created, active clients=" + sessionTable.size());
+        System.out.println("Session Created, active clients=" + sessionTable.size());
     }
 
     @Override
@@ -156,8 +154,8 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                 if (e.getChannel().equals(value.getChannel())) {
                     int key = (Integer) m.getKey();
                     sessionTable.remove(key);
-                    //System.out.println("#Removed client channel with ID= " + key);
-                    //System.out.println("#active clients=" + sessionTable.size());
+                    System.out.println("#Removed client channel with ID= " + key);
+                    System.out.println("#active clients=" + sessionTable.size());
                     break;
                 }
             }
