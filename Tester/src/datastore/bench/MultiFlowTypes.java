@@ -64,6 +64,48 @@ public class MultiFlowTypes extends BenchClient{
 		};
 	}
 	
+	static class LoadBalancerNew{
+		public static String read_Vip_key = "Read the VIP id for the destination IP";  
+		public static String obtain_Vip_info = "Read the VIP Information"; 
+		public static String read_pool = "Read the choosen Pool for this request";
+		public static String cond_update_pool = "Conditional replace pool after round-robin changes";
+		public static String read_member = "Read the chosen Member"; 
+		
+		public static int[][] lbw_1_arp_request = {
+			{ FlowSimulation.READ_OP,104,12},
+			{ FlowSimulation.READ_OP,29,513},
+		};
+		
+		public static String[] lbw_1_arp_request_dsc ={
+			LoadBalancerNew.read_Vip_key, 
+			obtain_Vip_info + " (Proxy MAC address)",
+			 
+		};
+		
+		public static int[][] lbw_1_ip_packet = {
+			{ FlowSimulation.READ_OP,104,12},
+			{ FlowSimulation.READ_OP,29,513},
+			{ FlowSimulation.READ_OP,30,373},
+			{ FlowSimulation.WRITE_OP,772,1},
+			{ FlowSimulation.READ_OP,32,225},
+			
+		}; 
+		
+		public static String[] lbw_1_ip_packet_dsc = {
+			LoadBalancerNew.read_Vip_key, 
+			LoadBalancerNew.obtain_Vip_info + " ( what pool to use) ",
+			read_pool, 
+			cond_update_pool,
+			read_member,
+		}; 
+		
+		public static int[][] lbw_1_normal_packet = {
+			{ FlowSimulation.READ_OP,104,0},
+		};
+		public static String[] lbw_1_normal_packet_dsc = {
+			read_Vip_key
+		};
+	}
 	static class LoadBalancer{
 		public static int[][] lbw_1 ={
 			{ FlowSimulation.READ_OP,106,509},

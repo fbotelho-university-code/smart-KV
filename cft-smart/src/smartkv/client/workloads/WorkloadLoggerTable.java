@@ -365,7 +365,51 @@ public class WorkloadLoggerTable<K,V>  implements IKeyValueTable<K,V>{
 	}
 
 
-	
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getValueByReferenceWithTimestamp(java.lang.Object)
+	 */
+	@Override
+	public <V1> VersionedValue<V1> getValueByReferenceWithTimestamp(K key) {
+		VersionedValue<V1> val = table.getValueByReferenceWithTimestamp(key);
+		logEntry(new RequestLogWithDataInformation.Builder().
+				setTable(tableName).
+				setKey(key != null? key.toString() : "null" ).
+				setReturnedValue(val != null ? val.toString() : "null" ).
+				build(entry));
+		return val; 
+	}
+
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#putAndGetPreviousWithTimestamp(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public VersionedValue<V> putAndGetPreviousWithTimestamp(K key, V value) {
+		VersionedValue<V> val =  table.putAndGetPreviousWithTimestamp(key, value);
+		logEntry(new RequestLogWithDataInformation.Builder().
+				setTable(tableName).
+				setKey(key != null? key.toString() : "null" ).
+				setValue(value != null ? value.toString() : "null").
+				setReturnedValue(val != null ? val.toString() : "null" ).
+				build(entry)); 
+		return val; 
+	}
+
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#putIfAbsentWithTimestamp(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public VersionedValue<V> putIfAbsentWithTimestamp(K key, V value) {
+		VersionedValue<V> val = table.putIfAbsentWithTimestamp(key, value);
+		logEntry(new RequestLogWithDataInformation.Builder().
+				setTable(tableName).
+				setKey(key != null? key.toString() : "null" ).
+				setValue(value != null ? value.toString() : "null").
+				setReturnedValue(val != null ? val.toString() : "null" ).
+				build(entry));
+		return val; 
+	}
 }
 
 

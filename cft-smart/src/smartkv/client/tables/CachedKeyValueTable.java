@@ -10,19 +10,19 @@ import com.google.common.collect.Maps;
 
 // Only works if the datastore is with timestamped values....
 
+//FIXME the modifications to the cache are concurrent. So we need concurrent hash map with weak references.  
+//FIXME Or we can use concurrent with least recently used. 
+
 public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
+	IKeyValueTable<K,V> table;
 	
-	IKeyValueTable<K,V> table; 
-	
-	
-	public static <K,V> CachedKeyValueTable<K,V> startCache(ICachedKeyValueTable<K,V> table){
+	public static <K,V> CachedKeyValueTable<K,V> startCache(IKeyValueTable<K,V> table){
 		return new CachedKeyValueTable<K,V>(table);
 	}
 	
 	private CachedKeyValueTable(IKeyValueTable<K,V> table){
 		this.table = table; 
 	}
-	
 	
 	
 	//TODO - extends the final map to take care of values for you. 

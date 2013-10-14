@@ -280,9 +280,12 @@ public class WorkLoadResults {
 			
 			
 			List<ActivityEvent> ev = Lists.newArrayList();
-			for (ActivityEvent e : this.activityLog){
-					ev.add(e);
-
+			for (ActivityEvent en : this.activityLog){
+				if ((en.getTimeStart() - timeZero) >= (ReportGenerator.BEGIN * 1000)
+						&& (en.getTimeStart() - timeZero) <= (ReportGenerator.END * 1000)
+							){
+					ev.add(en);
+				}
 			}
 			
 			activityLog = ev; 
