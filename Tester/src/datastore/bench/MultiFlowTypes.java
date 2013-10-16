@@ -3,12 +3,9 @@ package datastore.bench;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-
 import com.google.common.collect.Maps;
 
 import datastore.bench.flowsimulations.FlowSimulation;
-import datastore.bench.flowsimulations.deviceManager.WorkloadPerFlow;
 
 /*
 class OpenFlowMessageWorkload{
@@ -67,33 +64,34 @@ public class MultiFlowTypes extends BenchClient{
 	static class LoadBalancerNew{
 		public static String read_Vip_key = "Read the VIP id for the destination IP";  
 		public static String obtain_Vip_info = "Read the VIP Information"; 
+		public static String obtain_Vip_info_pool = "Read the VIP Information (pool information)"; 
+		public static String obtain_Vip_info_mac  = "Read the VIP Information (Proxy MAC address)"; 
 		public static String read_pool = "Read the choosen Pool for this request";
 		public static String cond_update_pool = "Conditional replace pool after round-robin changes";
 		public static String read_member = "Read the chosen Member"; 
 		
 		public static int[][] lbw_1_arp_request = {
-			{ FlowSimulation.READ_OP,104,12},
-			{ FlowSimulation.READ_OP,29,513},
+			{ FlowSimulation.READ_OP,104,8},
+			{ FlowSimulation.READ_OP,29,509},
 		};
 		
 		public static String[] lbw_1_arp_request_dsc ={
 			LoadBalancerNew.read_Vip_key, 
-			obtain_Vip_info + " (Proxy MAC address)",
+			obtain_Vip_info_mac
 			 
 		};
 		
 		public static int[][] lbw_1_ip_packet = {
-			{ FlowSimulation.READ_OP,104,12},
-			{ FlowSimulation.READ_OP,29,513},
-			{ FlowSimulation.READ_OP,30,373},
+			{ FlowSimulation.READ_OP,104,8},
+			{ FlowSimulation.READ_OP,29,509},
+			{ FlowSimulation.READ_OP,30,369},
 			{ FlowSimulation.WRITE_OP,772,1},
-			{ FlowSimulation.READ_OP,32,225},
-			
-		}; 
+			{ FlowSimulation.READ_OP,32,221},
+		};
 		
 		public static String[] lbw_1_ip_packet_dsc = {
 			LoadBalancerNew.read_Vip_key, 
-			LoadBalancerNew.obtain_Vip_info + " ( what pool to use) ",
+			LoadBalancerNew.obtain_Vip_info_pool,
 			read_pool, 
 			cond_update_pool,
 			read_member,
@@ -102,9 +100,58 @@ public class MultiFlowTypes extends BenchClient{
 		public static int[][] lbw_1_normal_packet = {
 			{ FlowSimulation.READ_OP,104,0},
 		};
+		
 		public static String[] lbw_1_normal_packet_dsc = {
 			read_Vip_key
 		};
+		
+		// LBW2 - Cross references eliminate the trouble of reading id and reading VIP (first 2 requests).
+		public static int[][] lbw_2_arp_request = {
+			{ FlowSimulation.READ_OP,104,509},
+		};
+		
+		public static String[] lbw_2_arp_request_dsc ={
+			obtain_Vip_info_mac,
+		};
+		
+		public static int[][] lbw_2_ip_packet = {
+			{ FlowSimulation.READ_OP,104,509},
+			{ FlowSimulation.READ_OP,30,369},
+			{ FlowSimulation.WRITE_OP,772,1},
+			{ FlowSimulation.READ_OP,32,221},
+		};
+		
+		public static String[] lbw_2_ip_packet_dsc = {
+			LoadBalancerNew.obtain_Vip_info_pool,
+			read_pool, 
+			cond_update_pool,
+			read_member,
+		}; 
+		
+		public static int[][] lbw_2_normal_packet = {
+			{ FlowSimulation.READ_OP,104,0},
+		};
+		
+		public static String[] lbw_2_normal_packet_dsc = {
+			obtain_Vip_info_pool
+		};
+	
+		// Replace replace by replace with timestamp. 
+		
+		
+		public static int[][] lbw_3_ip_packet = {
+			{ FlowSimulation.READ_OP,104, 513},
+			{ FlowSimulation.READ_OP,30,373},
+			{ FlowSimulation.WRITE_OP,403,1},
+			{ FlowSimulation.READ_OP,32,225},
+		};
+		
+		public static String[] lbw_3_ip_packet_dsc = {
+			LoadBalancerNew.obtain_Vip_info_pool,
+			read_pool, 
+			cond_update_pool,
+			read_member,
+		}; 
 	}
 	static class LoadBalancer{
 		public static int[][] lbw_1 ={

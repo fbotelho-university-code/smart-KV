@@ -3,19 +3,12 @@
  */
 package smartkv.server.experience;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
-import com.google.common.io.ByteStreams;
-
-import smartkv.server.ByteArrayWrapper;
 import smartkv.server.experience.values.ColumnValue;
-import smartkv.server.experience.values.ByteArrayKey;
 import smartkv.server.experience.values.Key;
 import smartkv.server.experience.values.Value;
+import smartkv.server.experience.values.VersionedValue;
 
 /**
  * @author fabiim
@@ -43,24 +36,25 @@ public class KeyColumnValueStore extends KeyValueStore{
 	}
 	
 	public Value put_column(String tableName, Key key, String columnName, Value columnValue){
-		if (datastore.containsKey(tableName)){
-			Map<Key, Value> table = datastore.get(tableName);
-			if (table.containsKey(key)){
-				ColumnValue value = (ColumnValue) table.get(key);
+			if (datastore.containsKey(tableName) && datastore.get(tableName).containsKey(key)){
+				ColumnValue value =  getColumnValue(tableName, key);
 				if (value.containsKey(columnName)){
 					return value.put(columnName, columnValue);
 				}
 			}
-		}
 		return Value.FALSE; 
 	}
 	
 	public  Value get_column(String tableName, Key key, String columnName){
 		 if (datastore.containsKey(tableName) && datastore.get(tableName).containsKey(key)){
-			 ColumnValue value = (ColumnValue) datastore.get(tableName).get(key); 
+			 ColumnValue value = getColumnValue(tableName, key);  
 			 return value.get(columnName); 
 		 }
 		 return null;
+	}
+	
+	private ColumnValue getColumnValue(String tableName, Key key){
+		return !this.keepTimeStamps ? (ColumnValue) datastore.get(tableName).get(key) :(ColumnValue) ((VersionedValue) datastore.get(tableName).get(key)).getValue(); 
 	}
 	
 }

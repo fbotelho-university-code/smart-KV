@@ -9,10 +9,10 @@ import com.google.common.primitives.Ints;
  * @author fabiim
  *
  */
-public class TimestampedDatastoreValue extends DatastoreValue{
+public class VersionedDatastoreValue extends DatastoreValue{
 	public  final int ts;
 	
-	public TimestampedDatastoreValue(byte[] reply) {
+	public VersionedDatastoreValue(byte[] reply) {
 		super(reply, 4, reply.length-1);
 		this.ts = Ints.fromByteArray(reply);
 	}

@@ -335,35 +335,35 @@ public class KeyValueDatastoreProxyTest {
 			String tableName = "cenas"; 
 			ds.createTable(tableName); 
 			ds.put(tableName, key_1, value_1);
-			TimestampedDatastoreValue value = (TimestampedDatastoreValue) ds.get(tableName, key_1);
+			VersionedDatastoreValue value = (VersionedDatastoreValue) ds.get(tableName, key_1);
 			assertNotNull(value);
 			assertEquals(value.ts, 0); //Start at zero.
-			value = (TimestampedDatastoreValue) ds.put(tableName, key_1, value_2);
+			value = (VersionedDatastoreValue) ds.put(tableName, key_1, value_2);
 			assertEquals(value.ts, 0); //Previous value timestamp is 0; 
-			value = (TimestampedDatastoreValue) ds.get(tableName, key_1);
+			value = (VersionedDatastoreValue) ds.get(tableName, key_1);
 			assertEquals(value.ts, 1); 
 			ds.put(tableName, key_1, value_2);
-			value = (TimestampedDatastoreValue) ds.get(tableName, key_1);
+			value = (VersionedDatastoreValue) ds.get(tableName, key_1);
 			assertEquals(value.ts, 1); //still the same because the previous put did not replace the value 
-			value = (TimestampedDatastoreValue) ds.remove(tableName, key_1);
+			value = (VersionedDatastoreValue) ds.remove(tableName, key_1);
 			assertEquals(value.ts, 1); 
 			ds.put(tableName, key_1, value_1);
-			value = (TimestampedDatastoreValue) ds.remove(tableName, key_1);
+			value = (VersionedDatastoreValue) ds.remove(tableName, key_1);
 			assertEquals(value.ts, 0); //Remove cleared the timestamp
 
 			ds.putIfAbsent(tableName, key_1, value_1); 
-			value = (TimestampedDatastoreValue) ds.get(tableName, key_1); 
+			value = (VersionedDatastoreValue) ds.get(tableName, key_1); 
 			assertEquals(value.ts, 0); 
 			ds.replace(tableName, key_1,value_1, value_1);
-			value = (TimestampedDatastoreValue) ds.get(tableName, key_1); 
+			value = (VersionedDatastoreValue) ds.get(tableName, key_1); 
 			assertEquals(value.ts, 0);
 			
 			ds.replace(tableName, key_1,value_1, value_2);
-			value = (TimestampedDatastoreValue) ds.get(tableName, key_1); 
+			value = (VersionedDatastoreValue) ds.get(tableName, key_1); 
 			assertEquals(value.ts, 1);
 			
 			ds.remove(tableName, key_1, value_1);
-			value = (TimestampedDatastoreValue) ds.get(tableName, key_1); 
+			value = (VersionedDatastoreValue) ds.get(tableName, key_1); 
 			assertEquals(value.ts, 1);
 		}
 	}
@@ -377,11 +377,11 @@ public class KeyValueDatastoreProxyTest {
 		assertFalse(ds.replace(tableName, key_1, 0, value_2)); 
 		assertFalse(ds.containsKey(tableName, key_1));
 		ds.put(tableName, key_1, value_1);
-		TimestampedDatastoreValue v = (TimestampedDatastoreValue) ds.get(tableName, key_1);
+		VersionedDatastoreValue v = (VersionedDatastoreValue) ds.get(tableName, key_1);
 		assertFalse(ds.replace(tableName, key_1, v.ts +1 , value_2)); 
 		assertArrayEquals(ds.get(tableName, key_1).getRawData(), value_1);
 		assertTrue(ds.replace(tableName, key_1, v.ts, value_2));
-		v = (TimestampedDatastoreValue) ds.get(tableName, key_1);
+		v = (VersionedDatastoreValue) ds.get(tableName, key_1);
 		assertArrayEquals(v.getRawData(), value_2);
 		assertTrue(ds.replace(tableName, key_1, v.ts, value_1));
 		assertArrayEquals(ds.get(tableName, key_1).getRawData(), value_1);

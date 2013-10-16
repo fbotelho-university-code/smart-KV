@@ -100,6 +100,13 @@ import smartkv.server.RequestType;
 
 public class WorkloadLoggerTable<K,V>  implements IKeyValueTable<K,V>{
 
+	public static <K,V> WorkloadLoggerTable<K,V> workloadLoggerDefault(int cid , String tablename, RequestLogger logger){
+		return new WorkloadLoggerTable<K,V>(cid,tablename,logger,  UnsafeJavaSerializer.<K>getInstance(), UnsafeJavaSerializer.<V>getInstance() );
+	}
+	
+	public static <K,V> WorkloadLoggerTable<K,V> workloadLoggerDefaultCrossReference(int cid , String tablename, RequestLogger logger, String crossTable){
+		return new WorkloadLoggerTable<K,V>(cid,tablename, logger,   UnsafeJavaSerializer.<K>getInstance(), UnsafeJavaSerializer.<V>getInstance() , crossTable, UnsafeJavaSerializer.getInstance() );
+	}
 	
 	IKeyValueTable<K,V> table;
 	RequestLogEntry entry;

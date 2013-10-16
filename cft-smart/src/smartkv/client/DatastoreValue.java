@@ -28,7 +28,7 @@ public class DatastoreValue {
 		if (data != null){
 			if (data.length > 4){
 				//It is a timestamped value 
-				return new TimestampedDatastoreValue(data); 
+				return new VersionedDatastoreValue(data); 
 			}
 		}
 		return null; 

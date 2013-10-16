@@ -6,6 +6,7 @@ package smartkv.server.experience.unmarshallRequests;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import smartkv.server.ByteArrayWrapper;
 import smartkv.server.ColumnDatastore;
 import smartkv.server.MapSmart;
 import smartkv.server.experience.KeyColumnValueStore;
+import smartkv.server.experience.values.ByteArrayValue;
 import smartkv.server.experience.values.ColumnValue;
 import smartkv.server.experience.values.Key;
 import smartkv.server.experience.values.Value;
@@ -67,10 +69,15 @@ public class KeyValueColumnStoreRpc extends KeyValueStoreRPC implements ColumnDa
 		String tableName =dis.readUTF();
 		Key key = createKeyFromBytes(readNextByteArray(dis));
 		String column=  dis.readUTF();
-		Value value = createValueFromBytes(ByteStreams.toByteArray(dis));
+		byte[] v =ByteStreams.toByteArray(dis); 
+		System.out.println(Arrays.toString(v));
+		Value value = createColumnValueFromBytes(v);
 		return datastore.put_column(tableName, key, column, value).asByteArray();
 	}
 	
+	protected Value createColumnValueFromBytes(byte[] valueBytes){
+		return new ByteArrayValue(valueBytes); 
+	}
 	
 	@Override
 	public Value createValueFromBytes(byte [] valueBytes) throws IOException, ClassNotFoundException{

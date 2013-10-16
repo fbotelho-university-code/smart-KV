@@ -14,6 +14,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -21,6 +22,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import smartkv.client.util.Serializer;
+import smartkv.client.util.UnsafeJavaSerializer;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -32,25 +36,41 @@ import com.google.common.collect.Maps;
 public class KeyValueColumnDatastoreProxyTest {
 	//TODO - laun smart, and maybe do it in verbose mode....
 	//XXX maybe set up tables for each method dynamically. 
+	private Serializer<Map<String,byte[]>> valuesSerializer = UnsafeJavaSerializer.getInstance();
 	
-	
-	public static  KeyValueColumnDatastoreProxy ds;
+	public static  IKeyValueColumnDatastoreProxy ds;
 	private byte[] key_1 = "1".getBytes(); 
-	private TreeMap<String,byte[]> value_1 = Maps.newHashMap(ImmutableMap.of("1", "1".getBytes(), "2", "2".getBytes()));
+	private TreeMap<String,byte[]> value_1_m; 
+	private byte[] value_1; 
 	private byte[] key_2 = "2".getBytes(); 
-	private TreeMap<String,byte[]> value_2 = Maps.newHashMap(ImmutableMap.of("4", "4".getBytes(), "3", "3".getBytes()));
+	private TreeMap<String,byte[]> value_2_m; 
+	private byte[] value_2; 
 	private byte[] key_3 = "3".getBytes(); 
-	private TreeMap<String,byte[]> value_3 = Maps.newHashMap(ImmutableMap.of("5", "5".getBytes(), "6", "6".getBytes()));
+	private TreeMap<String,byte[]> value_3_m; 
+	private byte[] value_3; 
 	
 	@BeforeClass 
 	public static void startup(){
-		ds = new ColumnProxy(0);
-		
+		 ds = new ColumnProxy(0); 
 	}
 	
 	@Before 
 	public void initTest(){
 		ds.clear();
+		ds = new ColumnProxy(0);
+		value_1_m = Maps.newTreeMap(); 
+		value_1_m.put("1", "1".getBytes()); 
+		value_1_m.put("2", "2".getBytes());
+		value_1 = this.valuesSerializer.serialize(value_1_m);
+		value_2_m = Maps.newTreeMap(); 
+		value_2_m.put("4", "4".getBytes()); 
+		value_2_m.put("3", "3".getBytes());
+		value_2 = this.valuesSerializer.serialize(value_2_m);
+		value_3_m = Maps.newTreeMap(); 
+		value_3_m.put("5", "5".getBytes()); 
+		value_3_m.put("6", "6".getBytes());
+		value_3 = this.valuesSerializer.serialize(value_3_m);
+		
 	}
 	
 	@Test
@@ -62,9 +82,9 @@ public class KeyValueColumnDatastoreProxyTest {
 		assertFalse(ds.setColumn(tableName, key_2, "whatever", new byte[1])); //key does not exist
 		ds.put(tableName, key_1, value_1);
 		assertFalse(ds.setColumn(tableName, key_2, "whatever", new byte[1])); //key (column) does not exist
-		String k_to_change = value_1.keySet().iterator().next();
+		String k_to_change = value_1_m.keySet().iterator().next();
 		assertTrue(ds.setColumn(tableName, key_1, k_to_change, "weChangedThisValue".getBytes()));
-		TreeMap<String,byte[]> val = ds.getValue(tableName, key_1); 
+		Map<String,byte[]> val = valuesSerializer.deserialize(ds.get(tableName, key_1).getRawData()); 
 		assertTrue(Arrays.equals(val.get(k_to_change), "weChangedThisValue".getBytes()));
 	}
 	
@@ -72,8 +92,8 @@ public class KeyValueColumnDatastoreProxyTest {
 	public void testGetColumn(){
 		String tableName = "getColumn";
 		ds.createTable(tableName);
-		TreeMap<String,byte[]>map  = Maps.newTreeMap(ImmutableMap.of("1" ,"1".getBytes()));
-		ds.put(tableName, key_1, map);
+		TreeMap<String,byte[]>map  = Maps.newTreeMap(); map.put("1",  "1".getBytes()); 
+		ds.put(tableName, key_1, valuesSerializer.serialize(map));
 		assertTrue(Arrays.equals(ds.getColumn(tableName, key_1, "1" ),"1".getBytes()));
 		ds.setColumn(tableName, key_1, "1","2".getBytes());
 		assertTrue(Arrays.equals(ds.getColumn(tableName, key_1, "1"),"2".getBytes()));
@@ -86,16 +106,16 @@ public class KeyValueColumnDatastoreProxyTest {
 	public void testPut() {
 		String tableName = "put";
 		ds.createTable(tableName);
-		TreeMap<String,byte[]> val = ds.put(tableName,key_1, value_1);
+		DatastoreValue val = ds.put(tableName,key_1, value_1);
 		assertNull(val); // previous value was null. 
 		val = ds.put(tableName,key_1, value_2); //replace value, and get previous value. 
 		assertNotNull(val);  //previous value is not null (should be value_1)
-		assertMapAreEqual(val,value_1); 
-		assertMapAreEqual(ds.getValue(tableName, key_1), value_2); 
+		assertMapAreEqual(this.valuesSerializer.deserialize(val.getRawData()),value_1_m); 
+		assertMapAreEqual(valuesSerializer.deserialize(ds.get(tableName, key_1).getRawData()), value_2_m); 
 	}
 
-	private boolean areByteArrayValueMapEqual(TreeMap<?, byte[]> a,
-			TreeMap<?, byte[]> b) {
+	private boolean areByteArrayValueMapEqual(Map<?, byte[]> a,
+			Map<?, byte[]> b) {
 		if (a.size() == b.size() ){
 			for (Entry<?, byte[]>  en : a.entrySet()){
 				if (b.containsKey(en.getKey()) && Arrays.equals(en.getValue(), b.get(en.getKey()))){
@@ -108,7 +128,7 @@ public class KeyValueColumnDatastoreProxyTest {
 		return false; 
 	}
 	
-	private  void assertMapAreEqual(final TreeMap<?,byte[]> a , final TreeMap<?,byte[]> b){
+	private  void assertMapAreEqual(final Map<?,byte[]> a , final Map<?,byte[]> b){
 		assertTrue(areByteArrayValueMapEqual(a,b));
 	}
 	/**
@@ -121,10 +141,10 @@ public class KeyValueColumnDatastoreProxyTest {
 		ds.createTable(tableName);
 		boolean inserted = ds.insert(tableName,key_1, value_1);
 		assertTrue(inserted);
-		assertMapAreEqual(ds.getValue(tableName, key_1), value_1); 
+		assertMapAreEqual(valuesSerializer.deserialize(ds.get(tableName, key_1).getRawData()), value_1_m); 
 		inserted = ds.insert(tableName,key_1, value_2);
 		assertTrue(inserted); 
-		assertMapAreEqual(ds.getValue(tableName, key_1), value_2); //value has been replaced.  
+		assertMapAreEqual(valuesSerializer.deserialize(ds.get(tableName, key_1).getRawData()), value_2_m); //value has been replaced.  
 	}
 
 	/**
@@ -134,18 +154,18 @@ public class KeyValueColumnDatastoreProxyTest {
 	public void testGet() {
 		String tableName = "get";
 		ds.createTable(tableName);
-		TreeMap<String,byte[]> val = ds.getValue(tableName, key_1);
+		DatastoreValue val = ds.get(tableName, key_1);
 		assertNull(val); // there is no key_1 yet.
 		ds.put(tableName,key_1, value_1);
-		val = ds.getValue(tableName, key_1);
-		assertNull(ds.removeValue(tableName, key_2)); //entry does not exists.
-		for (Entry<String, byte[]> m : val.entrySet()){
-			System.out.println(m.getKey() + "-" + Arrays.toString(m.getValue()));
-			System.out.println( m.getKey() + "-" + Arrays.toString(value_1.get(m.getKey())));
-		}
-		assertMapAreEqual(val, value_1); 
+		val = ds.get(tableName, key_1);
+		assertNull(ds.remove(tableName, key_2)); //entry does not exists.
+		
+		assertMapAreEqual(convertInMap(val), value_1_m); 
 	}
 	
+	private Map<String,byte[]> convertInMap( DatastoreValue v){
+		return v != null ? valuesSerializer.deserialize(v.getRawData()) : null; 
+	}
 
 	/**
 	 * Test method for {@link smartkv.client.IKeyValueDataStoreProxy#remove(java.lang.String, byte[])}.
@@ -155,9 +175,9 @@ public class KeyValueColumnDatastoreProxyTest {
 		String tableName = "removeStringByteArray"; 
 		ds.createTable(tableName);
 		ds.put(tableName, key_1, value_1);
-		TreeMap<String,byte[]> val =ds.removeValue(tableName, key_1);
+		Map<String,byte[]> val =convertInMap(ds.remove(tableName, key_1));
 		assertNotNull(val);
-		assertMapAreEqual(val, value_1); 
+		assertMapAreEqual(val, value_1_m); 
 	}
 	
 	/**
@@ -172,9 +192,9 @@ public class KeyValueColumnDatastoreProxyTest {
 		assertFalse(ds.containsKey(tableName, key_1));
 		ds.put(tableName, key_1, value_1);
 		assertTrue(ds.replace(tableName, key_1, value_1, value_2));
-		assertMapAreEqual(ds.getValue(tableName, key_1), value_2); 
+		assertMapAreEqual(convertInMap(ds.get(tableName, key_1)), value_2_m); 
 		assertTrue(ds.replace(tableName, key_1, value_2, value_1));
-		assertMapAreEqual(ds.getValue(tableName, key_1), value_1);
+		assertMapAreEqual(convertInMap(ds.get(tableName, key_1)), value_1_m);
 	}
 
 	/**
@@ -203,9 +223,9 @@ public class KeyValueColumnDatastoreProxyTest {
 		ds.createTable(tableName); 
 		assertNull(ds.putIfAbsent(tableName, key_1, value_1));
 		assertTrue(ds.containsKey(tableName, key_1));
-		assertMapAreEqual(ds.getValue(tableName, key_1), value_1); 
-		assertMapAreEqual(ds.putIfAbsent(tableName, key_1, value_2), value_1);
-		assertMapAreEqual(ds.putIfAbsent(tableName, key_1, value_2), value_1);
+		assertMapAreEqual(convertInMap(ds.get(tableName, key_1)), value_1_m); 
+		assertMapAreEqual(convertInMap(ds.putIfAbsent(tableName, key_1, value_2)), value_1_m);
+		assertMapAreEqual(convertInMap(ds.putIfAbsent(tableName, key_1, value_2)), value_1_m);
 	}
 
 	/**
@@ -308,7 +328,7 @@ public class KeyValueColumnDatastoreProxyTest {
 		assertEquals(ds.size("size"), 1);
 		ds.put("size", key_2, value_1);
 		assertEquals(ds.size("size"), 2);
-		ds.removeValue("size", key_2);
+		ds.remove("size", key_2);
 		assertEquals(ds.size("size"), 1);
 		ds.clear("size");
 		assertEquals(ds.size("size"), 0);
@@ -351,18 +371,18 @@ public class KeyValueColumnDatastoreProxyTest {
 		ds.put(tableName, key_1, value_1); 
 		ds.put(tableName, key_2, value_2); 
 		ds.put(tableName, key_3, value_3);
-		Collection<TreeMap<String,byte[]>> maps = ds.valueS(tableName);
+		Collection<DatastoreValue> maps = ds.values(tableName);
 		
 		assertSame(maps.size(), 3);
 		boolean c1=false,c2=false,c3=false;
-		for (TreeMap<String,byte[]> m : maps){
-			if (areByteArrayValueMapEqual(m, value_1)){
+		for (DatastoreValue m : maps){
+			if (areByteArrayValueMapEqual(convertInMap(m), value_1_m)){
 				c1 = true;
 			}
-			else if (areByteArrayValueMapEqual(m, value_2)){
+			else if (areByteArrayValueMapEqual(convertInMap(m), value_2_m)){
 				c2 = true;
 			}
-			else if (areByteArrayValueMapEqual(m, value_3)){
+			else if (areByteArrayValueMapEqual(convertInMap(m), value_3_m)){
 				c3 = true; 
 			}
 		}

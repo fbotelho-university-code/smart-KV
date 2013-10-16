@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import smartkv.client.DatastoreValue;
 import smartkv.server.experience.unmarshallRequests.KeyValueColumnStoreRpc;
 import smartkv.server.experience.unmarshallRequests.KeyValueStoreRPC;
 import bftsmart.tom.MessageContext;
@@ -36,8 +37,8 @@ public class MapSmart extends DefaultSingleRecoverable{
         return o.readObject();
     }
     
-    private Datastore keyValue = new KeyValueStoreRPC(true); 
-	private ColumnDatastore columns = new KeyValueColumnStoreRpc(true); 
+    private Datastore keyValue = new KeyValueStoreRPC(DatastoreValue.timeStampValues); 
+	private ColumnDatastore columns = new KeyValueColumnStoreRpc(DatastoreValue.timeStampValues); 
 	public static void main(String[] args){
 		new MapSmart(0);
 		new MapSmart(1);

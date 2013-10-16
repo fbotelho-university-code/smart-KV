@@ -3,12 +3,13 @@
  */
 package smartkv.client.tables;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,10 +17,6 @@ import org.junit.Test;
 
 import smartkv.client.ColumnProxy;
 import smartkv.client.util.JavaSerializer;
-import smartkv.client.util.UnsafeJavaSerializer;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 /**
  * @author fabiim
@@ -67,7 +64,7 @@ public class ColumnTableTest {
 	private ColumnTable<KeyObject, ValueObject> ds;
 	public static int id=0; 
 	public ColumnTableTest(){
-		  ds =ColumnTable_.<KeyObject, ValueObject>getTable(new ColumnProxy(id++), "ttestTable", JavaSerializer.<KeyObject>getJavaSerializer(), AnnotatedColumnObject.newAnnotatedColumnObject(ValueObject.class)); 
+		ds = new ColumnTable_<KeyObject, ValueObject>(new TableBuilder<KeyObject,ValueObject>().setCid(id++).setTableName("ttestTable").setColumnSerializer(ValueObject.class)); 
 	}
 	
 	/**
