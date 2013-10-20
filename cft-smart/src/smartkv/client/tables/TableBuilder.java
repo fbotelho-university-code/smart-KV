@@ -3,6 +3,7 @@
  */
 package smartkv.client.tables;
 
+
 import smartkv.client.ColumnProxy;
 import smartkv.client.IDataStoreProxy;
 import smartkv.client.KeyValueProxy;
@@ -25,19 +26,35 @@ public class TableBuilder<K,V> {
 	private Serializer<K> keySerializer = UnsafeJavaSerializer.getInstance();
 	private Serializer<V> valueSerializer = UnsafeJavaSerializer.getInstance(); 
 	private Serializer<Object> crossReferenceValueSerializer = UnsafeJavaSerializer.getInstance();
-	
+	private ColumnObject<Object> crossReferenceColumnSerializer = null;
 	private ColumnObject<V> columnSerializer = null;
 
 	public Integer getCid() {
 		return cid;
 	}
 
+	
+	public ColumnObject<Object> getCrossReferenceColumnSerializer() {
+		return crossReferenceColumnSerializer;
+	}
+
+
+	public TableBuilder<K,V> setCrossReferenceColumnSerializer(
+			ColumnObject<Object> crossReferenceColumnSerializer) {
+		this.crossReferenceColumnSerializer = crossReferenceColumnSerializer;
+		return this; 
+	}
+
+
 	public TableBuilder<K,V> setCid(Integer cid) {
 		this.cid = cid;
 		return this; 
 	}
 
-	public IDataStoreProxy getProxy() {
+	public IDataStoreProxy getProxy(){
+		return this.proxy; 
+	}
+	public IDataStoreProxy getOrCreateProxy() {
 		return proxy != null ? proxy : createProxy(cid) ;
 	}
 
@@ -109,6 +126,18 @@ public class TableBuilder<K,V> {
 	public TableBuilder<K,V> setColumnSerializer(Class<V> clazz) {
 		this.columnSerializer = AnnotatedColumnObject.newAnnotatedColumnObject(clazz); 
 		return this;
+	}
+
+
+	/**
+	 * @param class1
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public TableBuilder<K, V> setCrossReferenceColumnSerializer(
+			Class<Object> class1) {
+		this.crossReferenceColumnSerializer = (ColumnObject<V>) AnnotatedColumnObject.newAnnotatedColumnObject(class1);
+		return this; 
 	} 
 	
 	

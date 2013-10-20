@@ -3,7 +3,10 @@
  */
 package smartkv.client;
 
+import java.util.Set;
 import java.util.TreeMap;
+
+import com.google.common.primitives.Bytes;
 
 import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
@@ -17,8 +20,6 @@ import smartkv.server.RequestType;
 
 
 public class ColumnProxy extends KeyValueProxy implements IKeyValueColumnDatastoreProxy{
-	
-	
 	/**
 	 * @param cid
 	 */
@@ -52,9 +53,15 @@ public class ColumnProxy extends KeyValueProxy implements IKeyValueColumnDatasto
 		byte[] result = invokeRequestWithRawReturn(type, request);
 		return result; 
 	}
+	
+	public DatastoreValue getColumns(String tableName, byte[] key, Set<String> columnName){
+		RequestType type = RequestType.GET_COLUMNS;
+		byte[] request = concatArrays(type.byteArrayOrdinal, getBytes(tableName), getBytes(key.length), key, getBytes(columnName));
+		return invokeRequest(type, request); 
+	}
+	
+	
 
-	
-	
 	@Override
 	public byte[] getColumnByReference(String tableName, byte[] key, String columnName) {
 		RequestType type = RequestType.GET_COLUMN_BY_REFERENCE; 
@@ -63,10 +70,7 @@ public class ColumnProxy extends KeyValueProxy implements IKeyValueColumnDatasto
 		return result; 
 	}
 
-
-
-
-
+	
 	@Override
 	protected DataStoreVersion version(){
 		return DataStoreVersion.COLUMN_KEY_VALUE; 

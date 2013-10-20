@@ -17,7 +17,7 @@ public class VersionedValue<V> {
 		this.ts = ts;
 		this.value = value;
 	}
-
+	
 	/**
 	 * @return
 	 */

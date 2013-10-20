@@ -3,6 +3,8 @@
  */
 package smartkv.client.tables;
 
+import java.util.Set;
+
 /**
  * @author fabiim
  *
@@ -71,5 +73,12 @@ public interface IKeyValueTable<K, V> extends ITable<K,V>{
 	public VersionedValue<V> getWithTimeStamp(K key);
 	
 	public VersionedValue<V> putAndGetPreviousWithTimestamp(K key, V value);
-	public VersionedValue<V> putIfAbsentWithTimestamp(K key, V value); 
+	public VersionedValue<V> putIfAbsentWithTimestamp(K key, V value);
+
+	public VersionedValue<Object> getColumnsByReference(K key, Set<String> columns); 
+	/**
+	 * Get the name of the table 
+	 * @return the name of the table 
+	 */
+	public String getName(); 
 }

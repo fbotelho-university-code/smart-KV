@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import smartkv.server.experience.values.ByteArrayKey;
 import smartkv.server.experience.values.Key;
@@ -29,12 +30,14 @@ public class KeyValueStore implements Serializable{
 	protected final Map<String, Map<Key, Value>> datastore;
 	protected final Map<String, Integer> counters;
 	protected final Map<String, String> pointers;
+	protected final KeyColumnValueStore columnStore; 
 	protected final boolean keepTimeStamps;
 	
-	public KeyValueStore(boolean keepTimeStamps){
+	public KeyValueStore(boolean keepTimeStamps, KeyColumnValueStore columnStore){
 		 datastore = new HashMap<String, Map<Key,Value>>(); 
 		 pointers = Maps.newHashMap();
 		 counters = Maps.newHashMap(); 
+		 this.columnStore = columnStore; 
 		 this.keepTimeStamps = keepTimeStamps; 
 	}
 	
@@ -59,21 +62,31 @@ public class KeyValueStore implements Serializable{
 			 datastore.put(tableName,  keepTimeStamps ? new VersionMap() : new NonNullValueMap()); 
 			 return Value.TRUE;  
 		 }
+		else if (!datastore.containsKey(tableName) && columnStore.contains_table(destinyTable).equals(Value.TRUE)){
+			 pointers.put(tableName, destinyTable);
+			 datastore.put(tableName,  keepTimeStamps ? new VersionMap() : new NonNullValueMap()); 
+			 return Value.TRUE;
+		}
 		return Value.FALSE; 
 	}
 	
 	
-	public Value get_referenced_value(String tableName, Key key) {
-		
+	public Value get_referenced_value(String tableName, Key key) throws IOException {
 		if (pointers.containsKey(tableName)){
-			
 			Map<Key,Value> keysTable = datastore.get(tableName);
 			if (keysTable.containsKey(key)){
-		
 				Map<Key,Value> endTable = datastore.get(pointers.get(tableName));
-				Value referencedValue = endTable.get(createKeyFromByteArray(keysTable.get(key)));
-				return referencedValue; 
+				if (endTable != null){
+					Value referencedValue = endTable.get(createKeyFromByteArray(keysTable.get(key)));
+					return referencedValue;
+				}
+				else if (columnStore.contains_table(pointers.get(tableName)).equals(Value.TRUE)){
+					Value v =  columnStore.get_value_in_table(pointers.get(tableName),createKeyFromByteArray(keysTable.get(key)));
+					
+					return v; 
+				}
 			}
+
 		}
 		return Value.SingletonValues.EMPTY; 
 	}
@@ -105,8 +118,6 @@ public class KeyValueStore implements Serializable{
 		}
 		return Value.FALSE;
 	}
-
-
 	
 	public Value clear_table(String tableName)  {
 		 if (datastore.containsKey(tableName)){
@@ -279,14 +290,14 @@ public class KeyValueStore implements Serializable{
 		return null; 
 	}
 	
-
-	
 	private Key createKeyFromByteArray(Value value) {
 		if (!keepTimeStamps){
 			return new ByteArrayKey(value.asByteArray());
 		}
-		System.out.println("Creating key from versioned value"); 
-		return new ByteArrayKey(((VersionedValue) value).getValue().asByteArray() ); 
+		if (value instanceof VersionedValue){
+			return new ByteArrayKey(((VersionedValue ) value).getValue().asByteArray()); 
+		}
+		return new ByteArrayKey(value.asByteArray()); 
 	}
 
 	/**
@@ -297,5 +308,21 @@ public class KeyValueStore implements Serializable{
 		return datastore.containsKey(tableName) ? datastore.get(tableName).size() : 0;  
 	}
 
-	
+	/**
+	 * @param tableName
+	 * @param key
+	 * @param columns
+	 * @return
+	 * @throws IOException 
+	 */
+	public Value get_referenced_columns_value(String tableName, Key key,
+			Set<String> columns) throws IOException {
+		Value v = this.get_value_in_table(tableName, key);
+		if (v != Value.SingletonValues.EMPTY){
+			
+			Value vv =  this.columnStore.get_columns(pointers.get(tableName),createKeyFromByteArray(v), columns);
+			return vv; 
+		}
+		return Value.SingletonValues.EMPTY; 
+	}
 }

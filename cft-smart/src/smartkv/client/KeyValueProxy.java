@@ -4,6 +4,7 @@
 package smartkv.client;
 
 import java.util.Collection;
+import java.util.Set;
 
 import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
@@ -11,6 +12,7 @@ import smartkv.server.DataStoreVersion;
 import smartkv.server.RequestType;
 
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 
 /**
@@ -53,7 +55,31 @@ public class KeyValueProxy extends AbstractDatastoreProxy implements IKeyValueDa
 		return invokeRequest(type, request);
 	}
 	
+	@Override
+	public DatastoreValue getColumnsByReference(String tableName, byte[] key, Set<String> columns) {
+		RequestType type = RequestType.GET_COLUMNS_REFERENCE;
+		byte[] request = concatArrays(
+				type.byteArrayOrdinal, 
+				getBytes(tableName), 
+				getBytes(key.length), 
+				key, 
+				getBytes(columns));
+		return invokeRequest(type, request);
+	}
 	
+	/**
+	 * @param columnName
+	 * @return
+	 */
+	protected byte[] getBytes(Set<String> columnName) {
+		byte[] finalByte = new byte[0];
+		
+		for (String s : columnName ){
+			finalByte = Bytes.concat(finalByte, getBytes(s));
+		}
+		return finalByte; 
+	}
+
 	/* 
 	 * @see bonafide.datastore.DatastoreProxy#put(java.lang.String, byte[], byte[])
 	 */

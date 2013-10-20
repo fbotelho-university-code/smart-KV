@@ -1,5 +1,9 @@
 package smartkv.client.workloads;
 
+import java.util.Set;
+
+import smartkv.client.workloads.RequestLogWithDataInformation.Builder;
+
 
 public class  RequestLogWithDataInformation extends RequestLogEntry{
 	/**
@@ -11,10 +15,13 @@ public class  RequestLogWithDataInformation extends RequestLogEntry{
 		private String value ="-"; 
 		private String existentValue ="-";
 		private String returnedValue = "-";
-		private String column = "-"; 
+		private String column = "-";
+		private Set<String> columns; 
 		
 
-		
+		public Set<String> getColumns(){
+			return columns; 
+		}
 		public Builder setTable(String table) {
 			this.table = table;
 			return this; 
@@ -69,6 +76,14 @@ public class  RequestLogWithDataInformation extends RequestLogEntry{
 		 * @param columnName
 		 * @return
 		 */
+		/**
+		 * @param columns
+		 * @return
+		 */
+		public Builder setColumns(Set<String> columns) {
+			this.columns = columns; 
+			return this; 
+		}
 		
 	}
 	
@@ -79,6 +94,7 @@ public class  RequestLogWithDataInformation extends RequestLogEntry{
 	private String existentValue; 
 	private String returnValue; 
 	private String column; 
+	private Set<String> columns; 
 	
 	///XXX - mete nojo isto. 
 	public RequestLogWithDataInformation(Builder b){

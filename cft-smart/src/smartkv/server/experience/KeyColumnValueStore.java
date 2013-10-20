@@ -3,23 +3,21 @@
  */
 package smartkv.server.experience;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 import smartkv.server.experience.values.ColumnValue;
 import smartkv.server.experience.values.Key;
 import smartkv.server.experience.values.Value;
 import smartkv.server.experience.values.VersionedValue;
 
-/**
- * @author fabiim
- *
- */
 public class KeyColumnValueStore extends KeyValueStore{
 	/**
 	 * @param keepTimeStamps
 	 */
 	public KeyColumnValueStore(boolean keepTimeStamps) {
-		super(keepTimeStamps);
+		super(keepTimeStamps, null);
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -55,6 +53,28 @@ public class KeyColumnValueStore extends KeyValueStore{
 	
 	private ColumnValue getColumnValue(String tableName, Key key){
 		return !this.keepTimeStamps ? (ColumnValue) datastore.get(tableName).get(key) :(ColumnValue) ((VersionedValue) datastore.get(tableName).get(key)).getValue(); 
+	}
+	
+	/**
+	 * @param tableName
+	 * @param key
+	 * @param columns
+	 * @return
+	 * @throws IOException 
+	 */
+	public Value get_columns(String tableName, Key key,
+			Set<String> columns) throws IOException {
+		Value s = get_value_in_table(tableName, key);
+		System.out.println(s);		
+		if (this.keepTimeStamps && !(s instanceof Value.SingletonValues)){
+			VersionedValue vs = (VersionedValue) s;
+			VersionedValue  newVs = new VersionedValue(new ColumnValue((ColumnValue) vs.getValue(), columns), vs.getVersion());
+			return newVs; 
+		}
+		else {
+			return s; 
+		}
+		
 	}
 	
 }

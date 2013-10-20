@@ -29,5 +29,6 @@ public interface ITable<K,V> {
 	public Collection<V> values();
 	public int getAndIncrement(String key);
 	
+	public String getName(); 
 }
 

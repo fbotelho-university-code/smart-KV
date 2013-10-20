@@ -4,6 +4,8 @@
 package smartkv.client.tables;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 import smartkv.client.DatastoreValue;
 import smartkv.client.IKeyValueDataStoreProxy;
@@ -23,7 +25,8 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	//Shadow "re-declaration" of datastore. Because we need a more specific type. 
 	protected IKeyValueDataStoreProxy datastore;
 	protected Serializer<V> valueSerializer;
-	protected Serializer<Object> referenceSerializer; 
+	protected Serializer<Object> referenceSerializer;
+	private ColumnObject<Object> referenceColumnSerializer; 
 	
 	
 	public static <K,V> KeyValueTable_<K,V> getTable(IKeyValueDataStoreProxy proxy, String tableName,
@@ -33,7 +36,7 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	
 	public static <K,V> KeyValueTable_<K,V> getTable(IKeyValueDataStoreProxy proxy, String tableName,
 			Serializer<K> keySerializer, Serializer<V> valueSerializer, String tableReference, Serializer<Object> referenceSerializer) {
-		return new KeyValueTable_<K,V>(proxy,tableName,  keySerializer, valueSerializer,tableReference , referenceSerializer );
+		return new KeyValueTable_<K,V>(proxy,tableName,  keySerializer, valueSerializer,tableReference , referenceSerializer, null );
 	}
 	
 
@@ -54,9 +57,8 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 		return new KeyValueTable_<K,V>(new KeyValueProxy(datastoreId), tableName, UnsafeJavaSerializer.<K>getInstance(),  UnsafeJavaSerializer.<V>getInstance());
 	}
 	
-	
-	protected KeyValueTable_(TableBuilder<K,V> b){
-		this((IKeyValueDataStoreProxy) b.getProxy(), b.getTableName(), b.getKeySerializer(), b.getValueSerializer(), b.getCrossReferenceTable(), b.getCrossReferenceValueSerializer()); 
+	public KeyValueTable_(TableBuilder<K,V> b){
+		this((IKeyValueDataStoreProxy) b.getOrCreateProxy(), b.getTableName(), b.getKeySerializer(), b.getValueSerializer(), b.getCrossReferenceTable(), b.getCrossReferenceValueSerializer(), b.getCrossReferenceColumnSerializer());
 	}
 	/**
 	 * @param proxy
@@ -66,8 +68,7 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	 */
 	protected KeyValueTable_(IKeyValueDataStoreProxy proxy, String tableName,
 			Serializer<K> keySerializer, Serializer<V> valueSerializer){
-		this(proxy, tableName, keySerializer, valueSerializer, null, null); 
-	
+		this(proxy, tableName, keySerializer, valueSerializer, null, null, null); 
 	}
 	
 	/**
@@ -75,13 +76,15 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	 * @param tableName
 	 * @param keySerializer
 	 * @param valueSerializer
+	 * @param columnObject 
 	 */
 	protected KeyValueTable_(IKeyValueDataStoreProxy proxy, String tableName,
-			Serializer<K> keySerializer, Serializer<V> valueSerializer,String tableReference, Serializer<Object> referenceSerializer) {
+			Serializer<K> keySerializer, Serializer<V> valueSerializer,String tableReference, Serializer<Object> referenceSerializer, ColumnObject<Object> columnObject) {
 		super(proxy, tableName, keySerializer, tableReference);
 		this.valueSerializer = valueSerializer; 
 		datastore = proxy;
 		this.referenceSerializer = referenceSerializer;
+		this.referenceColumnSerializer = columnObject; 
 	}
 
 	
@@ -181,13 +184,25 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	public <V1> VersionedValue<V1> getValueByReferenceWithTimestamp(K key) {
 		DatastoreValue val = datastore.getByReference(tableName, keySerializer.serialize(key));
 		return val != null  ?  new VersionedValue<V1>(
-							DatastoreValue.timeStampValues ? ((VersionedDatastoreValue) val).ts : 0, (V1) deserializeValue(val)) 
+							DatastoreValue.timeStampValues ? ((VersionedDatastoreValue) val).ts : 0, (V1) deserializeReferenceValue(val)) 
 							: null;
-
 	}
 	
 	
 
+	/**
+	 * @param val
+	 * @return
+	 */
+	private <V1> V1 deserializeReferenceValue(DatastoreValue val) {
+		if (this.referenceColumnSerializer != null){
+			return (V1) referenceColumnSerializer.fromColumns(serializeMap.deserialize(val.getRawData()));
+		}
+		else{
+			return (V1) referenceSerializer.deserialize(val.getRawData());
+		}
+	}
+	
 	/* (non-Javadoc) 
 	 * @see bonafide.getRawData()store.tables.KeyValueTable#replace(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
@@ -219,7 +234,20 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	protected byte[] serializeValue(V value) {
 		return valueSerializer.serialize(value);
 	}
+	private Serializer<Map<String,byte[]>>  serializeMap = UnsafeJavaSerializer.<Map<String,byte[]>>getInstance();  
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getColumnsByReference(java.lang.Object, java.util.Set)
+	 */
+
+	@Override
+	public VersionedValue<Object> getColumnsByReference(K key, Set<String> columns) {
+		VersionedDatastoreValue v = (VersionedDatastoreValue) datastore.getColumnsByReference(tableName, serializeKey(key), columns);
+		System.out.println(v);
+		return v != null ? new VersionedValue<Object>(v.ts, this.referenceColumnSerializer.fromColumns(serializeMap.deserialize(v.getRawData()))) : null;
+	}
 	
+	//FIXME : DataStoreValue and VersionedValue must be the same. No need to create two different objects. 
+	//Nullyfy the byte representation of DatastoreValue and add the value after deserialization.
 }
 	
 

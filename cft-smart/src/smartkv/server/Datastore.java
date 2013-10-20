@@ -59,5 +59,11 @@ public interface Datastore {
 	 * @throws Exception 
 	 */
 	byte[] atomic_replace_value_in_table_with_timestamp(DataInputStream dis) throws Exception;
+	/**
+	 * @param dis
+	 * @return
+	 * @throws IOException
+	 */
+	byte[] get_referenced_columns_value(DataInputStream dis) throws IOException;
 }
 

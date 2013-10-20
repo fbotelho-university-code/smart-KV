@@ -5,12 +5,12 @@ package smartkv.client.tables;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import smartkv.client.util.Serializer;
-import smartkv.client.util.UnsafeJavaSerializer;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -31,24 +31,27 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 	//FIXME 
 	@SuppressWarnings("unchecked")
 	public synchronized static <T> AnnotatedColumnObject<T> newAnnotatedColumnObject(Class<T> type){
+		return AnnotatedColumnObject.newAnnotatedColumnObject(type, new HashMap<String,Serializer>()); 
+	}
+	
+	public synchronized static <T> AnnotatedColumnObject<T> newAnnotatedColumnObject(Class<T> type, Map<String, Serializer> serializers){
 		if (!instances.containsKey(type)){
-			instances.put(type, new AnnotatedColumnObject<T>(type)); 
+			instances.put(type, new AnnotatedColumnObject<T>(type, serializers)); 
 		}
 		return (AnnotatedColumnObject<T>) instances.get(type);
 	}
 	
-	
 	private final Map<String,Method> getters;
 	private final Map<String,Method> setters;
+	private final Map<String,Serializer>  serializers; 
 	private final Class<T> clazz;
-	private final Serializer<Object> serializer = UnsafeJavaSerializer.getInstance(); 
 	private AnnotatedColumnObject.Constructor<T>  constructor; 
 	
 	/**
 	 * FIXME: documentation. 
 	 * @throws IllegalArgumentException if type does not implements an appropriate constructor.  
 	 */
-	private AnnotatedColumnObject(Class<T> type){
+	private AnnotatedColumnObject(Class<T> type, Map<String,Serializer> serializers){
 		clazz = type; 
 		try {
 			type.newInstance();
@@ -75,25 +78,29 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 			}
 		};
 		Map<String,Method> setters = Maps.newHashMap(); 
-		Map<String,Method> getters = Maps.newHashMap(); 
-		_construct(type, getters, setters);
+		Map<String,Method> getters = Maps.newHashMap();
+		_construct(type, getters, setters, serializers);
 		this.setters = ImmutableMap.copyOf(setters);
-		this.getters =ImmutableMap.copyOf(getters); 
+		this.getters =ImmutableMap.copyOf(getters);
+		this.serializers = ImmutableMap.copyOf(serializers); 
+		
 	}
 	
-	private AnnotatedColumnObject(Class<T> type, Constructor<T> constructor){
+	private AnnotatedColumnObject(Class<T> type, Constructor<T> constructor, Map<String,Serializer> serializers){
 		this.clazz = type; 
 		this.constructor = constructor; 
 		Map<String,Method> setters = Maps.newHashMap(); 
 		Map<String,Method> getters = Maps.newHashMap(); 
-		_construct(type, getters, setters);
+		_construct(type, getters, setters, serializers);
 		this.setters = ImmutableMap.copyOf(setters);
-		this.getters =ImmutableMap.copyOf(getters); 
+		this.getters =ImmutableMap.copyOf(getters);
+		this.serializers = ImmutableMap.copyOf(serializers); 
 	}
 	
 	
 	//XXX is this ok (method shared by constructors) ? 
-	private final void _construct(Class<T> type, Map<String,Method> getters, Map<String,Method> setters){
+	@SuppressWarnings("unchecked")
+	private final void _construct(Class<T> type, Map<String,Method> getters, Map<String,Method> setters, Map<String, Serializer> serializers){
 		
 		for (Method m : type.getDeclaredMethods()) {
 			if (m.isAnnotationPresent(Column.class)) {
@@ -120,7 +127,10 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 					e.printStackTrace();
 					throw new IllegalArgumentException("Method: " + m.getName() + " is qualified by  Column with default setter, but there is no method: " + setter ); 
 				}
-				setters.put( getter, setterMethod); 
+				setters.put( getter, setterMethod);
+				if (!serializers.containsKey(getter)){
+					serializers.put(getter, m.getAnnotation(Column.class).serializer().serial);
+				}
 			}
 		}
 	}
@@ -135,7 +145,11 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 		
 		for (Entry<String, Method> field : getters.entrySet()){
 			try {
-				values.put(field.getKey(), serializer.serialize(field.getValue().invoke(obj)));
+				Object v = field.getValue().invoke(obj);
+				//No need to serialize null references...
+				if (v != null){
+					values.put(field.getKey(),  this. serializers.get(field.getKey()).serialize(field.getValue().invoke(obj)));
+				}
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -165,7 +179,7 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 			if (m!= null){
 			try {
 				
-				m.invoke(object, serializer.deserialize(en.getValue()));
+				m.invoke(object, serializers.get(en.getKey()).deserialize(en.getValue()));
 				
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
@@ -190,7 +204,7 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 	 */
 	@Override
 	public byte[] serializeColumn(String columnName, Object val) {
-		return serializer.serialize(val); 
+		return serializers.get(columnName).serialize(val); 
 	}
 
 	/* (non-Javadoc)
@@ -198,7 +212,24 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 	 */
 	@Override
 	public Object deserializeColumn(String columnName, byte[] val) {
-		return  val != null ?  serializer.deserialize(val): null; 
+		return  val != null ?  serializers.get(columnName).deserialize(val): null; 
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.ColumnObject#getColumn(java.lang.Object, java.lang.String)
+	 */
+	@Override
+	public <C> C getColumn(T t, String columnName) {
+		try {
+			return (C) getters.get(columnName).invoke(t);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return null; 
 	}
 
 }

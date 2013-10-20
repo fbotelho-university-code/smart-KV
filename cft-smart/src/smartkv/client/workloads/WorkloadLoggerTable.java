@@ -11,6 +11,7 @@ import java.util.Set;
 import smartkv.client.KeyValueProxy;
 import smartkv.client.tables.IKeyValueTable;
 import smartkv.client.tables.KeyValueTable_;
+import smartkv.client.tables.TableBuilder;
 import smartkv.client.tables.VersionedValue;
 import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
@@ -108,11 +109,15 @@ public class WorkloadLoggerTable<K,V>  implements IKeyValueTable<K,V>{
 		return new WorkloadLoggerTable<K,V>(cid,tablename, logger,   UnsafeJavaSerializer.<K>getInstance(), UnsafeJavaSerializer.<V>getInstance() , crossTable, UnsafeJavaSerializer.getInstance() );
 	}
 	
-	IKeyValueTable<K,V> table;
-	RequestLogEntry entry;
+	public static <K,V> WorkloadLoggerTable<K,V> withSingletonLogger(TableBuilder<K,V> builder){
+		return new WorkloadLoggerTable<K,V>(builder, RequestLogger.getRequestLogger());
+	}
 	
-	String tableName;
-	RequestLogger logger; 
+	protected IKeyValueTable<K,V> table;
+	protected RequestLogEntry entry;
+	
+	protected String tableName;
+	protected RequestLogger logger; 
 	
 	/**
 	 * Construct a TableLogger with default (unsafe) serializers for keys and values.
@@ -123,7 +128,27 @@ public class WorkloadLoggerTable<K,V>  implements IKeyValueTable<K,V>{
 	
 	
 	protected WorkloadLoggerTable(){
-		
+	}
+	
+	protected WorkloadLoggerTable(TableBuilder<K,V> builder, RequestLogger logger){
+		this.entry = new RequestLogEntry();  
+		this.logger = logger;
+		this.tableName =builder.getTableName();
+		if (builder.getProxy() ==null){
+		builder.setProxy(new KeyValueProxy(builder.getCid()){
+			@Override
+			protected byte[] invokeRequestWithRawReturn(RequestType type, byte[] request) {
+				entry.setTimeStarted(System.currentTimeMillis());
+				entry.setSizeOfRequest(request.length);
+				entry.setType(type);
+				byte[] result =  super.invokeRequestWithRawReturn(type, request);
+				entry.setTimeEnded(System.currentTimeMillis());
+				entry.setSizeOfResponse( result != null ? result.length : 0);
+				return result; 
+			}
+		});
+		}
+		this.table = new KeyValueTable_<K,V>(builder); 
 	}
 	
 	
@@ -318,7 +343,9 @@ public class WorkloadLoggerTable<K,V>  implements IKeyValueTable<K,V>{
 	 */
 	@Override
 	public <V1> V1 getValueByReference(K key) {
+		
 		V1 val = (V1) table.getValueByReference(key);
+		System.out.println(val);
 		logEntry(new RequestLogWithDataInformation.Builder().
 				setTable(tableName).
 				setKey(key != null? key.toString() : "null" ).
@@ -417,6 +444,31 @@ public class WorkloadLoggerTable<K,V>  implements IKeyValueTable<K,V>{
 				build(entry));
 		return val; 
 	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getName()
+	 */
+	@Override
+	public String getName() {
+		return tableName; 
+	}
+	
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getColumnsByReference(java.lang.Object, java.util.Set)
+	 */
+	@Override
+	public VersionedValue<Object> getColumnsByReference(K key,
+			Set<String> columns) {
+		VersionedValue<Object> val = table.getColumnsByReference(key, columns);
+		logEntry(new RequestLogWithDataInformation.Builder().
+				setTable(tableName).
+				setKey(key != null? key.toString() : "null" ).
+				setReturnedValue(val != null ? val.toString() : "null" ).
+				setColumns(columns).
+				build(entry));
+		return val;
+	}
+	
 }
 
 

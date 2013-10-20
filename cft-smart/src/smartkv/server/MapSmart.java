@@ -37,8 +37,9 @@ public class MapSmart extends DefaultSingleRecoverable{
         return o.readObject();
     }
     
-    private Datastore keyValue = new KeyValueStoreRPC(DatastoreValue.timeStampValues); 
-	private ColumnDatastore columns = new KeyValueColumnStoreRpc(DatastoreValue.timeStampValues); 
+    
+	private ColumnDatastore columns = new KeyValueColumnStoreRpc(DatastoreValue.timeStampValues);
+	private Datastore keyValue = new KeyValueStoreRPC(DatastoreValue.timeStampValues,columns.getDatastore()); 
 	public static void main(String[] args){
 		new MapSmart(0);
 		new MapSmart(1);
@@ -153,7 +154,13 @@ public class MapSmart extends DefaultSingleRecoverable{
 			case GET_VALUE_IN_TABLE_BY_REFERENCE:
 				return ds.get_referenced_value(dis);
 			case REPLACE_WITH_TIMESTAMP:
-				return ds.atomic_replace_value_in_table_with_timestamp(dis); 
+				return ds.atomic_replace_value_in_table_with_timestamp(dis);
+			case GET_COLUMNS: 
+				if (version != DataStoreVersion.COLUMN_KEY_VALUE) throw new UnsupportedOperationException("This is operation is not supported for the specified version");
+				return this.columns.get_columns(dis);
+			case GET_COLUMNS_REFERENCE:
+				//TODO  should only be applied to key value table. 
+				return ds.get_referenced_columns_value(dis);
 			default:
 				break;
 			 }

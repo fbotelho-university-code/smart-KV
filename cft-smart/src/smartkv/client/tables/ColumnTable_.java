@@ -3,13 +3,11 @@
  */
 package smartkv.client.tables;
 
-import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
-import smartkv.client.ColumnProxy;
 import smartkv.client.DatastoreValue;
 import smartkv.client.IKeyValueColumnDatastoreProxy;
-import smartkv.client.util.JavaSerializer;
 import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
 
@@ -18,14 +16,17 @@ import smartkv.client.util.UnsafeJavaSerializer;
  *
  */
 public class ColumnTable_<K, V> extends KeyValueTable_<K, V> implements
-		ColumnTable<K, V> {
+		IColumnTable<K, V> {
 
 	private IKeyValueColumnDatastoreProxy datastore;
 	private ColumnObject<V> valueSerializer;
 	
 	public ColumnTable_(TableBuilder<K,V> builder){
-		super(builder); 
+		super(builder);
+		datastore = (IKeyValueColumnDatastoreProxy) builder.getProxy(); 
+		valueSerializer = builder.getColumnSerializer(); 
 	}
+	
 	/**
 	 * @param proxy
 	 * @param tableName
@@ -72,6 +73,11 @@ public class ColumnTable_<K, V> extends KeyValueTable_<K, V> implements
 		return datastore.setColumn(tableName, serializeKey(key), columnName, serializeColumn(columnName, value));
 	}
 	
+	public V getColumns(K key, Set<String> columns){
+		DatastoreValue v = datastore.getColumns(tableName, serializeKey(key), columns);
+		return deserializeValue(v); 
+	}
+	
 	// *****  Serialization ************** 
 
 
@@ -110,6 +116,15 @@ public class ColumnTable_<K, V> extends KeyValueTable_<K, V> implements
 	
 	protected byte[] serializeColumn(String columnName, Object value){
 		return valueSerializer.serializeColumn(columnName, value);
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IColumnTable#getColumnsSerializer()
+	 */
+	@Override
+	public ColumnObject<V> getColumnsSerializer() {
+		//FIXME isIt safe to share ?
+		return valueSerializer; 
 	}
 		
 	

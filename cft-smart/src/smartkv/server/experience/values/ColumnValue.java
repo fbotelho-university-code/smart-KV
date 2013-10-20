@@ -7,11 +7,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 
 import smartkv.server.MapSmart;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -19,26 +21,36 @@ import com.google.common.collect.Maps;
  *
  */
 public class ColumnValue implements Value{
-	private final SortedMap<String,Value> columns;
+	private final SortedMap<String,byte[]> columns;
 	
 	public static Value createSimpleValueFromMap(Map<String,byte[]> map){
-		SortedMap<String,Value> newMap =  Maps.newTreeMap();
+		SortedMap<String,byte[]> newMap =  Maps.newTreeMap();
 		for (Entry<String, byte[]> entry : map.entrySet()){
-			newMap.put(entry.getKey(), ByteArrayValue.createValueFromByteArray(entry.getValue())); 
+			newMap.put(entry.getKey(), entry.getValue()); 
 		}
 		return new ColumnValue(newMap); 
 	}
 	
-	public ColumnValue(SortedMap<String, Value> columns) {
+	public ColumnValue(SortedMap<String, byte[]> columns) {
 		this.columns = columns; 
 	}
 	
+	
+	public ColumnValue(ColumnValue value, Set<String> columns) {
+		ImmutableSortedMap.Builder<String, byte[]> result = ImmutableSortedMap.naturalOrder();
+		for (String s : columns){
+			result.put(s, value.columns.get(s));
+		}
+		this.columns = result.build(); 
+	}
+
 	/**
 	 * @param columnName
 	 * @return
 	 */
 	public Value get(String columnName) {
-		Value val = columns.get(columnName); 
+		//XXX not efficient optimium
+		Value val = ByteArrayValue.createValueFromByteArray(columns.get(columnName)); 
 		return val != null ? val : Value.SingletonValues.EMPTY; 
 	}
 	
@@ -53,15 +65,15 @@ public class ColumnValue implements Value{
 	 * @return
 	 */
 	public Value put(String columnName, Value columnValue) {
-		return columns.put(columnName, columnValue);
+		return ByteArrayValue.createValueFromByteArray(columns.put(columnName, columnValue.asByteArray()));
 	}
 	
 	
 	@Override
 	public byte[] asByteArray() {
 		ImmutableMap.Builder<String, byte[]> result = ImmutableMap.builder();
-		for ( Entry<String, Value> i : columns.entrySet()){
-			result.put(i.getKey(), i.getValue().asByteArray());  
+		for ( Entry<String, byte[]> i : columns.entrySet()){
+			result.put(i.getKey(), i.getValue());  
 		}
 		try {
 			return MapSmart.serialize(result.build());
@@ -72,9 +84,8 @@ public class ColumnValue implements Value{
 		}
 		return null;
 	}
-
 	
-
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

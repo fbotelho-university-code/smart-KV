@@ -3,8 +3,7 @@
  */
 package smartkv.client;
 
-import java.util.Collection;
-import java.util.TreeMap;
+import java.util.Set;
 
 /**
  * @author fabiim
@@ -25,6 +24,12 @@ public interface IKeyValueColumnDatastoreProxy extends IKeyValueDataStoreProxy{
 	 * @return
 	 */
 	byte[] getColumnByReference(String tableName, byte[] key, String columnName);
+	/**
+	 * @param serializeKey
+	 * @param columns
+	 * @return
+	 */
+	public DatastoreValue getColumns(String tableName, byte[] serializeKey,  Set<String> columns);
 	
 	
 }

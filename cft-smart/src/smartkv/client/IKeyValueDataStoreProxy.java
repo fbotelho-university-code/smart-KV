@@ -4,6 +4,7 @@
 package smartkv.client;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author fabiim
@@ -136,6 +137,17 @@ public interface IKeyValueDataStoreProxy extends IDataStoreProxy{
 	 */
 	public boolean replace(String tableName, byte[] serialize,
 			int knownVersion, byte[] serialize2);
+
+
+
+	/**
+	 * @param tableName
+	 * @param key
+	 * @param columns
+	 * @return
+	 */
+	DatastoreValue getColumnsByReference(String tableName, byte[] key,
+			Set<String> columns);
 	
 	
 }

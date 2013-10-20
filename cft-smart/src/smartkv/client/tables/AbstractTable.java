@@ -142,4 +142,9 @@ public abstract  class AbstractTable<K, V> implements ITable<K, V> {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public String getName(){
+		return tableName;
+	}
 }

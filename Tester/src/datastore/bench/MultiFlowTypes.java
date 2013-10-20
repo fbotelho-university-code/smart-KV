@@ -152,6 +152,31 @@ public class MultiFlowTypes extends BenchClient{
 			cond_update_pool,
 			read_member,
 		}; 
+		
+		// Column values  
+		
+		public static int[][] lbw_4_ip_packet = {
+			{ FlowSimulation.READ_OP,62, 324},
+			{ FlowSimulation.READ_OP,30,373},
+			{ FlowSimulation.WRITE_OP,403,1},
+			{ FlowSimulation.READ_OP,44,4},
+		};
+		
+		public static String[] lbw_4_ip_packet_dsc = {
+			LoadBalancerNew.obtain_Vip_info_pool,
+			read_pool, 
+			cond_update_pool,
+			read_member,
+		}; 
+		
+		public static int[][] lbw_4_normal_packet = {
+			{ FlowSimulation.READ_OP,62,0},
+		};
+		
+		public static String[] lbw_4_normal_packet_dsc = {
+			obtain_Vip_info_pool
+		};
+		
 	}
 	static class LoadBalancer{
 		public static int[][] lbw_1 ={

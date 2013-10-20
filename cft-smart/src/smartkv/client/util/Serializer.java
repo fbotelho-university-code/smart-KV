@@ -3,14 +3,33 @@
  */
 package smartkv.client.util;
 
+import java.util.List;
+
+import com.google.common.primitives.Bytes;
+import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.google.common.primitives.Shorts;
+
 
 /**
  * @author fabiim
  *
  */
 public interface Serializer<T> {
+	
+	public static enum SerialNum{
+		INT (Serializer.INT),
+		UNSAFE (UnsafeJavaSerializer.getInstance()), 
+		STRING(Serializer.STRING),
+		SHORT(Serializer.SHORT); 
+		
+		public final Serializer serial; 
+		SerialNum(Serializer o){
+			this.serial =o; 
+		}
+	}
+	
+
 	public static  Serializer<Long> LONG = new Serializer<Long>(){
 
 		@Override
@@ -49,6 +68,20 @@ public interface Serializer<T> {
 		@Override
 		public Short deserialize(byte[] bytes) {
 			return Shorts.fromByteArray(bytes); 
+		}
+		
+	};
+	
+	public static Serializer<Integer> INT = new Serializer<Integer>(){
+
+		@Override 
+		public byte[] serialize(Integer v) {
+			return Ints.toByteArray(v);
+		}
+
+		@Override
+		public Integer deserialize(byte[] bytes) {
+			return Ints.fromByteArray(bytes); 
 		}
 		
 	};

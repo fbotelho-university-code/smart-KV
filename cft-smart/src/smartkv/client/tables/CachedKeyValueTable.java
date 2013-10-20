@@ -20,10 +20,9 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 		return new CachedKeyValueTable<K,V>(table);
 	}
 	
-	private CachedKeyValueTable(IKeyValueTable<K,V> table){
+	protected CachedKeyValueTable(IKeyValueTable<K,V> table){
 		this.table = table; 
 	}
-	
 	
 	//TODO - extends the final map to take care of values for you. 
 	static class ClockTimeStampValue<V>{
@@ -89,6 +88,44 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 			return (V1) v.value; 
 		}
 		return null;
+	}
+	
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getColumnsByReference(java.lang.Object, java.util.Set)
+	 */
+	@Override
+	public VersionedValue<Object> getColumnsByReference(K key,
+			Set<String> columns, long delta) {
+		ClockTimeStampValue<Object> cached_value = referencesCache.get(key);
+		
+		if (cached_value != null){
+			
+			System.out.println((System.currentTimeMillis() - cached_value.timestamp) +" < " + delta + "? " + ((System.currentTimeMillis() - cached_value.timestamp) < delta) + " - " + columns);
+			if ((System.currentTimeMillis() - cached_value.timestamp) < delta){
+				 return cached_value.value;  
+			}
+		}
+		System.out.println("not found on cache: " + key);
+		return getColumnsByReferenceAndUpdateCache(key,columns); 
+	}
+	/**
+	 * @param key
+	 * @param columns
+	 * @return
+	 */
+	private VersionedValue<Object> getColumnsByReferenceAndUpdateCache(K key,
+			Set<String> columns) {
+		VersionedValue<Object> v = table.getColumnsByReference(key, columns);
+		if (v!= null){
+			System.out.println("Updated cache : " + key + " -> " + v);
+			referencesCache.put(key, new ClockTimeStampValue<Object>(v));
+		}
+		return v; 
+	}
+	@Override
+	public VersionedValue<Object> getColumnsByReference(K key,
+			Set<String> columns) {
+		return getColumnsByReferenceAndUpdateCache(key, columns); 
 	}
 	
 	@Override
@@ -222,17 +259,28 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 		return table.getAndIncrement(key);
 	}
 
+	//FIXME Why I am not adding this to the cache?
 	public <V1> VersionedValue<V1> getValueByReferenceWithTimestamp(K key) {
 		return table.getValueByReferenceWithTimestamp(key);
 	}
-
+	//FIXME Why I am not adding this to the cache?
 	public VersionedValue<V> getWithTimeStamp(K key) {
 		return table.getWithTimeStamp(key);
 	}
-
+	//FIXME Why I am not adding this to the cache?
 	public VersionedValue<V> putIfAbsentWithTimestamp(K key, V value) {
 		return table.putIfAbsentWithTimestamp(key, value);
 	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getName()
+	 */
+	@Override
+	public String getName() {
+		return table.getName();
+	}
+
+	
 
 	
 }

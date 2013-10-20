@@ -61,7 +61,7 @@ public class ColumnTableTest {
 	
 	
 	
-	private ColumnTable<KeyObject, ValueObject> ds;
+	private IColumnTable<KeyObject, ValueObject> ds;
 	public static int id=0; 
 	public ColumnTableTest(){
 		ds = new ColumnTable_<KeyObject, ValueObject>(new TableBuilder<KeyObject,ValueObject>().setCid(id++).setTableName("ttestTable").setColumnSerializer(ValueObject.class)); 
@@ -81,7 +81,7 @@ public class ColumnTableTest {
 	}
 	
 	/**
-	 * Test method for {@link smartkv.client.tables.ColumnTable#getColumn(java.lang.Object, java.lang.String)}.
+	 * Test method for {@link smartkv.client.tables.IColumnTable#getColumn(java.lang.Object, java.lang.String)}.
 	 */
 	@Test
 	public void testGetColumn(){
@@ -92,7 +92,7 @@ public class ColumnTableTest {
 	}
 	
 	/**
-	 * Test method for {@link smartkv.client.tables.ColumnTable#setColumn(java.lang.Object, java.lang.String, java.lang.Object)}.
+	 * Test method for {@link smartkv.client.tables.IColumnTable#setColumn(java.lang.Object, java.lang.String, java.lang.Object)}.
 	 */
 	@Test
 	public void testSetColumn(){

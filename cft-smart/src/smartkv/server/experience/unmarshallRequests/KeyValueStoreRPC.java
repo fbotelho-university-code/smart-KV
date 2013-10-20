@@ -6,33 +6,27 @@ package smartkv.server.experience.unmarshallRequests;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
-import smartkv.server.ByteArrayWrapper;
+import smartkv.server.ColumnDatastore;
 import smartkv.server.Datastore;
 import smartkv.server.MapSmart;
+import smartkv.server.experience.KeyColumnValueStore;
 import smartkv.server.experience.KeyValueStore;
 import smartkv.server.experience.values.ByteArrayKey;
 import smartkv.server.experience.values.ByteArrayValue;
 import smartkv.server.experience.values.Key;
 import smartkv.server.experience.values.Value;
-import smartkv.server.util.LRULinkedHashMap;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.common.primitives.Ints;
-import com.google.common.primitives.UnsignedBytes;
 
 
 public class KeyValueStoreRPC implements Datastore, Serializable{
+	KeyColumnValueStore columnStore;
 	
 	/**
 	 * 
@@ -43,8 +37,8 @@ public class KeyValueStoreRPC implements Datastore, Serializable{
 	/**
 	 * @param keeptimestamps
 	 */
-	public KeyValueStoreRPC(boolean keeptimestamps) {
-		datastore = new KeyValueStore(keeptimestamps); 
+	public KeyValueStoreRPC(boolean keeptimestamps, smartkv.server.experience.KeyColumnValueStore store) {
+		datastore = new KeyValueStore(keeptimestamps, store); 
 	}
 	
 	@Override
@@ -72,9 +66,23 @@ public class KeyValueStoreRPC implements Datastore, Serializable{
 	public byte[] get_referenced_value(DataInputStream dis) throws IOException{
 		String tableName = dis.readUTF();
 		Key key = ByteArrayKey.createKeyFromBytes(readNextByteArray(dis));
+		//System.out.println("GET referenced value : " + tableName + "; key : " + key);
 		return datastore.get_referenced_value(tableName, key).asByteArray();
 	}
+			
 	
+	@Override
+	public byte[] get_referenced_columns_value(DataInputStream dis) throws IOException{
+		String tableName = dis.readUTF();
+		Key key = ByteArrayKey.createKeyFromBytes(readNextByteArray(dis));
+		Set<String> columns = Sets.newHashSet();
+		while (dis.available() >0 ){
+			String s = dis.readUTF();
+			columns.add(s); 
+		}
+		return datastore.get_referenced_columns_value(tableName, key,columns).asByteArray();
+	}
+		
 	@Override
 	public byte[] create_table_max_size(DataInputStream dis)
 			throws IOException {
@@ -367,6 +375,6 @@ public class KeyValueStoreRPC implements Datastore, Serializable{
 	public byte[] is_datastore_empty() throws Exception {
 		return datastore.is_datastore_empty().asByteArray(); 
 	}
-
+	
 	
 }

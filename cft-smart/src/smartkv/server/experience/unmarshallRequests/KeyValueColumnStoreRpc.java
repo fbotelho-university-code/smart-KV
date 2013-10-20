@@ -5,15 +5,10 @@ package smartkv.server.experience.unmarshallRequests;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 
-import smartkv.server.ByteArrayWrapper;
 import smartkv.server.ColumnDatastore;
 import smartkv.server.MapSmart;
 import smartkv.server.experience.KeyColumnValueStore;
@@ -22,7 +17,7 @@ import smartkv.server.experience.values.ColumnValue;
 import smartkv.server.experience.values.Key;
 import smartkv.server.experience.values.Value;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
 
@@ -41,10 +36,10 @@ public class KeyValueColumnStoreRpc extends KeyValueStoreRPC implements ColumnDa
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	KeyColumnValueStore datastore;  
+	KeyColumnValueStore datastore;
 	
 	public KeyValueColumnStoreRpc(boolean keeptimestamps){
-		super(keeptimestamps); 
+		super(keeptimestamps, null); 
 		
 		datastore = new KeyColumnValueStore(keeptimestamps);
 		//paranoid java n00b warning. Too lazy to go on the internet... 
@@ -60,6 +55,18 @@ public class KeyValueColumnStoreRpc extends KeyValueStoreRPC implements ColumnDa
 		return datastore.get_column(tableName,key,columnName).asByteArray(); 
 	}		
 	
+	public byte[] get_columns(DataInputStream dis) throws IOException{
+		String tableName;
+		tableName = dis.readUTF();
+		Key key =createKeyFromBytes(readNextByteArray(dis));
+		Set<String> columns = Sets.newHashSet();
+		while (dis.available() >0 ){
+			String s = dis.readUTF();
+			columns.add(s); 
+		}
+		
+		return datastore.get_columns(tableName,key,columns).asByteArray();
+	}
 	
 	/* (non-Javadoc)
 	 * @see mapserver.ColumnDatastore#put_column(java.io.DataInputStream)
@@ -103,4 +110,17 @@ public class KeyValueColumnStoreRpc extends KeyValueStoreRPC implements ColumnDa
 		 }
 		 return null;*/
 	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.server.ColumnDatastore#getDatastore()
+	 */
+	@Override
+	public KeyColumnValueStore getDatastore() {
+		return datastore; 
+	}
+	
+	/* (non-Javadoc)
+	 * @see smartkv.server.ColumnDatastore#get_columns(java.io.DataInputStream)
+	 */
+	
 }
