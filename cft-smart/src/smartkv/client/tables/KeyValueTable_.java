@@ -281,7 +281,7 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	}*/
 	public byte[] getTwoDevices(IndexedEntity ieSource,
 			IndexedEntity ieDestination) {
-		System.out.println("KeyValue Proxy");
+		//System.out.println("KeyValue Proxy");
 		return datastore.getTwoDevices(ieSource, ieDestination); 
 	}
 

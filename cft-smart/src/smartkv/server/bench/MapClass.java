@@ -81,7 +81,7 @@ public class MapClass extends DefaultSingleRecoverable {
 		this.interval = interval; 
 		this.measure = true;
 		throughput = new DescriptiveStatistics();
-		tpStartTime = System.currentTimeMillis();
+		tpStartTime = System.nanoTime(); 
 		executions =0;
 
 		
@@ -103,7 +103,8 @@ public class MapClass extends DefaultSingleRecoverable {
 	    			        	
 	    			        	out.println(statsEnd.getN() + ":" + statsEnd.getMean() +  ":" + statsEnd.getStandardDeviation() + ":" + statsEnd.getMin() + ":" +statsEnd.getMax() + 
 	    			        		( (tests.size() > 0) ?  (":" + tests.get(0).name + ":" + tests.get(0).clients + ":"  + tests.get(0).random) : "") 
-	    			        		+ ": " + ordered + ":" + unordered);  
+	    			        		+ ": " + ordered + ":" + unordered);
+	    			        	out.flush(); 
 	    			        	out.close();
 	    			        	}
 	    					} catch (IOException e) {
@@ -173,7 +174,7 @@ public class MapClass extends DefaultSingleRecoverable {
 		 if (!warmed){
 			 if (warm++ == 1000) {
 				 warmed = true;
-				 tpStartTime = System.currentTimeMillis();  
+				 tpStartTime = System.nanoTime(); 
 			 }
 		 }
 		 
@@ -187,8 +188,8 @@ public class MapClass extends DefaultSingleRecoverable {
 				 if ((executions % interval) == 0 ){
 					 executions = 0; 
 					 try{
-						 throughput.addValue(1000 * interval/ (System.currentTimeMillis() - tpStartTime));
-						 tpStartTime = System.currentTimeMillis();
+						 throughput.addValue(1000 * 1000000 * interval/ (System.nanoTime() - tpStartTime));
+						 tpStartTime = System.nanoTime();
 					 }catch (ArithmeticException e){
 						System.err.println("Atirhtmetic exception") ; 
 					 }

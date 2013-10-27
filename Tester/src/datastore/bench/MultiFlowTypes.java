@@ -3,6 +3,8 @@ package datastore.bench;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import com.google.common.collect.Maps;
 
 import datastore.bench.flowsimulations.FlowSimulation;
@@ -26,10 +28,11 @@ public class MultiFlowTypes extends BenchClient{
 	public static HashMap<String, WorkloadPerFlow> simulations = Maps.newHashMap(); 
 	
 	static{
-		simulations.put("lsw-0-broadcast", new WorkloadPerFlow("lsw-0" , LearningSwitch.lsw_0_broadcast_ops, LearningSwitch.lsw_0_brodcast_dsc, "Broadcast Packet", "Original with Java Serialization"));
-		simulations.put("lsw-0-unicast", new WorkloadPerFlow("lsw-0" , LearningSwitch.lsw_0_unicast_ops, LearningSwitch.lsw_0_unicast_dsc, "Unicast Packet", "Original with Java Serialization"));
-		simulations.put("lsw-1-unicast", new WorkloadPerFlow("lsw-1" , LearningSwitch.lsw_1_unicast_ops, LearningSwitch.lsw_1_unicast_dsc, "Unicast Packet", "Better Serialization"));
-		simulations.put("lsw-1-broadcast", new WorkloadPerFlow("lsw-1" , LearningSwitch.lsw_1_broadcast_ops, LearningSwitch.lsw_1_broadcast_dsc, "Broadcast Packet", "Better Serialization"));
+		simulations.put("lsw-0-broadcast", new WorkloadPerFlow("lsw-0" , LearningSwitch.lsw_0_broadcast_ops, LearningSwitch.lsw_0_brodcast_dsc, "Broadcast Packet", "Original"));
+		simulations.put("lsw-0-unicast", new WorkloadPerFlow("lsw-0" , LearningSwitch.lsw_0_unicast_ops, LearningSwitch.lsw_0_unicast_dsc, "Unicast Packet", "Original"));
+		//Serialization 
+		simulations.put("lsw-1-unicast", new WorkloadPerFlow("lsw-1" , LearningSwitch.lsw_1_unicast_ops, LearningSwitch.lsw_1_unicast_dsc, "Unicast Packet", "Manual Serialization"));
+		simulations.put("lsw-1-broadcast", new WorkloadPerFlow("lsw-1" , LearningSwitch.lsw_1_broadcast_ops, LearningSwitch.lsw_1_broadcast_dsc, "Broadcast Packet", "Manual Serialization"));
 	}
 	
 	static class LearningSwitch{
@@ -69,6 +72,8 @@ public class MultiFlowTypes extends BenchClient{
 			"Read egress port for destination in ingress switch-table",
 		};
 	}
+	
+	
 	static{
 		simulations.put("lbw-0-arp-request", new WorkloadPerFlow("lbw-0" , LoadBalancerNew.lbw_0_arp_request, LoadBalancerNew.lbw_0_arp_request_dsc, "Arp Request to a VIP", "Original"));
 		simulations.put("lbw-0-ip-to-vip", new WorkloadPerFlow("lbw-0" , LoadBalancerNew.lbw_0_ip_packet, LoadBalancerNew.lbw_0_ip_packet_dsc, "IP packet to a VIP", "Original"));
@@ -78,17 +83,15 @@ public class MultiFlowTypes extends BenchClient{
 		simulations.put("lbw-1-ip-to-vip", new WorkloadPerFlow("lbw-1" , LoadBalancerNew.lbw_1_ip_packet, LoadBalancerNew.lbw_1_ip_packet_dsc, "IP packet to a VIP", "Cross Reference Tables"));
 		simulations.put("lbw-1-ip-to-notvip", new WorkloadPerFlow("lbw-1" , LoadBalancerNew.lbw_1_normal_packet, LoadBalancerNew.lbw_1_normal_packet_dsc, "Normal Packet", "Cross Reference Tables"));
 		// Use replace with timestamp 
-		simulations.put("lbw-2-arp-request", new WorkloadPerFlow("lbw-2" , LoadBalancerNew.lbw_2_arp_request, LoadBalancerNew.lbw_2_arp_request_dsc, "Arp Request to a VIP", "Timestamp Values"));
+//		simulations.put("lbw-2-arp-request", new WorkloadPerFlow("lbw-2" , LoadBalancerNew.lbw_2_arp_request, LoadBalancerNew.lbw_2_arp_request_dsc, "Arp Request to a VIP", "Timestamp Values"));
 		simulations.put("lbw-2-ip-to-vip", new WorkloadPerFlow("lbw-2" , LoadBalancerNew.lbw_2_ip_packet, LoadBalancerNew.lbw_2_ip_packet_dsc, "IP packet to a VIP", "Timestamp Values"));
-		simulations.put("lbw-2-ip-to-notvip", new WorkloadPerFlow("lbw-2" , LoadBalancerNew.lbw_2_normal_packet, LoadBalancerNew.lbw_2_normal_packet_dsc, "Normal Packet", "Timestamp Values"));
+//		simulations.put("lbw-2-ip-to-notvip", new WorkloadPerFlow("lbw-2" , LoadBalancerNew.lbw_2_normal_packet, LoadBalancerNew.lbw_2_normal_packet_dsc, "Normal Packet", "Timestamp Values"));
 		// Columns
 		simulations.put("lbw-3-arp-request", new WorkloadPerFlow("lbw-3" , LoadBalancerNew.lbw_3_arp_request, LoadBalancerNew.lbw_3_arp_request_dsc, "Arp Request to a VIP", "Columns"));
 		simulations.put("lbw-3-ip-to-vip", new WorkloadPerFlow("lbw-3" , LoadBalancerNew.lbw_3_ip_packet, LoadBalancerNew.lbw_3_ip_packet_dsc, "IP packet to a VIP", "Columns"));
 		simulations.put("lbw-3-ip-to-notvip", new WorkloadPerFlow("lbw-3" , LoadBalancerNew.lbw_3_normal_packet, LoadBalancerNew.lbw_3_normal_packet_dsc, "Normal Packet", "Columns"));
 		// Micro Componenets 
-		simulations.put("lbw-4-arp-request", new WorkloadPerFlow("lbw-4" , LoadBalancerNew.lbw_4_arp_request, LoadBalancerNew.lbw_4_arp_request_dsc, "Arp Request to a VIP", "Micro Components"));
 		simulations.put("lbw-4-ip-to-vip", new WorkloadPerFlow("lbw-4" , LoadBalancerNew.lbw_4_ip_packet, LoadBalancerNew.lbw_4_ip_packet_dsc, "IP packet to a VIP", "Micro Components"));
-		simulations.put("lbw-4-ip-to-notvip", new WorkloadPerFlow("lbw-4" , LoadBalancerNew.lbw_4_normal_packet, LoadBalancerNew.lbw_4_normal_packet_dsc, "Normal Packet", "Micro Components"));
 	}
 	static class LoadBalancerNew{
 		public static String read_Vip_key = "Read the VIP id for the destination IP";  
@@ -134,7 +137,7 @@ public class MultiFlowTypes extends BenchClient{
 			read_Vip_key
 		};
 		
-		// LBW2 - Cross references eliminate the trouble of reading id and reading VIP (first 2 requests).
+		// LBW1 - Cross references eliminate the trouble of reading id and reading VIP (first 2 requests).
 		public static int[][] lbw_1_arp_request = {
 			{ FlowSimulation.READ_OP,104,509},
 		};
@@ -166,8 +169,7 @@ public class MultiFlowTypes extends BenchClient{
 		};
 	
 		// Replace replace by replace with timestamp. 
-		
-		
+
 		public static int[][] lbw_2_ip_packet = {
 			{ FlowSimulation.READ_OP,104, 513},
 			{ FlowSimulation.READ_OP,30,373},
@@ -183,6 +185,14 @@ public class MultiFlowTypes extends BenchClient{
 		}; 
 		
 		// Column values  
+		
+		public static int[][] lbw_3_arp_request = {
+			{ FlowSimulation.READ_OP,62,324},
+		};
+		
+		public static String[] lbw_3_arp_request_dsc ={
+			obtain_Vip_info_mac,
+		};
 		
 		public static int[][] lbw_3_ip_packet = {
 			{ FlowSimulation.READ_OP,62, 324},
@@ -216,8 +226,8 @@ public class MultiFlowTypes extends BenchClient{
 			LoadBalancerNew.obtain_Vip_info_pool,
 			"Round robin pool and return member address",
 		};
-		
 	}
+	
 	/*
 	static class LoadBalancer{
 		public static int[][] lbw_1 ={
@@ -286,8 +296,8 @@ public class MultiFlowTypes extends BenchClient{
 		simulations.put("dm-3-unknown", new WorkloadPerFlow("dm-3" , DeviceManagerNew.dmw_3_arp_for_unknown, DeviceManagerNew.dmw_3_arp_for_unknown_dsc, "ARP from Unknown Source", "Columns"));
 		simulations.put("dm-3-known", new WorkloadPerFlow("dm-3" , DeviceManagerNew.dmw_3_ip_for_known, DeviceManagerNew.dmw_3_ip_for_known_dsc, "Known Devices", "Columns"));
 		//Micro Components
-		simulations.put("dm-4-unknown", new WorkloadPerFlow("dm-4" , DeviceManagerNew.dmw_4_arp_for_unknown, DeviceManagerNew.dmw_4_arp_for_unknown_dsc, "ARP from Unknown Source", "Micro Componenets"));
-		simulations.put("dm-4-known", new WorkloadPerFlow("dm-4" , DeviceManagerNew.dmw_4_ip_for_known, DeviceManagerNew.dmw_4_ip_for_known_dsc, "Known Devices", "Micro Componenents"));
+		//simulations.put("dm-4-unknown", new WorkloadPerFlow("dm-4" , DeviceManagerNew.dmw_4_arp_for_unknown, DeviceManagerNew.dmw_4_arp_for_unknown_dsc, "ARP from Unknown Source", "Micro Componenets"));
+		simulations.put("dm-4-known", new WorkloadPerFlow("dm-4" , DeviceManagerNew.dmw_4_ip_for_known, DeviceManagerNew.dmw_4_ip_for_known_dsc, "Known Devices", "Micro Components"));
 	}
 	
 	static class DeviceManagerNew{
@@ -312,6 +322,7 @@ public class MultiFlowTypes extends BenchClient{
 				{ FlowSimulation.READ_OP,408,8},
 				{ FlowSimulation.READ_OP,26,1369}
 		}; 
+		
 		public static String[] dmw_0_ip_for_known_dsc ={
 			read_source_key, 
 			read_source,
@@ -342,18 +353,18 @@ public class MultiFlowTypes extends BenchClient{
 		};
 		
 		// KV -  With Cross Reference and removed the Device Entity Class from the serialization (state ) of the objects 
-		
 		public static int[][] dmw_1_ip_for_known ={ 
 			{ FlowSimulation.READ_OP,408,1274},
 			{ FlowSimulation.WRITE_OP,2602,0},
 			{ FlowSimulation.READ_OP,408,1199}
-		}; 
-	public static String[] dmw_1_ip_for_known_dsc ={
-		read_source,
-		update_ts,
-		read_dest
-	};
-	
+		};
+		
+		public static String[] dmw_1_ip_for_known_dsc ={
+			read_source,
+			update_ts,
+			read_dest
+		};
+		
 	public static int[][] dmw_1_arp_for_unknown ={ 
 		{ FlowSimulation.READ_OP,408,0},
 		{ FlowSimulation.WRITE_OP,21,4},
@@ -361,8 +372,9 @@ public class MultiFlowTypes extends BenchClient{
 		{ FlowSimulation.WRITE_OP,416,0},
 		{ FlowSimulation.READ_OP,386,0},
 		{ FlowSimulation.WRITE_OP,517,0},
-		{ FlowSimulation.READ_OP,408,0},
-	}; 
+		{ FlowSimulation.READ_OP,408,1208},
+	};
+	
 	public static String[] dmw_1_arp_for_unknown_dsc ={
 				read_source, 
 				inc_counter, 
@@ -436,6 +448,38 @@ public class MultiFlowTypes extends BenchClient{
 				read_dest + "(partially)", 
 	};
 	
+	// Micro Componenets 
+	
+	public static int[][] dmw_4_ip_for_known ={ 
+		{ FlowSimulation.READ_OP,32,1414},
+		{ FlowSimulation.WRITE_OP,36,0},
+	};
+	
+	public static String[] dmw_4_ip_for_known_dsc ={
+		"Read Source and Destination devices (partially)", 
+		"Update Devices",
+	};
+	/*
+	public static int[][] dmw_4_arp_for_unknown ={ 
+		{ FlowSimulation.READ_OP,486,0},
+		{ FlowSimulation.WRITE_OP,21,4},
+		{ FlowSimulation.WRITE_OP,1183,1},
+		{ FlowSimulation.WRITE_OP,416,0},
+		{ FlowSimulation.READ_OP,386,0},
+		{ FlowSimulation.WRITE_OP,517,0},
+		{ FlowSimulation.READ_OP,416,474},
+	}; 
+	
+	public static String[] dmw_4_arp_for_unknown_dsc ={
+				read_source, 
+				inc_counter, 
+				add_device_map, 
+				add_device_mac, 
+				get_ips, 
+				update_ips, 
+				read_dest + "(partially)", 
+	};
+	*/
 	}
 	/*static class DeviceManager{
 		
@@ -475,7 +519,7 @@ public class MultiFlowTypes extends BenchClient{
 	int index=0;
 	
 
-	static{
+	/*static{
 		//Learning Switch 
 		simulations.put("lsw-0", new WorkloadPerFlow("lsw-0" , LearningSwitch.lsw_0_broadcast_ops, LearningSwitch.lsw_0_brodcast_dsc, "Broadcast Packet"));  
 		simulations.put("lsw-2", new WorkloadPerFlow(LearningSwitch.lsw_2_ops, LearningSwitch.lsw_2_dsc, "Unicast Packet"));  
@@ -495,7 +539,7 @@ public class MultiFlowTypes extends BenchClient{
 		simulations.put("dmw-2", new WorkloadPerFlow(DeviceManager.dmw_2, DeviceManager.dmw_2_dsc, "Unknown source"));  
 
 		
-/*		simulations.put("lsw-2", new OpenFlowMessageWorkload(new FlowSimulation[] {
+		simulations.put("lsw-2", new OpenFlowMessageWorkload(new FlowSimulation[] {
 				new LearningSwitch(LearningSwitch.worstCase1),
 				}, "Unicast Packet"));
 		//
@@ -537,8 +581,8 @@ public class MultiFlowTypes extends BenchClient{
 				new LearningSwitch(LearningSwitch.cachedCase0),
 				new LearningSwitch(LearningSwitch.cachedCase1),
 				new LearningSwitch(LearningSwitch.cachedCase2)}, "Learning Switch with Cache")); 
-	*/	
-	}
+		
+	}*/
 
 	/*static{
 		simulations.put("base", new FlowSimula(new FlowSimulation[] { 
@@ -583,7 +627,7 @@ public class MultiFlowTypes extends BenchClient{
 	public static String getValues(){
 		StringBuilder s = new StringBuilder();
 		for (Entry<String, WorkloadPerFlow> en : simulations.entrySet()){
-			s.append(en.getKey() + " - " + en.getValue().workloadDescription + "\n");
+			s.append(en.getKey() + "#" + en.getValue().name  + "#" + en.getValue().workload_dsc +"#" +  en.getValue().datastoreState +"#\n");
 		}
 		return s.toString(); 
 	}

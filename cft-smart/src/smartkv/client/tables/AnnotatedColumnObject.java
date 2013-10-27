@@ -202,7 +202,7 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 				e.printStackTrace();
 			}}
 			else{
-				System.out.println("Data store object has unknown columns: " + en.getKey());
+				//System.out.println("Data store object has unknown columns: " + en.getKey());
 				//log.warn("Data store object has unknown columns: ");				
 			}
 		}

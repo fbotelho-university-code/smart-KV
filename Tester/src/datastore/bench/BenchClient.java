@@ -17,12 +17,12 @@ import smartkv.server.bench.TestInformation;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.TimeoutException;
 import datastore.bench.flowsimulations.FlowSimulation;
-import datastore.bench.flowsimulations.deviceManager.WorkloadPerFlow;
+
 
 
 public abstract class BenchClient implements Runnable{
 	
-	static long test_start_time = System.currentTimeMillis();
+	static long test_start_time = System.nanoTime(); 
 	public static void main(String[] args) throws InterruptedException{
 		if (args.length < 3) {
             System.out.println("Usage: ... ThroughputLatencyClient <num. threads> <number of operations per thread> <interval> <verbose?> <stored statistics?> <start_id> <CASE (see above)?>");
@@ -126,14 +126,14 @@ public abstract class BenchClient implements Runnable{
         }
         try{
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("./latency", true)));
-        out.print( type +":" + numThreads + ":"+ statsEnd.getN() + ":" + statsEnd.getMean() + ":" +statsEnd.getStandardDeviation() + ":" + statsEnd.getMin() + ":" + statsEnd.getMax() + ":" + random 
+        out.print( type +":" + numThreads + ":"+ statsEnd.getN() + ":" + statsEnd.getMean()  + ":" +statsEnd.getStandardDeviation() + ":" + statsEnd.getMin() + ":" + statsEnd.getMax() + ":" + random 
         		 + ":" +  ops);
         //Print Test information. 
         out.print(":("); 
         WorkloadPerFlow f = MultiFlowTypes.simulations.get(type);
-        out.print(f.workloadDescription +";"); 
+        out.print(f.workload_dsc +";"); 
         
-        int[][] requests = f.requests;  
+        int[][] requests = f.ops;  
         for (int i = 0 ; i < requests.length ; i++){
         	out.print(requests[i][0] == FlowSimulation.WRITE_OP ? "W" : "R"); 
         	out.print(","); 
@@ -145,7 +145,7 @@ public abstract class BenchClient implements Runnable{
         out.print(")");
         
         //Test duration
-        out.print(":" + ((System.currentTimeMillis() - test_start_time) / (1000 *60) ));
+        out.print(":" + ((System.nanoTime() - test_start_time) / (1000 * 1000 *60) ));
         out.println(""); 
         
         out.close(); 
@@ -276,7 +276,7 @@ public abstract class BenchClient implements Runnable{
 			if (verbose && (i % interval) == 0 ){
 				System.out.println("Thread " + id + " on request: " + i); 
 			}
-			long tflow_started = System.currentTimeMillis();
+			long tflow_started = System.nanoTime();
 			
 			try{
 				flow.run(proxy);
@@ -284,7 +284,7 @@ public abstract class BenchClient implements Runnable{
 				return false;
 			}
 			
-			final long total  = System.currentTimeMillis() - tflow_started;  
+			final long total  = System.nanoTime() - tflow_started;  
 			try{
 				proxy.invokeUnordered(end);
 			}catch(Exception e){
@@ -313,7 +313,7 @@ public abstract class BenchClient implements Runnable{
         return o.readObject();
     }
 	
-    WorkloadPerFlow flow; 
+    datastore.bench.WorkloadPerFlow flow; 
 	//protected  abstract FlowSimulation chooseNextFlow();
 	protected  abstract void end(long t, long i);
 }
