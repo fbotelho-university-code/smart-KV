@@ -32,4 +32,10 @@ public interface ColumnDatastore extends Datastore{
 	 * @return
 	 */
 	public KeyColumnValueStore getDatastore();
+	/**
+	 * @param dis
+	 * @return
+	 * @throws Exception 
+	 */
+	public byte[] replace_column(DataInputStream dis) throws Exception;
 }

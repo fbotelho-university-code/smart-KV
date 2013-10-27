@@ -6,6 +6,8 @@ package smartkv.client.tables;
 import java.util.Map;
 import java.util.Set;
 
+import net.floodlightcontroller.devicemanager.internal.Device;
+import net.floodlightcontroller.devicemanager.internal.Entity;
 import smartkv.client.DatastoreValue;
 import smartkv.client.IKeyValueColumnDatastoreProxy;
 import smartkv.client.util.Serializer;
@@ -96,6 +98,7 @@ public class ColumnTable_<K, V> extends KeyValueTable_<K, V> implements
 		try{
 			return serialize.serialize(valueSerializer.toColumns(value));
 		}catch (NullPointerException e){
+
 			e.printStackTrace();
 
 		}
@@ -126,8 +129,13 @@ public class ColumnTable_<K, V> extends KeyValueTable_<K, V> implements
 		//FIXME isIt safe to share ?
 		return valueSerializer; 
 	}
-		
-	
-	
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IColumnTable#replaceCOlumn(java.lang.Object, java.lang.String, byte[])
+	 */
+	@Override
+	public boolean replaceColumn(K key, int currentValue, String columnName, Object value) {
+		return datastore.replace(tableName, serializeKey(key), currentValue, columnName, serializeColumn(columnName, value));
+	}
 
 }

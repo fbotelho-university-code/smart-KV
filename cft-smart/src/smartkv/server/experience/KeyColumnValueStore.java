@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import smartkv.server.experience.values.ByteArrayValue;
 import smartkv.server.experience.values.ColumnValue;
 import smartkv.server.experience.values.Key;
 import smartkv.server.experience.values.Value;
@@ -75,6 +76,29 @@ public class KeyColumnValueStore extends KeyValueStore{
 			return s; 
 		}
 		
+	}
+
+	/**
+	 * @param table
+	 * @param key
+	 * @param column
+	 * @param v
+	 * @return
+	 * @throws IOException 
+	 */
+	public Value replace_column(String tableName, Key key, int knownVersion,String columnName,
+			Value columnValue) throws IOException {
+		if (datastore.containsKey(tableName) && datastore.get(tableName).containsKey(key)){
+			VersionedValue v = (VersionedValue) super.get_value_in_table(tableName, key);
+			if (v.getVersion()  == knownVersion){
+				ColumnValue value = getColumnValue(tableName, key);
+				if (value.containsKey(columnName)){
+					value.put(columnName, columnValue);
+					return Value.TRUE; 
+				}
+			}
+		}
+		return Value.FALSE;
 	}
 	
 }

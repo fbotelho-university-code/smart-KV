@@ -76,5 +76,40 @@ public class ColumnProxy extends KeyValueProxy implements IKeyValueColumnDatasto
 		return DataStoreVersion.COLUMN_KEY_VALUE; 
 	}
 
+	/* (non-Javadoc)
+	 * @see smartkv.client.IKeyValueColumnDatastoreProxy#replace(java.lang.String, byte[], int, java.lang.String, byte[])
+	 */
+	@Override
+	public boolean replace(String tableName, byte[] key,
+			int currentValue, String columnName2, byte[] serializeColumn) {
+		RequestType type = RequestType.REPLACE_COLUMN; 
+		byte[] request = concatArrays(type.byteArrayOrdinal, 
+				getBytes(tableName), 
+				getBytes(key.length), 
+				key,
+				getBytes(currentValue), 
+				getBytes(columnName2), 
+				serializeColumn);
+		byte[] result = invokeRequestWithRawReturn(type, request);
+		return result != null; 
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.IKeyValueColumnDatastoreProxy#updateDevice(java.lang.Long, int, int, long, byte[])
+	 */
+	@Override
+	public Object updateDevice(Long deviceKey, int version, int entityindex,
+			long l, byte[] serialize) {
+		RequestType type = RequestType.DM_UPDATE_DEVICE;
+		byte[] request = concatArrays(type.byteArrayOrdinal, 
+				getBytes(deviceKey),
+				getBytes(version), 
+				getBytes(entityindex), 
+				getBytes(l), 
+				serialize); 
+		byte[] result = invokeRequestWithRawReturn(type, request);
+		return result != null; 
+	}
+
 	
 } 

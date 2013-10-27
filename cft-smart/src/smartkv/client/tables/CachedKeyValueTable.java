@@ -5,6 +5,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.floodlightcontroller.devicemanager.internal.Device;
+import net.floodlightcontroller.devicemanager.internal.Entity;
+import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
+
 import com.google.common.collect.Maps;
 
 
@@ -15,14 +19,20 @@ import com.google.common.collect.Maps;
 
 public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 	IKeyValueTable<K,V> table;
+	private boolean fetch_null =false; 
 	
+	public static <K,V> CachedKeyValueTable<K,V> startCache(IKeyValueTable<K,V> table, boolean fetch_null){
+		return new CachedKeyValueTable<K,V>(table, fetch_null);
+	}
 	public static <K,V> CachedKeyValueTable<K,V> startCache(IKeyValueTable<K,V> table){
-		return new CachedKeyValueTable<K,V>(table);
+		return new CachedKeyValueTable<K,V>(table,false);
 	}
 	
-	protected CachedKeyValueTable(IKeyValueTable<K,V> table){
+	protected CachedKeyValueTable(IKeyValueTable<K,V> table, boolean fetch_null){
 		this.table = table; 
+		this.fetch_null = fetch_null;  
 	}
+	
 	
 	//TODO - extends the final map to take care of values for you. 
 	static class ClockTimeStampValue<V>{
@@ -67,25 +77,31 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <V1> V1 getValueByReference(K key, long delta) {
+	@Override
+	public VersionedValue<Object> getVersionedValueByReference(K key, long delta){
 		ClockTimeStampValue<Object> cached_value = referencesCache.get(key); 
 		if (cached_value != null){
 			if (System.currentTimeMillis() - cached_value.timestamp < delta){
-				 return (V1) cached_value.value.value; 
+				 return cached_value.value; 
 			}
 		}
 		return getReferenceAndUpdateCache(key); 
 	}
 
+	public <V1> V1 getValueByReference(K key, long delta) {
+		VersionedValue<Object> v = getVersionedValueByReference(key, delta);
+		return v != null  ?  (V1) v.value() : null; 
+	}
+	
 	/**
 	 * @param key
 	 * @return
 	 */
-	private <V1> V1 getReferenceAndUpdateCache(K key) {
+	private VersionedValue<Object> getReferenceAndUpdateCache(K key) {
 		VersionedValue<Object> v = table.getValueByReferenceWithTimestamp(key); 
 		if (v != null){
 			referencesCache.put(key, new ClockTimeStampValue<Object>(v));
-			return (V1) v.value; 
+			return  v; 
 		}
 		return null;
 	}
@@ -97,15 +113,11 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 	public VersionedValue<Object> getColumnsByReference(K key,
 			Set<String> columns, long delta) {
 		ClockTimeStampValue<Object> cached_value = referencesCache.get(key);
-		
 		if (cached_value != null){
-			
-			System.out.println((System.currentTimeMillis() - cached_value.timestamp) +" < " + delta + "? " + ((System.currentTimeMillis() - cached_value.timestamp) < delta) + " - " + columns);
 			if ((System.currentTimeMillis() - cached_value.timestamp) < delta){
 				 return cached_value.value;  
 			}
 		}
-		System.out.println("not found on cache: " + key);
 		return getColumnsByReferenceAndUpdateCache(key,columns); 
 	}
 	/**
@@ -117,7 +129,6 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 			Set<String> columns) {
 		VersionedValue<Object> v = table.getColumnsByReference(key, columns);
 		if (v!= null){
-			System.out.println("Updated cache : " + key + " -> " + v);
 			referencesCache.put(key, new ClockTimeStampValue<Object>(v));
 		}
 		return v; 
@@ -145,7 +156,8 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 	
 	@Override
 	public <V1> V1 getValueByReference(K key) {
-		return getReferenceAndUpdateCache(key);
+		VersionedValue<Object>  v = getReferenceAndUpdateCache(key);
+		return v != null ? (V1) v.value() : null;  
 	}
 	
 	@Override
@@ -260,6 +272,7 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 	}
 
 	//FIXME Why I am not adding this to the cache?
+	
 	public <V1> VersionedValue<V1> getValueByReferenceWithTimestamp(K key) {
 		return table.getValueByReferenceWithTimestamp(key);
 	}
@@ -280,7 +293,44 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 		return table.getName();
 	}
 
-	
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#roundRobin(java.lang.String)
+	 */
+	@Override
+	public Integer roundRobin(String id) {
+		return table.roundRobin(id); 
+	}
 
+	
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#createDevice(net.floodlightcontroller.devicemanager.internal.Entity)
+	 */
+	@Override
+	public Device createDevice(Entity entity) {
+		return table.createDevice(entity); 
+	}
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.ICachedKeyValueTable#createDevice(java.lang.Long, int, int, long)
+	 */
+	@Override
+	public boolean updateDevice(Long deviceKey, int version, int entityindex,
+			long l) {
+		return table.updateDevice(deviceKey, version, entityindex, l); 
+	}
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getTwoDevices(net.floodlightcontroller.devicemanager.internal.Entity, net.floodlightcontroller.devicemanager.internal.Entity)
+	 */
+	//@Override
+	/*public byte[] getTwoDevices(Entity ieSource, Entity ieDestination) {
+		//return table.getTwoDevices(ieSource, ieDestination); 
+	}*/
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getTwoDevices(net.floodlightcontroller.devicemanager.internal.IndexedEntity, net.floodlightcontroller.devicemanager.internal.IndexedEntity)
+	 */
+	@Override
+	public byte[] getTwoDevices(IndexedEntity ieSource,
+			IndexedEntity ieDestination) {
+		return table.getTwoDevices(ieSource, ieDestination); 
+	}
 	
 }

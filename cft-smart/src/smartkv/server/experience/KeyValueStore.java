@@ -49,6 +49,7 @@ public class KeyValueStore implements Serializable{
 		
 	
 	public Value create_table(String tableName){
+
 		 if (!datastore.containsKey(tableName)){
 			 datastore.put(tableName, keepTimeStamps ?  new VersionMap() : new NonNullValueMap());
 			 return Value.TRUE;  
@@ -57,6 +58,7 @@ public class KeyValueStore implements Serializable{
 	}
 
 	public Value create_pointer_table(String tableName, String destinyTable) {
+
 		if (!datastore.containsKey(tableName) && datastore.containsKey(destinyTable)){
 			 pointers.put(tableName, destinyTable);
 			 datastore.put(tableName,  keepTimeStamps ? new VersionMap() : new NonNullValueMap()); 
@@ -72,12 +74,17 @@ public class KeyValueStore implements Serializable{
 	
 	
 	public Value get_referenced_value(String tableName, Key key) throws IOException {
+
 		if (pointers.containsKey(tableName)){
+			
 			Map<Key,Value> keysTable = datastore.get(tableName);
 			if (keysTable.containsKey(key)){
+			
 				Map<Key,Value> endTable = datastore.get(pointers.get(tableName));
 				if (endTable != null){
+			
 					Value referencedValue = endTable.get(createKeyFromByteArray(keysTable.get(key)));
+			
 					return referencedValue;
 				}
 				else if (columnStore.contains_table(pointers.get(tableName)).equals(Value.TRUE)){
@@ -86,8 +93,8 @@ public class KeyValueStore implements Serializable{
 					return v; 
 				}
 			}
-
 		}
+
 		return Value.SingletonValues.EMPTY; 
 	}
 	

@@ -3,10 +3,16 @@
  */
 package smartkv.client.tables;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import net.floodlightcontroller.devicemanager.internal.Device;
+import net.floodlightcontroller.devicemanager.internal.Entity;
+import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
 import smartkv.client.DatastoreValue;
 import smartkv.client.IKeyValueDataStoreProxy;
 import smartkv.client.KeyValueProxy;
@@ -15,6 +21,8 @@ import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
 
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Bytes;
+import com.google.common.primitives.Longs;
 //FIXME are you certain that updates are updating the cache and the corresponding timestamp ? 
 /**
  * @author fabiim
@@ -242,12 +250,65 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	@Override
 	public VersionedValue<Object> getColumnsByReference(K key, Set<String> columns) {
 		VersionedDatastoreValue v = (VersionedDatastoreValue) datastore.getColumnsByReference(tableName, serializeKey(key), columns);
-		System.out.println(v);
 		return v != null ? new VersionedValue<Object>(v.ts, this.referenceColumnSerializer.fromColumns(serializeMap.deserialize(v.getRawData()))) : null;
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#roundRobin(java.lang.String)
+	 */
+	@Override
+	public Integer roundRobin(String id) {
+		return datastore.roundRobin(id); 
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getTwoDevices(net.floodlightcontroller.devicemanager.internal.IndexedEntity, net.floodlightcontroller.devicemanager.internal.IndexedEntity)
+	 */
+/*	@Override
+	public byte[] getTwoDevices(Entity ieSource,
+			Entity ieDestination) {
+		try {
+		ByteArrayOutputStream ob = new ByteArrayOutputStream(); 
+			ObjectOutputStream oo = new ObjectOutputStream(ob);
+			oo.writeObject(ieSource);
+			oo.writeObject(ieDestination);
+			return datastore.getTwoDevices(ob.toByteArray());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}*/
+	public byte[] getTwoDevices(IndexedEntity ieSource,
+			IndexedEntity ieDestination) {
+		System.out.println("KeyValue Proxy");
+		return datastore.getTwoDevices(ieSource, ieDestination); 
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#createDevice(net.floodlightcontroller.devicemanager.internal.Entity)
+	 */
+	@Override
+	public Device createDevice(Entity entity) {
+		byte[] b = datastore.createDevice(UnsafeJavaSerializer.getInstance().serialize(entity));
+		return b != null ? (Device) UnsafeJavaSerializer.getInstance().deserialize(b) : null;
 	}
 	
 	//FIXME : DataStoreValue and VersionedValue must be the same. No need to create two different objects. 
 	//Nullyfy the byte representation of DatastoreValue and add the value after deserialization.
+	
+	/**
+	 * @param deviceKey
+	 * @param version
+	 * @param entityindex
+	 * @param l
+	 * @return
+	 */
+	@Override
+	public boolean updateDevice(Long deviceKey, int version, int entityindex,
+			long l){
+		return datastore.updateDevice(deviceKey, version, entityindex, l); 
+	}
 }
 	
 

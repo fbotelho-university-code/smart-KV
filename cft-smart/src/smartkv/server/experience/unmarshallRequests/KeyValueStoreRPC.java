@@ -319,7 +319,6 @@ public class KeyValueStoreRPC implements Datastore, Serializable{
 		key=createKeyFromBytes(readNextByteArray(dis));
 		Value value = createValueFromBytes( ByteStreams.toByteArray(dis));
 		return datastore.atomic_put_if_absent(tableName, key, value).asByteArray();
-		
 	}
 	
 	protected byte[] readNextByteArray(DataInputStream in) throws IOException {

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
 import smartkv.server.DataStoreVersion;
 import smartkv.server.RequestType;
@@ -58,11 +59,13 @@ public abstract class AbstractDatastoreProxy  implements IDataStoreProxy{
 	 * @param cid The client id used in {@link ServiceProxy} . Remember that is must be globally unique. 
 	 */
 	protected AbstractDatastoreProxy(int id){
+		if (id >=0 ){
 		//FIXME
 		///TODO have a testing setting that verifies if the same cid is being used, and throws an exception to find out where. 
 		
 		//server = createThreadServiceProxy(id);
 		server = new ServiceProxy(counter++); 
+		}
 	}
 	
 	/* 
@@ -305,7 +308,7 @@ public abstract class AbstractDatastoreProxy  implements IDataStoreProxy{
 	
 	protected abstract DataStoreVersion version();
 	
-	protected  byte[] getBytes(String s){
+	protected static  byte[] getBytes(String s){
 		//FIXME
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		DataOutputStream stream = new DataOutputStream(out);
@@ -318,14 +321,20 @@ public abstract class AbstractDatastoreProxy  implements IDataStoreProxy{
 		}
 	}
 	
-	protected  byte[] getBytes(Integer i){
+	protected static  byte[] getBytes(int i){
 		return ByteBuffer.allocate(4).putInt(i).array();
 	}
 	
-	protected byte[] getBytes(Long l){
+	protected static byte[] getBytes(long l){
 		return ByteBuffer.allocate(8).putLong(l).array();
 	}
 	
+	@Override
+	public Integer roundRobin(String id){
+		byte[] msg = concatArrays(RequestType.LB_ROUND_ROBIN.byteArrayOrdinal, getBytes(id));
+		byte [] result = invokeRequestWithRawReturn(RequestType.LB_ROUND_ROBIN, msg); 
+		return result != null ?  Serializer.INT.deserialize(result ) : null; 
+	}
 	
 }
 

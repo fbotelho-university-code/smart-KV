@@ -21,7 +21,8 @@ public interface Serializer<T> {
 		INT (Serializer.INT),
 		UNSAFE (UnsafeJavaSerializer.getInstance()), 
 		STRING(Serializer.STRING),
-		SHORT(Serializer.SHORT); 
+		SHORT(Serializer.SHORT),
+		LONG(Serializer.LONG); 
 		
 		public final Serializer serial; 
 		SerialNum(Serializer o){

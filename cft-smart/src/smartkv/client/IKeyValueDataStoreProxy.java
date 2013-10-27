@@ -6,6 +6,8 @@ package smartkv.client;
 import java.util.Collection;
 import java.util.Set;
 
+import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
+
 /**
  * @author fabiim
  *
@@ -148,6 +150,42 @@ public interface IKeyValueDataStoreProxy extends IDataStoreProxy{
 	 */
 	DatastoreValue getColumnsByReference(String tableName, byte[] key,
 			Set<String> columns);
+
+
+	
+	/**
+	 * @param serialize
+	 * @return
+	 */
+	public byte[] createDevice(byte[] serialize);
+
+
+	
+	/**
+	 * @param deviceKey
+	 * @param version
+	 * @param entityindex
+	 * @param l
+	 * @return
+	 */
+	public boolean updateDevice(Long deviceKey, int version, int entityindex,
+			long l);
+
+
+	/**
+	 * @param byteArray
+	 * @return
+	 */
+	public byte[] getTwoDevices(byte[] byteArray);
+
+
+	/**
+	 * @param ieSource
+	 * @param ieDestination
+	 * @return
+	 */
+	public byte[] getTwoDevices(IndexedEntity ieSource,
+			IndexedEntity ieDestination);
 	
 	
 }

@@ -3,11 +3,13 @@
  */
 package smartkv.client.tables;
 
+import java.io.Serializable;
+
 /**
  * @author fabiim
  * Also known as a tuple!
  */
-public class VersionedValue<V> {
+public class VersionedValue<V> implements Serializable{
 	
 	public  final int ts; 
 	public final V value;

@@ -3,6 +3,9 @@
  */
 package smartkv.client.tables;
 
+import net.floodlightcontroller.devicemanager.internal.Entity;
+import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
+
 import com.google.common.collect.ImmutableMap;
 
 
@@ -18,7 +21,7 @@ public class CachedColumnTable<K,V> extends CachedKeyValueTable<K,V> implements 
 	}
 	
 	protected CachedColumnTable(IColumnTable<K, V> table) {
-		super(table);
+		super(table,false);
 		this.table = table;
 		this.columnsSerializer = table.getColumnsSerializer(); 
 	}
@@ -35,7 +38,6 @@ public class CachedColumnTable<K,V> extends CachedKeyValueTable<K,V> implements 
 		else{
 			C c  = table.getColumn(key, columnName);
 			V incompleteValue = columnsSerializer.fromColumns(ImmutableMap.<String, byte[]>of(columnName, columnsSerializer.serializeColumn(columnName, c)));
-			System.out.println("value: " + incompleteValue);
 			cache.put(key, new ClockTimeStampValue<V>(new VersionedValue<V>(-1, incompleteValue)));
 			return c; 
 		}
@@ -79,6 +81,17 @@ public class CachedColumnTable<K,V> extends CachedKeyValueTable<K,V> implements 
 	public ColumnObject<V> getColumnsSerializer() {
 		return columnsSerializer; 
 	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IColumnTable#replaceColumn(java.lang.Object, int, java.lang.String, byte[])
+	 */
+	@Override
+	public boolean replaceColumn(K key, int currentValue, String columnName,
+			Object value) {
+		//FIXME - aproveitar valor retornado
+		return table.replaceColumn(key,currentValue, columnName, value);
+	}
+
 	
 	
 }

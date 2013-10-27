@@ -3,11 +3,15 @@
  */
 package smartkv.client.workloads;
 
+//XXX pass Objects to RequestLogData and avoid checking everything if it is null or not... 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.floodlightcontroller.devicemanager.internal.Device;
+import net.floodlightcontroller.devicemanager.internal.Entity;
+import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
 import smartkv.client.KeyValueProxy;
 import smartkv.client.tables.IKeyValueTable;
 import smartkv.client.tables.KeyValueTable_;
@@ -467,6 +471,58 @@ public class WorkloadLoggerTable<K,V>  implements IKeyValueTable<K,V>{
 				setColumns(columns).
 				build(entry));
 		return val;
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#roundRobin(java.lang.String)
+	 */
+	@Override
+	public Integer roundRobin(String id) {
+		Integer v = table.roundRobin(id);
+		logEntry(new RequestLogWithDataInformation.Builder().setKey(id).setReturnedValue(v != null ? v.toString() : null).build(entry));
+		return v; 
+	}
+	
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#getTwoDevices(net.floodlightcontroller.devicemanager.internal.IndexedEntity, net.floodlightcontroller.devicemanager.internal.IndexedEntity)
+	 */
+	@Override
+	public byte[] getTwoDevices(IndexedEntity ieSource,
+			IndexedEntity ieDestination){
+		byte[] v = table.getTwoDevices(ieSource,ieDestination);
+		logEntry(new RequestLogWithDataInformation.Builder().
+				setKey(ieSource + " - " + ieDestination).
+				setReturnedValue(v != null ? v.toString() : null).build(entry));
+		return v; 
+	}
+	
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#createDevice(net.floodlightcontroller.devicemanager.internal.Entity)
+	 */
+	@Override
+	public Device createDevice(Entity entity) {
+		Device d = table.createDevice(entity); 
+		logEntry(new RequestLogWithDataInformation.Builder() 
+				.setKey(entity.toString())
+				.setReturnedValue(d)
+				.build(entry)
+				);
+		return d; 
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#updateDevice(java.lang.Long, int, int, long)
+	 */
+	@Override
+	public boolean updateDevice(Long deviceKey, int version, int entityindex,
+			long l) {
+		Boolean b = table.updateDevice(deviceKey, version, entityindex, l); 
+		logEntry(new RequestLogWithDataInformation.Builder() 
+		.setKey("key= " + deviceKey +", version= " + version + ", entityIndex = " + entityindex + " , newTimeStamp" + l)
+		.setReturnedValue(b)
+		.build(entry)
+		);
+		return b; 
 	}
 	
 }

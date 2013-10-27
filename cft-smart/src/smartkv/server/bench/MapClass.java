@@ -51,7 +51,6 @@ public class MapClass extends DefaultSingleRecoverable {
 	private long tpStartTime = System.currentTimeMillis(); 
 	
 	public static void main(String[] args){
-		//System.out.println("Usage : prog <id> <throughput measurement interval in operations>");
 		int id = Integer.parseInt(args[0]); 
 		
 		if (args.length ==  2) {
@@ -108,7 +107,7 @@ public class MapClass extends DefaultSingleRecoverable {
 	    			        	out.close();
 	    			        	}
 	    					} catch (IOException e) {
-	    						System.out.println("error"); 
+	    						e.printStackTrace(); 
 	    					}
 	    					
 	    				}	

@@ -146,6 +146,9 @@ public interface IDataStoreProxy{
 	 * @return
 	 */
 	Map<byte[], DatastoreValue> getTable(String tableName);
+
+	public Integer roundRobin(String id);
+
 	
 }
 

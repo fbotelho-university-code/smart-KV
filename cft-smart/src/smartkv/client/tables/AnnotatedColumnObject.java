@@ -5,6 +5,7 @@ package smartkv.client.tables;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -139,6 +140,7 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 	/* 
 	 * @see bonafide.datastore.tables.ColumnObject#toColumns(java.lang.Object)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public TreeMap<String, byte[]> toColumns(T obj){
 		TreeMap<String, byte[]> values= Maps.newTreeMap();  
@@ -148,8 +150,19 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 				Object v = field.getValue().invoke(obj);
 				//No need to serialize null references...
 				if (v != null){
-					values.put(field.getKey(),  this. serializers.get(field.getKey()).serialize(field.getValue().invoke(obj)));
+					byte[] vv = this. serializers.get(field.getKey()).serialize(field.getValue().invoke(obj));
+					if (vv != null){
+						values.put(field.getKey(), vv); 
+					}
+					else{
+						try{
+							throw new Exception("Null value: "+ field.getKey());
+						}catch (Exception e){
+							e.printStackTrace(); 
+						}
+					}
 				}
+
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -171,18 +184,15 @@ public class AnnotatedColumnObject<T> implements ColumnObject<T>{
 	 */
 	@Override
 	public T fromColumns(Map<String, byte[]> fields) {
-		
 		T object = constructor.newInstance();
 		for (Entry<String, byte[]> en: fields.entrySet()){
-			
 			Method m = setters.get(en.getKey());
 			if (m!= null){
 			try {
-				
-				m.invoke(object, serializers.get(en.getKey()).deserialize(en.getValue()));
+				Object o = serializers.get(en.getKey()).deserialize(en.getValue());
+				m.invoke(object, o);
 				
 			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
 				// TODO Auto-generated catch block

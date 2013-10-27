@@ -11,6 +11,7 @@ import java.util.Set;
 
 import smartkv.server.ColumnDatastore;
 import smartkv.server.MapSmart;
+import smartkv.server.RequestType;
 import smartkv.server.experience.KeyColumnValueStore;
 import smartkv.server.experience.values.ByteArrayValue;
 import smartkv.server.experience.values.ColumnValue;
@@ -19,6 +20,7 @@ import smartkv.server.experience.values.Value;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
+import com.google.common.primitives.Ints;
 
 
 //TODO: logger prints only in one replica. 
@@ -69,6 +71,22 @@ public class KeyValueColumnStoreRpc extends KeyValueStoreRPC implements ColumnDa
 	}
 	
 	/* (non-Javadoc)
+	 * @see smartkv.server.ColumnDatastore#replace_column(java.io.DataInputStream)
+	 */
+	@Override
+	public byte[] replace_column(DataInputStream dis) throws Exception{
+		String table = dis.readUTF(); 
+		Key key = createKeyFromBytes(readNextByteArray(dis));
+		byte[] intBytes = new byte[4]; 
+		dis.readFully(intBytes);
+		int  knownVersion = Ints.fromByteArray(intBytes); 
+		String column = dis.readUTF();
+		Value v = createColumnValueFromBytes(ByteStreams.toByteArray(dis));
+		return datastore.replace_column(table, key, knownVersion, column, v).asByteArray(); 
+	}
+	
+
+	/* (non-Javadoc)
 	 * @see mapserver.ColumnDatastore#put_column(java.io.DataInputStream)
 	 */
 	@Override
@@ -77,7 +95,6 @@ public class KeyValueColumnStoreRpc extends KeyValueStoreRPC implements ColumnDa
 		Key key = createKeyFromBytes(readNextByteArray(dis));
 		String column=  dis.readUTF();
 		byte[] v =ByteStreams.toByteArray(dis); 
-		System.out.println(Arrays.toString(v));
 		Value value = createColumnValueFromBytes(v);
 		return datastore.put_column(tableName, key, column, value).asByteArray();
 	}
@@ -118,6 +135,7 @@ public class KeyValueColumnStoreRpc extends KeyValueStoreRPC implements ColumnDa
 	public KeyColumnValueStore getDatastore() {
 		return datastore; 
 	}
+
 	
 	/* (non-Javadoc)
 	 * @see smartkv.server.ColumnDatastore#get_columns(java.io.DataInputStream)

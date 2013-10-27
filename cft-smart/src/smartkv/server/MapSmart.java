@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import smartkv.client.DatastoreValue;
+import smartkv.micro.lb.Operations;
 import smartkv.server.experience.unmarshallRequests.KeyValueColumnStoreRpc;
 import smartkv.server.experience.unmarshallRequests.KeyValueStoreRPC;
 import bftsmart.tom.MessageContext;
@@ -40,11 +41,13 @@ public class MapSmart extends DefaultSingleRecoverable{
     
 	private ColumnDatastore columns = new KeyValueColumnStoreRpc(DatastoreValue.timeStampValues);
 	private Datastore keyValue = new KeyValueStoreRPC(DatastoreValue.timeStampValues,columns.getDatastore()); 
+	private Operations op = new Operations(this);
+	private smartkv.micro.dm.Operations dmOps = new smartkv.micro.dm.Operations(this);  
 	public static void main(String[] args){
 		new MapSmart(0);
-		new MapSmart(1);
-		new MapSmart(2);
-		new MapSmart(3);
+//		new MapSmart(1);
+//		new MapSmart(2);
+//		new MapSmart(3);
 		 
 		/*File f = new File("./config/currentView");
 		if (f.exists()){
@@ -83,7 +86,7 @@ public class MapSmart extends DefaultSingleRecoverable{
 	 * @param command
 	 * @return
 	 */
-	private byte[] execute(byte[] command) {
+	public  byte[] execute(byte[] command) {
 		 //FIXME: Proper serialization/deserialization of messages.
 		ByteArrayInputStream in = new ByteArrayInputStream(command);
 		 try {
@@ -161,6 +164,17 @@ public class MapSmart extends DefaultSingleRecoverable{
 			case GET_COLUMNS_REFERENCE:
 				//TODO  should only be applied to key value table. 
 				return ds.get_referenced_columns_value(dis);
+			case LB_ROUND_ROBIN:
+				return op.roundRobin( dis.readUTF() );
+			case REPLACE_COLUMN:
+				if (version != DataStoreVersion.COLUMN_KEY_VALUE) throw new UnsupportedOperationException("This is operation is not supported for the specified version");
+				return this.columns.replace_column(dis); 
+			case DM_UPDATE_DEVICE: 
+				return dmOps.updateDevice(dis);
+			case DM_TWO_DEVICES: 
+				return dmOps.twoDevice(dis);
+			case DM_CREATE_DEVICE: 
+				return dmOps.createDevice(dis); 
 			default:
 				break;
 			 }
@@ -211,8 +225,6 @@ public class MapSmart extends DefaultSingleRecoverable{
              bos.close();
              return bos.toByteArray();
      } catch (IOException e) {
-             System.out.println("Exception when trying to take a + " +
-                             "snapshot of the application state" + e.getMessage());
              e.printStackTrace();
              return null; //FIXME
      }	// TODO Auto-generated method stub

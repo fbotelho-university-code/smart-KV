@@ -5,6 +5,10 @@ package smartkv.client.tables;
 
 import java.util.Set;
 
+import net.floodlightcontroller.devicemanager.internal.Device;
+import net.floodlightcontroller.devicemanager.internal.Entity;
+import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
+
 /**
  * @author fabiim
  *
@@ -22,5 +26,16 @@ public interface ICachedKeyValueTable<K, V> extends IKeyValueTable<K,V> {
 	 */
 	VersionedValue<Object> getColumnsByReference(K key, Set<String> columns,
 			long delta);
+	/**
+	 * @param key
+	 * @param delta
+	 * @return
+	 */
+	VersionedValue<Object> getVersionedValueByReference(K key, long delta);
+	/**
+	 * @param entity
+	 * @return
+	 */
 	
+
 }

@@ -39,11 +39,14 @@ public class ColumnValue implements Value{
 	public ColumnValue(ColumnValue value, Set<String> columns) {
 		ImmutableSortedMap.Builder<String, byte[]> result = ImmutableSortedMap.naturalOrder();
 		for (String s : columns){
-			result.put(s, value.columns.get(s));
+			byte[] c = value.columns.get(s);
+			if (c != null){
+				result.put(s, c);
+			}
 		}
 		this.columns = result.build(); 
 	}
-
+	
 	/**
 	 * @param columnName
 	 * @return

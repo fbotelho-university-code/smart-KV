@@ -136,7 +136,7 @@ public class TableBuilder<K,V> {
 	@SuppressWarnings("unchecked")
 	public TableBuilder<K, V> setCrossReferenceColumnSerializer(
 			Class<Object> class1) {
-		this.crossReferenceColumnSerializer = (ColumnObject<V>) AnnotatedColumnObject.newAnnotatedColumnObject(class1);
+		this.crossReferenceColumnSerializer = (ColumnObject<Object>) AnnotatedColumnObject.newAnnotatedColumnObject(class1);
 		return this; 
 	} 
 	

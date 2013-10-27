@@ -5,6 +5,10 @@ package smartkv.client.tables;
 
 import java.util.Set;
 
+import net.floodlightcontroller.devicemanager.internal.Device;
+import net.floodlightcontroller.devicemanager.internal.Entity;
+import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
+
 /**
  * @author fabiim
  *
@@ -80,5 +84,25 @@ public interface IKeyValueTable<K, V> extends ITable<K,V>{
 	 * Get the name of the table 
 	 * @return the name of the table 
 	 */
-	public String getName(); 
+	public String getName();
+	
+	public Integer roundRobin(String id);
+
+	/**
+	 * @param ieSource
+	 * @param ieDestination
+	 * @return
+	 */
+	byte[] getTwoDevices(IndexedEntity ieSource, IndexedEntity ieDestination); 
+	
+	public Device createDevice(Entity entity);
+
+	/**
+	 * @param deviceKey
+	 * @param version
+	 * @param entityindex
+	 * @param l
+	 * @return
+	 */
+	boolean updateDevice(Long deviceKey, int version, int entityindex, long l);
 }

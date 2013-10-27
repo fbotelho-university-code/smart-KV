@@ -2,6 +2,7 @@ package smartkv.client.workloads;
 
 import java.util.Set;
 
+import net.floodlightcontroller.devicemanager.internal.Device;
 import smartkv.client.workloads.RequestLogWithDataInformation.Builder;
 
 
@@ -83,6 +84,13 @@ public class  RequestLogWithDataInformation extends RequestLogEntry{
 		public Builder setColumns(Set<String> columns) {
 			this.columns = columns; 
 			return this; 
+		}
+		/**
+		 * @param d
+		 * @return
+		 */
+		public Builder setReturnedValue(Object d) {
+			returnedValue = d != null ? d.toString() : "null"; return this; 
 		}
 		
 	}

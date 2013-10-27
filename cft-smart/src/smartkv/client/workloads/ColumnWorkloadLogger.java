@@ -103,4 +103,22 @@ public class ColumnWorkloadLogger< K,V> extends WorkloadLoggerTable<K,V> impleme
 	public ColumnObject<V> getColumnsSerializer() {
 		return table.getColumnsSerializer(); 
 	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IColumnTable#replaceColumn(java.lang.Object, int, java.lang.String, byte[])
+	 */
+	@Override
+	public boolean replaceColumn(K key, int currentValue, String columnName,
+			Object value) {
+		Boolean val = table.replaceColumn(key, currentValue, columnName, value);
+		logEntry(new RequestLogWithDataInformation.Builder().
+				setTable(tableName).
+				setKey(key != null ? key.toString() : "null").
+				setColumn(columnName)
+				.setExistentValue(currentValue + "")
+				.setValue(value.toString())
+				.setReturnedValue(val != null ? val.toString() : "null")
+				.build(entry));
+		return val; 
+	}
 }

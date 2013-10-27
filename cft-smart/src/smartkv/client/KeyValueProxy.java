@@ -3,9 +3,12 @@
  */
 package smartkv.client;
 
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.util.Collection;
 import java.util.Set;
 
+import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
 import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
 import smartkv.server.DataStoreVersion;
@@ -92,7 +95,7 @@ public class KeyValueProxy extends AbstractDatastoreProxy implements IKeyValueDa
 				getBytes(key.length), 
 				key, 
 				value);
-		return invokeRequest(type, request);
+		return invokeRequest(type, request); 
 	}
 
 	/* 
@@ -221,5 +224,71 @@ public class KeyValueProxy extends AbstractDatastoreProxy implements IKeyValueDa
 		return finalValues;
 	}
 
+	/* (non-Javadoc)
+	 * @see smartkv.client.IKeyValueDataStoreProxy#getTwoDevices(byte[], byte[])
+	 */
+	@Override
+	public byte[] getTwoDevices(byte[] cenas) {
+		RequestType type = RequestType.DM_TWO_DEVICES;
+		byte[] req = concatArrays(
+				type.byteArrayOrdinal,
+				cenas
+				); 
+		byte[] res = invokeRequestWithRawReturn(type, req);
+		return res; 
+	}
+
+	public final byte[] ONE = Ints.toByteArray(1);
+	public final byte[] TWO = Ints.toByteArray(2);
+	/* (non-Javadoc)
+	 * @see smartkv.client.IKeyValueDataStoreProxy#createDevice(byte[])
+	 */
+	@Override
+	public byte[] createDevice(byte[] serialize) {
+		RequestType type = RequestType.DM_CREATE_DEVICE; 
+		byte[] req = concatArrays(type.byteArrayOrdinal, 
+				serialize); 
+		return invokeRequestWithRawReturn(type, req); 
+	}
 	
+	/* (non-Javadoc)
+	 * @see smartkv.client.IKeyValueDataStoreProxy#createDevice(java.lang.Long, int, int, long)
+	 */
+	@Override
+	public boolean updateDevice(Long deviceKey, int version, int entityindex,
+			long l) {
+		RequestType type = RequestType.DM_UPDATE_DEVICE; 
+		byte[] req = concatArrays(type.byteArrayOrdinal, type.byteArrayOrdinal, 
+				getBytes(deviceKey), 
+				getBytes(version), 
+				getBytes(entityindex), 
+				getBytes(l));
+		byte[] b =invokeRequestWithRawReturn(type,req);
+		return b != null ; 
+	}
+
+	/* (non-Javadoc)
+	 * @see smartkv.client.IKeyValueDataStoreProxy#getTwoDevices(net.floodlightcontroller.devicemanager.internal.IndexedEntity, net.floodlightcontroller.devicemanager.internal.IndexedEntity)
+	 */
+	@Override
+	public byte[] getTwoDevices(IndexedEntity ieSource,
+			IndexedEntity ieDestination) {
+		RequestType type = RequestType.DM_TWO_DEVICES;
+		System.out.println(ieSource);
+		byte[] req = ieDestination != null ? concatArrays(
+				type.byteArrayOrdinal,
+				getBytes(ieSource.getEntity().getMacAddress()), 
+				getBytes(ieSource.getEntity().getVlanOrZero()),
+				getBytes(ieDestination.getEntity().getMacAddress()), 
+				getBytes(ieDestination.getEntity().getVlanOrZero())
+				) :
+					concatArrays(
+							type.byteArrayOrdinal,
+							getBytes(ieSource.getEntity().getMacAddress()), 
+							getBytes(ieSource.getEntity().getVlan())
+							); 
+				System.out.println("HERE"); 
+		byte[] res = invokeRequestWithRawReturn(type, req);
+		return res;
+	}
 }

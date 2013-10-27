@@ -45,7 +45,7 @@ public class JavaSerializer<T extends Serializable>  implements Serializer<T>{
 			//This makes a copy of the internal array. 
 			return bout.toByteArray(); 
 		} catch (IOException e) {
-			; 
+			e.printStackTrace(); 
 		}
 		return null; 
 	}

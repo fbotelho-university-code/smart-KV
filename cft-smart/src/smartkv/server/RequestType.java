@@ -33,7 +33,13 @@ public enum RequestType implements Serializable{
 	GET_COLUMN_BY_REFERENCE(SuperType.READ, "Get Column value by reference"), 
 	REPLACE_WITH_TIMESTAMP(SuperType.WRITE, "Replace a value based on the previous known timestamp"), 
 	GET_COLUMNS (SuperType.READ, "GET Several Columns"),
-	GET_COLUMNS_REFERENCE(SuperType.READ, "Get Several COlumns from a crosss reference"); 
+	GET_COLUMNS_REFERENCE(SuperType.READ, "Get Several COlumns from a crosss reference"),
+	LB_ROUND_ROBIN(SuperType.WRITE, "ROund robin and return member address"),
+	REPLACE_COLUMN(SuperType.WRITE, "Replace column with timestamp"),
+	DM_UPDATE_DEVICE(SuperType.WRITE, "Update timestamp in device"), 
+	DM_TWO_DEVICES(SuperType.READ, "get devices"), 
+	DM_CREATE_DEVICE(SuperType.WRITE, "create device");
+	
 	public enum SuperType{
 		WRITE,
 		READ;

@@ -33,7 +33,7 @@ public class KeyValueDatastoreProxyTest {
 	@BeforeClass 
 	public static void startup(){
 		ds = new KeyValueProxy(0);
-		System.out.println("here");
+
 	}
 	
 	@Before 
@@ -49,7 +49,6 @@ public class KeyValueDatastoreProxyTest {
 		String tableName = "put";
 		ds.createTable(tableName);
 		DatastoreValue val = ds.put(tableName,key_1, value_1);
-		System.out.println(Arrays.toString(value_1));
 		assertNull(val); // previous value was null. 
 		
 		val = ds.put(tableName,key_1, value_2); //replace value, and get previous value. 
@@ -91,8 +90,6 @@ public class KeyValueDatastoreProxyTest {
 		ds.put(tableName,key_1, value_1);
 		val = ds.get(tableName, key_1);
 		assertNull(ds.remove(tableName, key_2)); //entry does not exists.
-		System.out.println(Arrays.toString(value_1)); 
-		System.out.println(Arrays.toString(val.getRawData())); 
 		assertArrayEquals(val.getRawData(), value_1); 
 	}
 	
