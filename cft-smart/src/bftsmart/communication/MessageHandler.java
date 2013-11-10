@@ -116,10 +116,10 @@ public class MessageHandler {
                     acceptor.deliver(paxosMsg);
                 else {
                     Logger.println("(MessageHandler.processData) WARNING: invalid MAC from " + sm.getSender());
-                    System.out.println("(MessageHandler.processData) WARNING: invalid MAC from " + sm.getSender());
+                    //System.out.println("(MessageHandler.processData) WARNING: invalid MAC from " + sm.getSender());
                 }
             } else {
-                System.out.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
+                //System.out.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
                 Logger.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
             }
 
@@ -146,7 +146,7 @@ public class MessageHandler {
 	                        break;
 	                }
 	
-	                System.out.println("(MessageHandler.processData) LC_MSG received: type " + type + ", regency " + lcMsg.getReg() + ", (replica " + lcMsg.getSender() + ")");
+	                //System.out.println("(MessageHandler.processData) LC_MSG received: type " + type + ", regency " + lcMsg.getReg() + ", (replica " + lcMsg.getSender() + ")");
 	                if (lcMsg.TRIGGER_LC_LOCALLY) tomLayer.requestsTimer.run_lc_protocol();
 	                else tomLayer.deliverTimeoutRequest(lcMsg);
 	            /**************************************************************/
@@ -170,7 +170,7 @@ public class MessageHandler {
 	                        type = "LOCAL";
 	                        break;
 	                }
-	                System.out.println("(MessageHandler.processData) SM_MSG received: type " + type + ", regency " + smsg.getRegency() + ", (replica " + smsg.getSender() + ")");
+	                //System.out.println("(MessageHandler.processData) SM_MSG received: type " + type + ", regency " + smsg.getRegency() + ", (replica " + smsg.getSender() + ")");
 	                if (smsg.TRIGGER_SM_LOCALLY) {
 	                    tomLayer.getStateManager().stateTimeout();
 	                } else if (smsg.getType() == TOMUtil.SM_REQUEST) {
@@ -180,10 +180,10 @@ public class MessageHandler {
 	                }
 	            /******************************************************************/
 	            } else {
-	            	System.out.println("UNKNOWN MESSAGE TYPE: " + sm);
+	            	//System.out.println("UNKNOWN MESSAGE TYPE: " + sm);
 	            }
 	        } else {
-	            System.out.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
+	            //System.out.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
 	        }
         }
     }

@@ -1,3 +1,5 @@
 eclipse.preferences.version=1
+encoding//src/bftsmart/reconfiguration/ServerViewManager.java=UTF-8
+encoding//src/bftsmart/tom/ServiceReplica.java=UTF-8
 encoding//src/smartkv/client/KeyValueDatastoreProxyTest.java=UTF-8
 encoding//src/smartkv/server/experience/values/ColumnValue.java=UTF-8

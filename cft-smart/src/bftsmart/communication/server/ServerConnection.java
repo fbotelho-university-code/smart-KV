@@ -275,7 +275,7 @@ public class ServerConnection {
                 ex.printStackTrace();
             } catch (IOException ex) {
                 
-                System.out.println("Impossible to reconnect to replica " + remoteId);
+                //System.out.println("Impossible to reconnect to replica " + remoteId);
                 //ex.printStackTrace();
             }
 
@@ -436,7 +436,7 @@ public class ServerConnection {
                             if (sm.getSender() == remoteId) {
                                 if (!inQueue.offer(sm)) {
                                     Logger.println("(ReceiverThread.run) in queue full (message from " + remoteId + " discarded).");
-                                    System.out.println("(ReceiverThread.run) in queue full (message from " + remoteId + " discarded).");
+                                    //System.out.println("(ReceiverThread.run) in queue full (message from " + remoteId + " discarded).");
                                 }
                             }
                         } else {
@@ -504,7 +504,7 @@ public class ServerConnection {
                         byte hasMAC = socketInStream.readByte();
                         if (manager.getStaticConf().getUseMACs() == 1 && hasMAC == 1) {
                             
-                            System.out.println("TTP CON USEMAC");
+                            //System.out.println("TTP CON USEMAC");
                             read = 0;
                             do {
                                 read += socketInStream.read(receivedMac, read, macSize - read);

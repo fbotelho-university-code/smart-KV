@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 public class MapClass extends DefaultSingleRecoverable {
 	public List<TestInformation> tests = Lists.newArrayList(); 
 	//TODO extract these methods to a standalone package. 
+	
 	public static byte[] serialize(Object obj) throws IOException {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         ObjectOutputStream o = new ObjectOutputStream(b);
@@ -89,21 +90,37 @@ public class MapClass extends DefaultSingleRecoverable {
 	    		new Thread(
 	    			new Runnable() {
 	    				public void run() {
-	    			        SummaryStatistics statsEnd = new SummaryStatistics(); 
-	    			        double[] vals = throughput.getSortedValues();
-	    			        int len = (int) (vals.length *( 0.95));
+	    					SummaryStatistics statsEnd95 = new SummaryStatistics(); 
+	    					SummaryStatistics statsEnd99 = new SummaryStatistics(); 
+	    					SummaryStatistics statsEnd90 = new SummaryStatistics(); 
 	    			        
-	    			        for (int j = vals.length -1 ; j  > (vals.length - len)  ; j-- ){
-	    			        	statsEnd.addValue(vals[j]);
+	    					double[] vals = throughput.getSortedValues();
+	    					int len95 = (int) (vals.length *( 0.95));
+	    					int len90 = (int) (vals.length *( 0.90));
+	    					int len99 = (int) (vals.length *( 0.99));
+	    			        
+	    					for (int j = vals.length -1 ; j  > (vals.length - len90)  ; j-- ){
+	    			        	statsEnd90.addValue(vals[j]);
 	    			        }
+	    					for (int j = vals.length -1 ; j  > (vals.length - len95)  ; j-- ){
+	    			        	statsEnd95.addValue(vals[j]);
+	    			        }
+	    					
+	    					for (int j = vals.length -1 ; j  > (vals.length - len99)  ; j-- ){
+	    			        	statsEnd99.addValue(vals[j]);
+	    			        }
+	    					
 	    			        try{
 	    			        	if (tests.size() > 0){
 	    			        	PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("./throughput", true)));
 	    			        
 	    			        	
-	    			        	out.println(statsEnd.getN() + ":" + statsEnd.getMean() +  ":" + statsEnd.getStandardDeviation() + ":" + statsEnd.getMin() + ":" +statsEnd.getMax() + 
-	    			        		( (tests.size() > 0) ?  (":" + tests.get(0).name + ":" + tests.get(0).clients + ":"  + tests.get(0).random) : "") 
-	    			        		+ ": " + ordered + ":" + unordered);
+	    			        	out.println(statsEnd90.getN() + ":" + statsEnd90.getMean() +  ":" + statsEnd90.getStandardDeviation() + ":" + statsEnd90.getMin() + ":" +statsEnd90.getMax() + 
+		    			        		( (tests.size() > 0) ?  (":" + tests.get(0).name + ":" + tests.get(0).clients + ":"  + tests.get(0).random) : "") 
+		    			        		+ ": " + ordered + ":" + unordered + ":"  
+		    			        		+ statsEnd95.getN() + ":" + statsEnd95.getMean() +  ":" + statsEnd95.getStandardDeviation() + ":" + statsEnd95.getMin() + ":" +statsEnd95.getMax() + 
+		    			        		+ statsEnd99.getN() + ":" + statsEnd99.getMean() +  ":" + statsEnd99.getStandardDeviation() + ":" + statsEnd99.getMin() + ":" +statsEnd99.getMax()  
+	    			        	); 
 	    			        	out.flush(); 
 	    			        	out.close();
 	    			        	}
@@ -172,7 +189,7 @@ public class MapClass extends DefaultSingleRecoverable {
 		 int val = dis.readInt();
 		 
 		 if (!warmed){
-			 if (warm++ == 1000) {
+			 if (warm++ == 5000) {
 				 warmed = true;
 				 tpStartTime = System.nanoTime(); 
 			 }

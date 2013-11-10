@@ -118,7 +118,7 @@ public class DurableStateManager extends BaseStateManager {
 	public void stateTimeout() {
 		lockTimer.lock();
 		Logger.println("(StateManager.stateTimeout) Timeout for the replica that was supposed to send the complete state. Changing desired replica.");
-		System.out.println("Timeout no timer do estado!");
+		//System.out.println("Timeout no timer do estado!");
 		if (stateTimer != null)
 			stateTimer.cancel();
 		reset();
@@ -128,7 +128,7 @@ public class DurableStateManager extends BaseStateManager {
 
 	@Override
 	public void SMRequestDeliver(SMMessage msg, boolean isBFT) {
-		System.out.println("(TOMLayer.SMRequestDeliver) invoked method");
+		//System.out.println("(TOMLayer.SMRequestDeliver) invoked method");
 		Logger.println("(TOMLayer.SMRequestDeliver) invoked method");
 		if (SVManager.getStaticConf().isStateTransferEnabled()
 				&& dt.getRecoverer() != null) {
@@ -142,7 +142,7 @@ public class DurableStateManager extends BaseStateManager {
 			if (sendState)
 				Logger.println("(TOMLayer.SMRequestDeliver) I should be the one sending the state");
 
-			System.out.println("--- state asked");
+			//System.out.println("--- state asked");
 
 			int[] targets = { msg.getSender() };
 			InetSocketAddress address = SVManager.getCurrentView().getAddress(
@@ -173,14 +173,14 @@ public class DurableStateManager extends BaseStateManager {
 		CSTSMMessage reply = (CSTSMMessage) msg;
 		if (SVManager.getStaticConf().isStateTransferEnabled()) {
 			Logger.println("(TOMLayer.SMReplyDeliver) The state transfer protocol is enabled");
-			System.out
+			/*System.out
 					.println("(TOMLayer.SMReplyDeliver) I received a state reply for EID "
 							+ reply.getEid()
 							+ " from replica "
-							+ reply.getSender());
+							+ reply.getSender());*/
 
-			System.out.println("--- Received eid: " + reply.getEid()
-					+ ". Waiting " + waitingEid);
+/*			System.out.println("--- Received eid: " + reply.getEid()
+					+ ". Waiting " + waitingEid);*/
 			if (waitingEid != -1 && reply.getEid() == waitingEid) {
 
 				int currentRegency = -1;
@@ -199,7 +199,7 @@ public class DurableStateManager extends BaseStateManager {
 						currentView = reply.getView();
 						if (!currentView.isMember(SVManager.getStaticConf()
 								.getProcessId())) {
-							System.out.println("Not a member!");
+							//System.out.println("Not a member!");
 						}
 					}
 				} else {
@@ -244,7 +244,7 @@ public class DurableStateManager extends BaseStateManager {
 
 					CommandsInfo[] lowerLog = stateLower.getLogLower();
 					CommandsInfo[] upperLog = stateUpper.getLogUpper();
-					System.out.print("lowerLog ");
+					//System.out.print("lowerLog ");
 					if (lowerLog != null)
 						System.out.println(lowerLog.length);
 					System.out.print("upperLog ");
@@ -253,8 +253,8 @@ public class DurableStateManager extends BaseStateManager {
 
 					boolean haveState = false;
 					byte[] lowerbytes = TOMUtil.getBytes(lowerLog);
-					System.out.println("Log lower bytes size: "
-							+ lowerbytes.length);
+					/*System.out.println("Log lower bytes size: "
+							+ lowerbytes.length);*/
 					byte[] upperbytes = TOMUtil.getBytes(upperLog);
 					System.out.println("Log upper bytes size: "
 							+ upperbytes.length);
@@ -288,9 +288,9 @@ public class DurableStateManager extends BaseStateManager {
 						}
 					}
 
-					System.out.println("-- current regency: " + currentRegency);
+					/*System.out.println("-- current regency: " + currentRegency);
 					System.out.println("-- current leader: " + currentLeader);
-					System.out.println("-- current view: " + currentView);
+					System.out.println("-- current view: " + currentView);*/
 					if (currentRegency > -1 && currentLeader > -1
 							&& currentView != null && haveState) {
 						System.out.println("---- RECEIVED VALID STATE ----");

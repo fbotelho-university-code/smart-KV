@@ -1,5 +1,8 @@
 package datastore.bench;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -25,7 +28,7 @@ class OpenFlowMessageWorkload{
 }
 */
 public class MultiFlowTypes extends BenchClient{
-	public static HashMap<String, WorkloadPerFlow> simulations = Maps.newHashMap(); 
+	public static HashMap<String, WorkloadPerFlow> simulations = Maps.newHashMap();
 	
 	static{
 		simulations.put("lsw-0-broadcast", new WorkloadPerFlow("lsw-0" , LearningSwitch.lsw_0_broadcast_ops, LearningSwitch.lsw_0_brodcast_dsc, "Broadcast Packet", "Original"));
@@ -68,8 +71,8 @@ public class MultiFlowTypes extends BenchClient{
 			{ FlowSimulation.READ_OP,27,6}, //Read destiny device 
 		};
 		public static String[] lsw_1_unicast_dsc = { 
-			"Write source address in ingress switch-table",
-			"Read egress port for destination in ingress switch-table",
+			"Associate source address to ingress port",
+			"Read egress port for destination address", 
 		};
 	}
 	
@@ -90,9 +93,10 @@ public class MultiFlowTypes extends BenchClient{
 		simulations.put("lbw-3-arp-request", new WorkloadPerFlow("lbw-3" , LoadBalancerNew.lbw_3_arp_request, LoadBalancerNew.lbw_3_arp_request_dsc, "Arp Request to a VIP", "Columns"));
 		simulations.put("lbw-3-ip-to-vip", new WorkloadPerFlow("lbw-3" , LoadBalancerNew.lbw_3_ip_packet, LoadBalancerNew.lbw_3_ip_packet_dsc, "IP packet to a VIP", "Columns"));
 		simulations.put("lbw-3-ip-to-notvip", new WorkloadPerFlow("lbw-3" , LoadBalancerNew.lbw_3_normal_packet, LoadBalancerNew.lbw_3_normal_packet_dsc, "Normal Packet", "Columns"));
-		// Micro Componenets 
+		// Micro Componenets
 		simulations.put("lbw-4-ip-to-vip", new WorkloadPerFlow("lbw-4" , LoadBalancerNew.lbw_4_ip_packet, LoadBalancerNew.lbw_4_ip_packet_dsc, "IP packet to a VIP", "Micro Components"));
 	}
+	
 	static class LoadBalancerNew{
 		public static String read_Vip_key = "Read the VIP id for the destination IP";  
 		public static String obtain_Vip_info = "Read the VIP Information"; 
@@ -281,7 +285,6 @@ public class MultiFlowTypes extends BenchClient{
 		
 	}
 	*/
-	
 	static{
 		//Original
 		simulations.put("dm-0-unknown", new WorkloadPerFlow("dm-0" , DeviceManagerNew.dmw_0_arp_for_unknown, DeviceManagerNew.dmw_0_arp_for_unknown_dsc, "ARP from Unknown Source", "Original"));
@@ -296,14 +299,14 @@ public class MultiFlowTypes extends BenchClient{
 		simulations.put("dm-3-unknown", new WorkloadPerFlow("dm-3" , DeviceManagerNew.dmw_3_arp_for_unknown, DeviceManagerNew.dmw_3_arp_for_unknown_dsc, "ARP from Unknown Source", "Columns"));
 		simulations.put("dm-3-known", new WorkloadPerFlow("dm-3" , DeviceManagerNew.dmw_3_ip_for_known, DeviceManagerNew.dmw_3_ip_for_known_dsc, "Known Devices", "Columns"));
 		//Micro Components
-		//simulations.put("dm-4-unknown", new WorkloadPerFlow("dm-4" , DeviceManagerNew.dmw_4_arp_for_unknown, DeviceManagerNew.dmw_4_arp_for_unknown_dsc, "ARP from Unknown Source", "Micro Componenets"));
+		simulations.put("dm-4-unknown", new WorkloadPerFlow("dm-4" , DeviceManagerNew.dmw_4_arp_for_unknown, DeviceManagerNew.dmw_4_arp_for_unknown_dsc, "ARP from Unknown Source", "Micro Componenets"));
 		simulations.put("dm-4-known", new WorkloadPerFlow("dm-4" , DeviceManagerNew.dmw_4_ip_for_known, DeviceManagerNew.dmw_4_ip_for_known_dsc, "Known Devices", "Micro Components"));
 	}
 	
 	static class DeviceManagerNew{
 		public static String read_source_key = "Read the source device key"; 
 		public static String read_source = "Read the source device"; 
-		public static String update_ts = "Update \"last seen\" timestampd" ;
+		public static String update_ts = "Update \"last seen\" timestamp" ;
 		public static String read_dest_key = "Read the destination device key"; 
 		public static String read_dest = "Read the destination device"; 
 		
@@ -391,7 +394,8 @@ public class MultiFlowTypes extends BenchClient{
 		{ FlowSimulation.READ_OP,408,1278},
 		{ FlowSimulation.WRITE_OP,1316,1},
 		{ FlowSimulation.READ_OP,408,1203},
-	}; 
+	};
+	
 	public static String[] dmw_2_ip_for_known_dsc ={
 		read_source,
 		update_ts,
@@ -450,15 +454,27 @@ public class MultiFlowTypes extends BenchClient{
 	
 	// Micro Componenets 
 	
-	public static int[][] dmw_4_ip_for_known ={ 
-		{ FlowSimulation.READ_OP,32,1414},
+	public static int[][] dmw_4_ip_for_known ={
+		{ FlowSimulation.READ_OP,28,1414},
 		{ FlowSimulation.WRITE_OP,36,0},
 	};
 	
 	public static String[] dmw_4_ip_for_known_dsc ={
-		"Read Source and Destination devices (partially)", 
-		"Update Devices",
+		"Read source and destination devices (partially)", 
+		"Update devices",
 	};
+	
+	
+	public static int[][] dmw_4_arp_for_unknown ={ 
+		{ FlowSimulation.READ_OP,28,201},
+		{ FlowSimulation.WRITE_OP,476,8},
+	}; 
+	
+	public static String[] dmw_4_arp_for_unknown_dsc = {
+		"Read source and destination devices (partially)",
+		"Create source device in the data store", 
+	};
+	
 	/*
 	public static int[][] dmw_4_arp_for_unknown ={ 
 		{ FlowSimulation.READ_OP,486,0},
@@ -645,8 +661,33 @@ public class MultiFlowTypes extends BenchClient{
 	
 	@Override
 	protected void end(long total, long i){
-		if (i > 1000){
+		if (i > 5000){
 			latency.addValue(total);
 		}
+	}
+	
+	public static void main(String[] args){
+		PrintWriter writer;
+		
+		try {
+			writer = new PrintWriter("//Users/fabiim/Dropbox/TESE/data/reportGenerator/descriptions", "UTF-8");
+		
+			for (Entry<String, WorkloadPerFlow> s : simulations.entrySet()){
+				writer.print(s.getKey() + ": ");
+				for (String m : s.getValue().ops_dsc ){
+					writer.print(m +':') ;
+				}
+				writer.println("");
+			}
+			writer.flush(); 
+			writer.close(); 
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 }

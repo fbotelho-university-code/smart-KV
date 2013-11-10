@@ -90,11 +90,11 @@ public class StandardStateManager extends BaseStateManager {
                 waitingEid, TOMUtil.SM_REQUEST, replica, null, null, -1, -1);
         tomLayer.getCommunication().send(SVManager.getCurrentViewOtherAcceptors(), smsg);
 
-        System.out.println("(TOMLayer.requestState) I just sent a request to the other replicas for the state up to EID " + waitingEid);
+        //System.out.println("(TOMLayer.requestState) I just sent a request to the other replicas for the state up to EID " + waitingEid);
 
         TimerTask stateTask =  new TimerTask() {
             public void run() {
-            	System.out.println("Timeout to retrieve state");
+            	//System.out.println("Timeout to retrieve state");
                 int[] myself = new int[1];
                 myself[0] = SVManager.getStaticConf().getProcessId();
                 tomLayer.getCommunication().send(myself, new StandardSMMessage(-1, waitingEid, TOMUtil.TRIGGER_SM_LOCALLY, -1, null, null, -1, -1));
@@ -111,7 +111,7 @@ public class StandardStateManager extends BaseStateManager {
     public void stateTimeout() {
         lockTimer.lock();
         Logger.println("(StateManager.stateTimeout) Timeout for the replica that was supposed to send the complete state. Changing desired replica.");
-        System.out.println("Timeout no timer do estado!");
+        //System.out.println("Timeout no timer do estado!");
         if (stateTimer != null)
         	stateTimer.cancel();
         changeReplica();
@@ -132,9 +132,9 @@ public class StandardStateManager extends BaseStateManager {
             int[] targets = { msg.getSender() };
             SMMessage smsg = new StandardSMMessage(SVManager.getStaticConf().getProcessId(),
                     msg.getEid(), TOMUtil.SM_REPLY, -1, thisState, SVManager.getCurrentView(), lcManager.getLastReg(), tomLayer.lm.getCurrentLeader());
-            System.out.println("Sending state");
+            //System.out.println("Sending state");
             tomLayer.getCommunication().send(targets, smsg);
-            System.out.println("Sent");
+            //System.out.println("Sent");
         }
     }
 
@@ -163,18 +163,18 @@ public class StandardStateManager extends BaseStateManager {
                 }
                 
                 if (msg.getSender() == replica && msg.getState().getSerializedState() != null) {
-                	System.out.println("Expected replica sent state. Setting it to state");
+                	//System.out.println("Expected replica sent state. Setting it to state");
                     state = msg.getState();
                     if (stateTimer != null) stateTimer.cancel();
                 }
 
                 senderStates.put(msg.getSender(), msg.getState());
 
-                System.out.println("Verifying more than F replies");
+                //System.out.println("Verifying more than F replies");
                 if (moreThanF_Replies()) {
-                    System.out.println("More than F confirmed");
+                  //  System.out.println("More than F confirmed");
                     ApplicationState otherReplicaState = getOtherReplicaState();
-                    System.out.println("State != null: " + (state != null) + ", recvState != null: " + (otherReplicaState != null));
+                    //System.out.println("State != null: " + (state != null) + ", recvState != null: " + (otherReplicaState != null));
                     int haveState = 0;
                         if(state != null) {
                             byte[] hash = null;
@@ -186,7 +186,7 @@ public class StandardStateManager extends BaseStateManager {
                             }
                         }
                     
-                    System.out.println("haveState: " + haveState);
+                    //System.out.println("haveState: " + haveState);
 
                     if (otherReplicaState != null && haveState == 1 && currentRegency > -1 &&
                             currentLeader > -1 && currentView != null) {
@@ -215,7 +215,7 @@ public class StandardStateManager extends BaseStateManager {
                         tomLayer.processOutOfContext();
                         
                         if (SVManager.getCurrentViewId() != currentView.getId()) {
-                            System.out.println("Installing current view!");
+                            //System.out.println("Installing current view!");
                             SVManager.reconfigureTo(currentView);
                         }
                         
@@ -224,7 +224,7 @@ public class StandardStateManager extends BaseStateManager {
 
                         reset();
 
-                        System.out.println("I updated the state!");
+                        //System.out.println("I updated the state!");
 
                         tomLayer.requestsTimer.Enabled(true);
                         tomLayer.requestsTimer.startTimer();

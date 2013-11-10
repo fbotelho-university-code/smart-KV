@@ -126,7 +126,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                             macReceive, currV[i], manager.getStaticConf().getRSAPublicKey(), new ReentrantLock());
                     sessionTable.put(currV[i], cs);
 
-                    System.out.println("Connecting to replica " + currV[i] + " at " + manager.getRemoteAddress(currV[i]));
+                    //System.out.println("Connecting to replica " + currV[i] + " at " + manager.getRemoteAddress(currV[i]));
                     //******* EDUARDO END **************//
 
                     DefaultChannelFuture.setUseDeadLockChecker( false );
@@ -196,7 +196,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                         NettyClientServerSession cs = new NettyClientServerSession(future.getChannel(), macSend, macReceive, currV[i], manager.getStaticConf().getRSAPublicKey(), new ReentrantLock());
                         sessionTable.put(currV[i], cs);
 
-                        System.out.println("Connecting to replica " + currV[i] + " at " + manager.getRemoteAddress(currV[i]));
+                        //System.out.println("Connecting to replica " + currV[i] + " at " + manager.getRemoteAddress(currV[i]));
                         //******* EDUARDO END **************//
 
                         future.awaitUninterruptibly();
@@ -235,7 +235,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
     @Override
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
-        System.out.println("Channel connected");
+        //System.out.println("Channel connected");
     }
 
     @Override

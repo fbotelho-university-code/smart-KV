@@ -120,13 +120,13 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 
     @Override
     public void exceptionCaught( ChannelHandlerContext ctx, ExceptionEvent e) {
-    	if(e.getCause() instanceof ClosedChannelException)
+    	/*if(e.getCause() instanceof ClosedChannelException)
             System.out.println("Connection with client closed.");
     	else if(e.getCause() instanceof ConnectException) {
             System.out.println("Impossible to connect to client.");
         } else {
             e.getCause().printStackTrace(System.err);
-        }
+        }*/
     }
 
     @Override
@@ -139,7 +139,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
     @Override
     public void channelConnected( ChannelHandlerContext ctx, ChannelStateEvent e) {
         Logger.println("Session Created, active clients=" + sessionTable.size());
-        System.out.println("Session Created, active clients=" + sessionTable.size());
+     //   System.out.println("Session Created, active clients=" + sessionTable.size());
     }
 
     @Override
@@ -154,8 +154,8 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                 if (e.getChannel().equals(value.getChannel())) {
                     int key = (Integer) m.getKey();
                     sessionTable.remove(key);
-                    System.out.println("#Removed client channel with ID= " + key);
-                    System.out.println("#active clients=" + sessionTable.size());
+                    //System.out.println("#Removed client channel with ID= " + key);
+                    //System.out.println("#active clients=" + sessionTable.size());
                     break;
                 }
             }

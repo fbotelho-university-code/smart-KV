@@ -228,11 +228,11 @@ public class ServerViewManager extends ViewManager {
         	addresses[i] = getStaticConf().getRemoteAddress(nextV[i]);
 
         View newV = new View(currentView.getId() + 1, nextV, f,addresses);
-
+        /*
         System.out.println("new view: " + newV);
         System.out.println("installed on eid: " + eid);
         System.out.println("lastJoinSet: " + jSet);
-
+	*/
         //TODO:Remove all information stored about each process in rSet
         //processes execute the leave!!!
         reconfigureTo(newV);
@@ -295,7 +295,7 @@ public class ServerViewManager extends ViewManager {
         this.currentView = newView;
         getViewStore().storeView(this.currentView);
         if (newView.isMember(getStaticConf().getProcessId())) {
-            //É membro da view atual
+            //�� membro da view atual
             otherProcesses = new int[currentView.getProcesses().length - 1];
             int c = 0;
             for (int i = 0; i < currentView.getProcesses().length; i++) {

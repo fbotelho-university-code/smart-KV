@@ -63,8 +63,9 @@ public class NettyTOMMessageEncoder extends SimpleChannelHandler {
         if (sm.signed){
             //signature was already produced before            
             signatureData = sm.serializedMessageSignature;
-            if (signatureData.length != signatureLength)
-                System.out.println("WARNING: message signature has size "+signatureData.length+" and should have "+signatureLength);
+            if (signatureData.length != signatureLength){
+                //System.out.println("WARNING: message signature has size "+signatureData.length+" and should have "+signatureLength);
+            }
         }
         
         if (useMAC)

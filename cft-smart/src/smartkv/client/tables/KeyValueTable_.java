@@ -3,14 +3,11 @@
  */
 package smartkv.client.tables;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import net.floodlightcontroller.devicemanager.internal.Device;
+import net.floodlightcontroller.core.types.MacVlanPair;
 import net.floodlightcontroller.devicemanager.internal.Entity;
 import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
 import smartkv.client.DatastoreValue;
@@ -21,8 +18,6 @@ import smartkv.client.util.Serializer;
 import smartkv.client.util.UnsafeJavaSerializer;
 
 import com.google.common.collect.Lists;
-import com.google.common.primitives.Bytes;
-import com.google.common.primitives.Longs;
 //FIXME are you certain that updates are updating the cache and the corresponding timestamp ? 
 /**
  * @author fabiim
@@ -289,11 +284,11 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	 * @see smartkv.client.tables.IKeyValueTable#createDevice(net.floodlightcontroller.devicemanager.internal.Entity)
 	 */
 	@Override
-	public Device createDevice(Entity entity) {
-		byte[] b = datastore.createDevice(UnsafeJavaSerializer.getInstance().serialize(entity));
-		return b != null ? (Device) UnsafeJavaSerializer.getInstance().deserialize(b) : null;
+	public byte[] createDevice(Entity entity) {
+		return  datastore.createDevice(UnsafeJavaSerializer.getInstance().serialize(entity));
 	}
 	
+
 	//FIXME : DataStoreValue and VersionedValue must be the same. No need to create two different objects. 
 	//Nullyfy the byte representation of DatastoreValue and add the value after deserialization.
 	
@@ -308,6 +303,16 @@ public class KeyValueTable_<K, V> extends AbstractTable<K,V> implements IKeyValu
 	public boolean updateDevice(Long deviceKey, int version, int entityindex,
 			long l){
 		return datastore.updateDevice(deviceKey, version, entityindex, l); 
+	}
+	
+	/**
+	 * @param key
+	 * @param portVal
+	 * @param destMac
+	 */
+	@Override
+	public void putAndGetPort(MacVlanPair key, short portVal, Long destMac){
+		
 	}
 }
 	

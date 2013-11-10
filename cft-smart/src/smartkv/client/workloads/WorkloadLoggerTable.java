@@ -500,8 +500,8 @@ public class WorkloadLoggerTable<K,V>  implements IKeyValueTable<K,V>{
 	 * @see smartkv.client.tables.IKeyValueTable#createDevice(net.floodlightcontroller.devicemanager.internal.Entity)
 	 */
 	@Override
-	public Device createDevice(Entity entity) {
-		Device d = table.createDevice(entity); 
+	public byte[] createDevice(Entity entity) {
+		byte[] d = table.createDevice(entity); 
 		logEntry(new RequestLogWithDataInformation.Builder() 
 				.setKey(entity.toString())
 				.setReturnedValue(d)

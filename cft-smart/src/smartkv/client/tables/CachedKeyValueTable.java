@@ -6,10 +6,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import net.floodlightcontroller.devicemanager.internal.Device;
+import net.floodlightcontroller.devicemanager.internal.DeviceManagerImpl;
 import net.floodlightcontroller.devicemanager.internal.Entity;
 import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
 
 import com.google.common.collect.Maps;
+import com.google.common.primitives.Longs;
 
 
 // Only works if the datastore is with timestamped values....
@@ -306,8 +308,14 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 	 * @see smartkv.client.tables.IKeyValueTable#createDevice(net.floodlightcontroller.devicemanager.internal.Entity)
 	 */
 	@Override
-	public Device createDevice(Entity entity) {
-		return table.createDevice(entity); 
+	public Device createDeviceAndCacheIt(Entity entity) {
+		byte[] keyBytes = table.createDevice(entity);
+		if (keyBytes != null){
+			long deviceKey = Longs.fromByteArray(keyBytes); 
+			Device d = new Device(deviceKey, entity, DeviceManagerImpl.entityClassifier.classifyEntity(entity));
+			return d; 
+		}
+		return null; 
 	}
 	/* (non-Javadoc)
 	 * @see smartkv.client.tables.ICachedKeyValueTable#createDevice(java.lang.Long, int, int, long)
@@ -331,6 +339,13 @@ public class CachedKeyValueTable<K,V> implements ICachedKeyValueTable<K,V>{
 	public byte[] getTwoDevices(IndexedEntity ieSource,
 			IndexedEntity ieDestination) {
 		return table.getTwoDevices(ieSource, ieDestination); 
+	}
+	/* (non-Javadoc)
+	 * @see smartkv.client.tables.IKeyValueTable#createDevice(net.floodlightcontroller.devicemanager.internal.Entity)
+	 */
+	@Override
+	public byte[] createDevice(Entity entity) {
+		return table.createDevice(entity); 
 	}
 	
 }

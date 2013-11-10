@@ -265,7 +265,6 @@ public abstract class AbstractDatastoreProxy  implements IDataStoreProxy{
 	//TODO - catch exceptions in invokeOrdered/Unordered and throw them as RuntimeExceptions. 
 	protected byte[] invokeRequestWithRawReturn(RequestType type, byte[] request){
 		byte[] result  = type.isRead() ?server.invokeOrdered(request) : server.invokeUnordered(request);
-		//System.out.println("Request size:"+ request.length +"  - Reply size: }" +    (result != null?  result.length : 0) );
 		return result; 
 	}
 	
@@ -323,6 +322,10 @@ public abstract class AbstractDatastoreProxy  implements IDataStoreProxy{
 	
 	protected static  byte[] getBytes(int i){
 		return ByteBuffer.allocate(4).putInt(i).array();
+	}
+	
+	protected static  byte[] getBytes(short i){
+		return ByteBuffer.allocate(2).putShort(i).array();
 	}
 	
 	protected static byte[] getBytes(long l){

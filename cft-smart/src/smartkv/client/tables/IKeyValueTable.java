@@ -95,7 +95,9 @@ public interface IKeyValueTable<K, V> extends ITable<K,V>{
 	 */
 	byte[] getTwoDevices(IndexedEntity ieSource, IndexedEntity ieDestination); 
 	
-	public Device createDevice(Entity entity);
+	
+	public byte[] createDevice(Entity entity);  
+	
 
 	/**
 	 * @param deviceKey

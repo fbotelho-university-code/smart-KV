@@ -144,13 +144,13 @@ public class ServiceReplica {
 		//******* EDUARDO BEGIN **************//
 
 		if (this.SVManager.isInCurrentView()) {
-			System.out.println("In current view: " + this.SVManager.getCurrentView());
+			//System.out.println("In current view: " + this.SVManager.getCurrentView());
 			initTOMLayer(-1, -1); // initiaze the TOM layer
 		} else {
-			System.out.println("Not in current view: " + this.SVManager.getCurrentView());
+			//System.out.println("Not in current view: " + this.SVManager.getCurrentView());
 			if (this.isToJoin) {
-				System.out.println("Sending join: " + this.SVManager.getCurrentView());
-				//Não está na visão inicial e é para executar um join;
+				//System.out.println("Sending join: " + this.SVManager.getCurrentView());
+				//N��o est�� na vis��o inicial e �� para executar um join;
 				int port = this.SVManager.getStaticConf().getServerToServerPort(id) - 1;
 				String ip = this.SVManager.getStaticConf().getServerToServerRemoteAddress(id).getAddress().getHostAddress();
 				ReconfigureReply r = null;

@@ -108,7 +108,7 @@ public class TTP {
         connect();
         ReconfigureReply r = rec.execute();
         View v = r.getView();
-        System.out.println("New view f: " + v.getF());
+        //System.out.println("New view f: " + v.getF());
 
         TTPMessage msg = new TTPMessage(id, r);
 

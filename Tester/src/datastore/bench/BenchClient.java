@@ -116,18 +116,38 @@ public abstract class BenchClient implements Runnable{
 	 */
 	private static void printResultsAndFinish(int numThreads,
 			DescriptiveStatistics[] stats,String type, Long random, int ops) {
-		SummaryStatistics statsEnd = new SummaryStatistics(); 
-        for (int i = 0 ; i < numThreads ; i++){
-        	  double[] vals = stats[i].getSortedValues();
-        	  int len = (int) (vals.length *( 0.95));
-        	  for (int j = 0 ; j < len ; j++ ){
-        		  statsEnd.addValue(vals[j]);
-        	  }
-        }
+		SummaryStatistics statsEnd90 = new SummaryStatistics(); 
+		SummaryStatistics statsEnd95 = new SummaryStatistics(); 
+		SummaryStatistics statsEnd99 = new SummaryStatistics();
+		WorkloadPerFlow testInfo = MultiFlowTypes.simulations.get(type); 
+		for (int i = 0 ; i < numThreads ; i++){
+      	  double[] vals = stats[i].getSortedValues();
+      	  int len = (int) (vals.length *( 0.90));
+      	  for (int j = 0 ; j < len ; j++ ){
+      		  statsEnd90.addValue(vals[j]);
+      	  }
+      }
+      
+		for (int i = 0 ; i < numThreads ; i++){
+	      	  double[] vals = stats[i].getSortedValues();
+	      	  int len = (int) (vals.length *( 0.95));
+	      	  for (int j = 0 ; j < len ; j++ ){
+	      		  statsEnd95.addValue(vals[j]);
+	      	  }
+	      }
+	      
+		for (int i = 0 ; i < numThreads ; i++){
+	      	  double[] vals = stats[i].getSortedValues();
+	      	  int len = (int) (vals.length *( 0.99));
+	      	  for (int j = 0 ; j < len ; j++ ){
+	      		  statsEnd99.addValue(vals[j]);
+	      	  }
+	      }
+	      
         try{
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("./latency", true)));
-        out.print( type +":" + numThreads + ":"+ statsEnd.getN() + ":" + statsEnd.getMean()  + ":" +statsEnd.getStandardDeviation() + ":" + statsEnd.getMin() + ":" + statsEnd.getMax() + ":" + random 
-        		 + ":" +  ops);
+        out.print( type +":" + numThreads + ":"+ statsEnd90.getN() + ":" + statsEnd90.getMean()  + ":" +statsEnd90.getStandardDeviation() + ":" + statsEnd90.getMin() + ":" + statsEnd90.getMax() + ":" + random 
+       		 + ":" +  ops);
         //Print Test information. 
         out.print(":("); 
         WorkloadPerFlow f = MultiFlowTypes.simulations.get(type);
@@ -143,10 +163,11 @@ public abstract class BenchClient implements Runnable{
         		}	
         }
         out.print(")");
-        
         //Test duration
         out.print(":" + ((System.nanoTime() - test_start_time) / (1000 * 1000 *60) ));
-        out.println(""); 
+        out.print(":" + statsEnd95.getN() + ":" + statsEnd95.getMean()  + ":" +statsEnd95.getStandardDeviation() + ":" + statsEnd95.getMin() + ":" + statsEnd95.getMax());
+        out.print(":" + statsEnd99.getN() + ":" + statsEnd99.getMean()  + ":" +statsEnd99.getStandardDeviation() + ":" + statsEnd99.getMin() + ":" + statsEnd99.getMax());
+        out.println(":" + testInfo.datastoreState);
         
         out.close(); 
         System.out.println("Printed results"); 
@@ -272,7 +293,7 @@ public abstract class BenchClient implements Runnable{
 	
 	final private boolean bombit(final byte[] end) {
 		
-		for (long i = 0; i < numFlows + 1000 ; i++){
+		for (long i = 0; i < numFlows + 5000 ; i++){
 			if (verbose && (i % interval) == 0 ){
 				System.out.println("Thread " + id + " on request: " + i); 
 			}
@@ -313,7 +334,7 @@ public abstract class BenchClient implements Runnable{
         return o.readObject();
     }
 	
-    datastore.bench.WorkloadPerFlow flow; 
+    WorkloadPerFlow flow; 
 	//protected  abstract FlowSimulation chooseNextFlow();
 	protected  abstract void end(long t, long i);
 }

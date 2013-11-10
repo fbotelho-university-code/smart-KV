@@ -243,6 +243,7 @@ public class KeyValueProxy extends AbstractDatastoreProxy implements IKeyValueDa
 	/* (non-Javadoc)
 	 * @see smartkv.client.IKeyValueDataStoreProxy#createDevice(byte[])
 	 */
+	
 	@Override
 	public byte[] createDevice(byte[] serialize) {
 		RequestType type = RequestType.DM_CREATE_DEVICE; 
@@ -274,7 +275,6 @@ public class KeyValueProxy extends AbstractDatastoreProxy implements IKeyValueDa
 	public byte[] getTwoDevices(IndexedEntity ieSource,
 			IndexedEntity ieDestination) {
 		RequestType type = RequestType.DM_TWO_DEVICES;
-		System.out.println(ieSource);
 		byte[] req = ieDestination != null ? concatArrays(
 				type.byteArrayOrdinal,
 				getBytes(ieSource.getEntity().getMacAddress()), 
@@ -282,12 +282,11 @@ public class KeyValueProxy extends AbstractDatastoreProxy implements IKeyValueDa
 				getBytes(ieDestination.getEntity().getMacAddress()), 
 				getBytes(ieDestination.getEntity().getVlanOrZero())
 				) :
-					concatArrays(
-							type.byteArrayOrdinal,
-							getBytes(ieSource.getEntity().getMacAddress()), 
-							getBytes(ieSource.getEntity().getVlan())
-							); 
-				System.out.println("HERE"); 
+				concatArrays(
+						type.byteArrayOrdinal,
+						getBytes(ieSource.getEntity().getMacAddress()), 
+						getBytes(ieSource.getEntity().getVlan())
+						);  
 		byte[] res = invokeRequestWithRawReturn(type, req);
 		return res;
 	}

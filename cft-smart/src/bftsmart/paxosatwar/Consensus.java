@@ -88,7 +88,7 @@ public class Consensus {
         while (decisionRound == null &&
                 decisionRound.deserializedPropValue == null) {
             try {
-                System.out.println("waiting for propose for " + eid);
+                //System.out.println("waiting for propose for " + eid);
                 Thread.sleep(1);
             } catch (InterruptedException ie) {
             }

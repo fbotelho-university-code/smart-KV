@@ -281,7 +281,7 @@ public class ServiceProxy extends TOMSender {
      */
     @Override
     public void replyReceived(TOMMessage reply) {
-
+    	
         try {
             canReceiveLock.lock();
             if (reqId == -1) {//no message being expected

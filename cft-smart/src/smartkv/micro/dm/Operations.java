@@ -113,7 +113,7 @@ public class Operations {
 	
 	protected byte[] createDevice(Entity entity){
         long deviceKey = (long) deviceMap.getAndIncrement("DM_ID");
-		IEntityClass entityClass = entityClassifier.classifyEntity(entity);
+        IEntityClass entityClass = entityClassifier.classifyEntity(entity);
 		
         Device device =  new Device(deviceKey, entity, entityClass);
         
@@ -122,9 +122,8 @@ public class Operations {
         boolean updatePrimary = primaryIndex.updateIndex(device, deviceKey) ; //if false then it should go to deleteQueue  
 
         index.updateIndex(entity, deviceKey);
-        return UnsafeJavaSerializer.getInstance().serialize(device); 
+        return Longs.toByteArray(deviceKey); 
 	}
-	
 	
 	/**
 	 * @param dis
@@ -195,30 +194,36 @@ public class Operations {
 		byte[] vlanSource = new byte[2];
 		dis.readFully(vlanSource);
 		short vl = Shorts.fromByteArray(vlanSource); 
-		source = new Entity(macSourceValue, vl,null,null,null,null); 
+		source = new Entity(macSourceValue, vl,null,null,null,null);
+		
 		if (dis.available() >0 ){
 			byte[] macDest = new byte[8];
 			dis.readFully(macDest);
-			long macDestValue = Longs.fromByteArray(macSource); 
+			long macDestValue = Longs.fromByteArray(macDest); 
 			byte[] vlanDest = new byte[2]; 
 			dis.readFully(vlanDest);
-			vl = Shorts.fromByteArray(vlanSource);
+			vl = Shorts.fromByteArray(vlanDest);
 			destination = new Entity(macDestValue, vl,null,null,null,null); 
 		}
+		
 		VersionedValue<Object> sd = this.primaryIndex.findDeviceByEntity(source);
 		if (sd != null){
 			oo.writeObject(sd);
 		}
+		
 		List<AttachmentPoint> list = null ;
 		if (destination != null){
 			VersionedValue<Object> d = this.primaryIndex.findDeviceByEntity(destination);
+			//System.out.println( "Aps : " + ((Device)d.value()).getDeviceKey() + ":" + ((Device)d.value()).getAps());
 			if (d!= null ){
-				List<AttachmentPoint> aps = ((Device) d.value()).getAps(); 
-				if (aps != null){
-					oo.writeObject(aps);
+				list = ((Device) d.value()).getAps(); 
+				if (list != null){
+					oo.writeObject(list);
 				}
 			}
 		}
+		
+		//System.out.println ( "Request for : " + source + "######################" + destination + " -----------> " + list + " ANNNNNNNNDDDD " + ((sd != null) ?  ((Device) sd.value()).getDeviceKey() : "null")); 
 		if (list != null || sd != null){
 			return bo.toByteArray(); 
 		}

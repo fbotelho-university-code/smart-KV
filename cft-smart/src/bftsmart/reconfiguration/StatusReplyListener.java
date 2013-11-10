@@ -46,7 +46,7 @@ public class StatusReplyListener implements ReplyListener {
 
     @Override
 	public void replyReceived(TOMMessage reply) {
-        System.out.println("Receiving reply from " + reply.getSender() + " with reqId:" + reply.getSequence());
+        //System.out.println("Receiving reply from " + reply.getSender() + " with reqId:" + reply.getSequence());
         String tmpReply = (String)TOMUtil.getObject(reply.getContent());
         response = StatusReply.fromString(tmpReply);
         this.sm.release();

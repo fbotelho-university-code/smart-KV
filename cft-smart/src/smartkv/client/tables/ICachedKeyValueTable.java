@@ -5,6 +5,7 @@ package smartkv.client.tables;
 
 import java.util.Set;
 
+import net.floodlightcontroller.core.types.MacVlanPair;
 import net.floodlightcontroller.devicemanager.internal.Device;
 import net.floodlightcontroller.devicemanager.internal.Entity;
 import net.floodlightcontroller.devicemanager.internal.IndexedEntity;
@@ -37,5 +38,6 @@ public interface ICachedKeyValueTable<K, V> extends IKeyValueTable<K,V> {
 	 * @return
 	 */
 	
-
+	public Device createDeviceAndCacheIt(Entity entity) ;
+	
 }

@@ -280,10 +280,10 @@ public class StateManager {
 
             for (int j = 0; j < st.length; j++) {
 
-                System.out.println("PID " + st[j].sender + " sent EID " + st[j].state.getLastEid());
+                //System.out.println("PID " + st[j].sender + " sent EID " + st[j].state.getLastEid());
                 //System.out.println(st[i].state.equals(st[j].state) + " && " + st[j].state.hasState());
                 if (st[i].state.equals(st[j].state) && st[j].state.hasState()) count++;
-                System.out.println("Count: " + count);
+                //System.out.println("Count: " + count);
                 //******* EDUARDO BEGIN **************//
                 if (count > SVManager.getCurrentViewF()) return st[j].state;
                 //******* EDUARDO END **************//
@@ -383,7 +383,7 @@ public class StateManager {
         lockTimer.lock();
         
         Logger.println("(StateManager.stateTimeout) Timeout for the replica that was supposed to send the complete state. Changing desired replica.");
-        System.out.println("Timeout no timer do estado!");
+        //System.out.println("Timeout no timer do estado!");
 
 
         if (stateTimer != null) stateTimer.cancel();
@@ -468,7 +468,7 @@ public class StateManager {
                     if (moreThan2F_Views(msg.getView())) {
                         currentView = msg.getView();
                         if (!currentView.isMember(SVManager.getStaticConf().getProcessId())) {
-                            System.out.println("Not a member!");
+                            //System.out.println("Not a member!");
                         }
                     }
                 } else {
@@ -557,7 +557,7 @@ public class StateManager {
                         tomLayer.processOutOfContext();
                         
                         if (SVManager.getCurrentViewId() != currentView.getId()) {
-                            System.out.println("Installing current view!");
+                            //System.out.println("Installing current view!");
                             SVManager.reconfigureTo(currentView);
                         }
                         
@@ -573,7 +573,7 @@ public class StateManager {
                         emptyViews();
                         setReplicaState(null);
 
-                        System.out.println("I updated the state!");
+                        //System.out.println("I updated the state!");
 
                         tomLayer.requestsTimer.Enabled(true);
                         tomLayer.requestsTimer.startTimer();
